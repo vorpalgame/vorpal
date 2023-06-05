@@ -11,6 +11,9 @@ From the perspective a game or training simulation, it is simply sending events 
 
 Currently we are working an implementation with raylib but ebitten or other engines could be implemented as well. The event system and game/training logic are decoupled from the concerns of the multimedia engine. 
 
+Sample
+Why a Tarot card sample? Well, it's fun but this is the kind of problem set that emphasizes the development of the mechanics and not of implementing game logic. For example, we need to ask users for input, capture keystrokes, draw to different layers for a board and cards on it, and play sounds for cards flipping and shuffling. What we don't want to focus on, at least at first, is implemeting rules and states for a game. Even a simple game like Solitaire has to have logic based on what column a card is in and what numeric value and color the cards are. That can all be done easily enough once the Vorpal engine is in place and all the events are implemented but it isn't the focus of the project. 
+
 ![image](https://github.com/vorpalgame/vorpal/assets/3209869/7b4df18f-e7f5-4941-8439-a79fa20584da)
 
 
