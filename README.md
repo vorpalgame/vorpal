@@ -1,5 +1,6 @@
 # Vorpal Engine
 Vorpal Game &amp; Simulation Engine for Go
+
 Golang and C multimedia libraries, such as raylib, operate on fundamentally different paradigms and Vorpal attempts to bridge that gap. Game and multimedia engines run in imperative loops and are usually single threaded (at least for the render loop). Golang and Go developers are used to working with events and channels in a concurrent fashion. 
 
 Vorpal engine creates a number of Golang channels and events that allow game or simulation logic to listen for various key and mouse events while sending events for rendering imgages or playing sounds. 
