@@ -32,6 +32,7 @@ func (g *tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 		var sendCard = false
 		if evt.GetKey().EqualsIgnoreCase("S") {
 			g.tarotDeck.Shuffle()
+			g.bus.SendAudioEvent(bus.NewAudioEvent("samples/resources/audio/shuffle.mp3"))
 			sendCard = true
 		} else if evt.GetKey().EqualsIgnoreCase("N") {
 			sendCard = true

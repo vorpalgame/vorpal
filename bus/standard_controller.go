@@ -4,28 +4,29 @@ import (
 	"log"
 )
 
-type StandardGameController interface {
+type StandardMediaPeerController interface {
 	EngineListener
-	GameListener
+	ControllerListener
 	GetImageDrawEvents() DrawEvent //TODO This needs to be an array of arrays of events for different layers.
-	ClearImagesToLoad()
+	GetAudioEvent() AudioEvent     //One event at at time...
 }
 
 type controller struct {
 	bus          VorpalBus
-	engine       LifeCycle
-	loadImages   []string //We need structs to store for these and not strings...
-	keyEvents    []string
-	imagesToDraw DrawEvent  //Should be multiple draw events sorted by layer and then receive order within layer...
+	engine       LifeCycle  //Rethink the lifecycle requirements (if any)
+	imagesToDraw DrawEvent  //Should be multiple draw events sorted by layer and ordered within layer...
+	audioEvent   AudioEvent //Only one audio event at a time but need controller flags for load, start, pause, unload...
 	mouseEvent   MouseEvent //Keep the last state of mouse and keys.
+	keyEvents    []string   //TODO use the actuaal key events and not the strings...
+
 }
 
 var c = controller{}
 
-func NewGameController() StandardGameController {
+func NewGameController() StandardMediaPeerController {
 	c.bus = GetVorpalBus()
 	InitKeys()
-	c.bus.AddGameListener(&c)
+	c.bus.AddControllerListener(&c)
 	c.bus.AddEngineListener(&c)
 	return &c
 }
@@ -53,6 +54,14 @@ func (c *controller) OnKeyEvent(keyChannel <-chan KeyEvent) {
 	}
 }
 
+func (c *controller) OnAudioEvent(audioChannel <-chan AudioEvent) {
+	for evt := range audioChannel {
+		log.Default().Println("audioEvent ")
+
+		c.audioEvent = evt
+	}
+}
+
 func (c *controller) OnMouseEvent(mouseChannel <-chan MouseEvent) {
 	for evt := range mouseChannel {
 		//log.Default().Println("Load Images in Controller: ")
@@ -60,19 +69,17 @@ func (c *controller) OnMouseEvent(mouseChannel <-chan MouseEvent) {
 	}
 }
 
-// /Called by engine...Need better struct values to return...
-func (c *controller) ClearImagesToLoad() {
-	c.loadImages = nil
-}
-
-func (c *controller) GetImagesToLoad() []string {
-	//log.Default().Println("Load images from file name")
-	return c.loadImages
-
-}
-
 // TODO return multiples...
 func (c *controller) GetImageDrawEvents() DrawEvent {
 	//log.Default().Println("Get Draw Image")
 	return c.imagesToDraw
+}
+
+func (c *controller) GetAudioEvent() AudioEvent {
+	//log.Default().Println("Get Draw Image")
+	//TODO audio event should be cleared by engine ack on callback.
+	//Just wire it in for now.
+	temp := c.audioEvent
+	c.audioEvent = nil
+	return temp
 }

@@ -1,5 +1,7 @@
 package bus
 
-type GameListener interface {
+//Messages from game/simulation to multimedia engine.
+type ControllerListener interface {
 	DrawEventListener
+	AudioEventListener
 }

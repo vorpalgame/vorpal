@@ -10,7 +10,7 @@ import (
 var e = engine{}
 
 type engine struct {
-	controller   bus.StandardGameController
+	controller   bus.StandardMediaPeerController
 	bus          bus.VorpalBus
 	imageLibrary map[string]*rl.Image
 }
@@ -30,16 +30,25 @@ func (e *engine) Start() {
 	rl.InitWindow(1920, 1080, "Get Window Title from Event!")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
+
+	rl.InitAudioDevice()
 	for !rl.WindowShouldClose() {
 
 		e.sendMouseEvents()
 		e.sendKeyEvents()
-		rl.BeginDrawing()
-
-		rl.ClearBackground(rl.RayWhite)
-		//rl.DrawText("Congrats! You created your first window!", 190, 200, 20, rl.LightGray)
+		e.playAudio()
 		e.drawImages()
-		rl.EndDrawing()
+
+	}
+}
+
+func (e *engine) playAudio() {
+	evt := e.controller.GetAudioEvent()
+	if evt != nil {
+		//log.Default().Println("Play audio: " + evt.GetAudio())
+		var audio = rl.LoadSound(evt.GetAudio())
+		rl.PlaySound(audio)
+
 	}
 }
 
@@ -49,6 +58,10 @@ func (e *engine) Start() {
 // so can be better consolidated later along with multiple layered
 // drawing and background color.
 func (e *engine) drawImages() {
+	rl.BeginDrawing()
+
+	rl.ClearBackground(rl.RayWhite)
+	//rl.DrawText("Congrats! You created your first window!", 190, 200, 20, rl.LightGray)
 
 	evt := e.controller.GetImageDrawEvents()
 	if evt != nil {
@@ -62,7 +75,7 @@ func (e *engine) drawImages() {
 			rl.DrawTexture(texture, evt.GetX(), evt.GetY(), rl.White)
 		}
 	}
-
+	rl.EndDrawing()
 }
 
 // TODO Rethink the mouse event as it probably should be static...
