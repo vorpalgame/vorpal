@@ -3,6 +3,7 @@ package tarot
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/vorpalgame/vorpal/bus"
 )
@@ -15,12 +16,19 @@ type tarot struct {
 // TODO The cards should have locations or the game/board should dictate those...
 var cards = tarot{}
 
-func StartGame() {
+func InitGame() {
 	log.Println("New card game")
 	cards.bus = bus.GetVorpalBus()
 	cards.bus.AddEngineListener(&cards)
 	cards.tarotDeck = NewDeck()
 	cards.tarotDeck.Init()
+
+}
+
+// TODO Need a better mechanism for start up mechanics so that listeners get registered before we send
+func StartGame() {
+	time.Sleep(time.Second * 1)
+	cards.bus.SendTextEvent(bus.NewTextEvent("Press S to shuffle the deck and show a card.\nPress N to show the next card.", 800, 200))
 
 }
 

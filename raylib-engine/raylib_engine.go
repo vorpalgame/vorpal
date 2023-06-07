@@ -7,6 +7,8 @@ import (
 	"github.com/vorpalgame/vorpal/bus"
 )
 
+//T
+
 var e = engine{}
 
 type engine struct {
@@ -17,7 +19,7 @@ type engine struct {
 
 //Need to disambiguate the controller and bus uses as one call the controller as if its't the bus and that's undesirable.
 
-func NewEngine() bus.LifeCycle {
+func NewEngine() bus.Engine {
 	log.Println("Init'd")
 
 	e.imageLibrary = make(map[string]*rl.Image)
@@ -36,16 +38,26 @@ func (e *engine) Start() {
 
 		e.sendMouseEvents()
 		e.sendKeyEvents()
+		e.showText()
 		e.playAudio()
 		e.drawImages()
 
 	}
 }
 
+// TODO Add font and color. Color must haave a controller/Volrpal version that
+// is translated here to the raylib.
+func (e *engine) showText() {
+	evt := e.controller.GetTextEvent()
+
+	if evt != nil {
+		rl.DrawText(evt.GetText(), evt.GetX(), evt.GetY(), 20, rl.Black)
+	}
+}
+
 func (e *engine) playAudio() {
 	evt := e.controller.GetAudioEvent()
 	if evt != nil {
-		//log.Default().Println("Play audio: " + evt.GetAudio())
 		var audio = rl.LoadSound(evt.GetAudio())
 		rl.PlaySound(audio)
 

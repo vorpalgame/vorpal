@@ -9,15 +9,16 @@ type StandardMediaPeerController interface {
 	ControllerListener
 	GetImageDrawEvents() DrawEvent //TODO This needs to be an array of arrays of events for different layers.
 	GetAudioEvent() AudioEvent     //One event at at time...
+	GetTextEvent() TextEvent
 }
 
 type controller struct {
 	bus          VorpalBus
-	engine       LifeCycle  //Rethink the lifecycle requirements (if any)
 	imagesToDraw DrawEvent  //Should be multiple draw events sorted by layer and ordered within layer...
 	audioEvent   AudioEvent //Only one audio event at a time but need controller flags for load, start, pause, unload...
 	mouseEvent   MouseEvent //Keep the last state of mouse and keys.
-	keyEvents    []string   //TODO use the actuaal key events and not the strings...
+	textEvent    TextEvent
+	keyEvents    []string //TODO use the actuaal key events and not the strings...
 
 }
 
@@ -29,12 +30,6 @@ func NewGameController() StandardMediaPeerController {
 	c.bus.AddControllerListener(&c)
 	c.bus.AddEngineListener(&c)
 	return &c
-}
-
-// Need standards for new/init/close...
-func (c *controller) Start() {
-
-	c.engine.Start()
 }
 
 // Usig the tag/name instead of actual imge assures race condtions aren't a problem.
@@ -62,6 +57,15 @@ func (c *controller) OnAudioEvent(audioChannel <-chan AudioEvent) {
 	}
 }
 
+func (c *controller) OnTextEvent(textChannel <-chan TextEvent) {
+	for evt := range textChannel {
+		log.Default().Println(evt)
+
+		c.textEvent = evt
+
+	}
+}
+
 func (c *controller) OnMouseEvent(mouseChannel <-chan MouseEvent) {
 	for evt := range mouseChannel {
 		//log.Default().Println("Load Images in Controller: ")
@@ -82,4 +86,12 @@ func (c *controller) GetAudioEvent() AudioEvent {
 	temp := c.audioEvent
 	c.audioEvent = nil
 	return temp
+}
+
+// TODO fix the bug with the event not coming trough with correc text...
+func (c *controller) GetTextEvent() TextEvent {
+	log.Default().Println("Get Text Event")
+
+	return c.textEvent
+
 }

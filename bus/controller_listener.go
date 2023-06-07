@@ -4,4 +4,5 @@ package bus
 type ControllerListener interface {
 	DrawEventListener
 	AudioEventListener
+	TextEventListener
 }

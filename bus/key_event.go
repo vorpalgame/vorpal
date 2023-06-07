@@ -1,6 +1,7 @@
 package bus
 
-//Need key constants and upper/lower case.
+//TODO Need key constants and upper/lower case.
+//TODO Need key registration listener events.
 type KeyEventListener interface {
 	OnKeyEvent(keyChannel <-chan KeyEvent)
 }

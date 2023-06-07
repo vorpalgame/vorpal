@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// TODO Need full test suites for all the listener/events and types...
 func TestKey(t *testing.T) {
 
 	// for i := 32; i < 96; i++ {
