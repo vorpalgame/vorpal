@@ -28,6 +28,7 @@ func InitGame() {
 // TODO Need a better mechanism for start up mechanics so that listeners get registered before we send
 func StartGame() {
 	time.Sleep(time.Second * 1)
+	cards.bus.SendDrawEvent(bus.NewDrawEvent("samples/resources/tarot/table.png", 0, 0, 0, 1900, 1200))
 	cards.bus.SendTextEvent(bus.NewTextEvent("Press S to shuffle the deck and show a card.\nPress N to show the next card.", 800, 200))
 
 }

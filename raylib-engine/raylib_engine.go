@@ -15,6 +15,7 @@ type engine struct {
 	controller   bus.StandardMediaPeerController
 	bus          bus.VorpalBus
 	imageLibrary map[string]*rl.Image
+	textures     []rl.Texture2D
 }
 
 //Need to disambiguate the controller and bus uses as one call the controller as if its't the bus and that's undesirable.
@@ -23,6 +24,7 @@ func NewEngine() bus.Engine {
 	log.Println("Init'd")
 
 	e.imageLibrary = make(map[string]*rl.Image)
+	e.textures = make([]rl.Texture2D, 0, 100)
 	e.controller = bus.NewGameController()
 	e.bus = bus.GetVorpalBus()
 
@@ -38,10 +40,13 @@ func (e *engine) Start() {
 
 		e.sendMouseEvents()
 		e.sendKeyEvents()
-		e.showText()
-		e.playAudio()
-		e.drawImages()
 
+		rl.BeginDrawing()
+		e.loadImages()
+		e.drawImages()
+		e.showText()
+		rl.EndDrawing()
+		e.playAudio()
 	}
 }
 
@@ -63,6 +68,24 @@ func (e *engine) playAudio() {
 
 	}
 }
+func (e *engine) loadImages() {
+	//Continue looping and loading as necessary.
+	//TODO need mechanism to load and unload.
+
+	drawEvents := e.controller.GetImageDrawEvents()
+
+	for _, evt := range drawEvents {
+		img := e.imageLibrary[evt.GetImage()]
+		if img == nil {
+			e.imageLibrary[evt.GetImage()] = rl.LoadImage(evt.GetImage())
+			img = e.imageLibrary[evt.GetImage()]
+			rl.ImageResize(img, evt.GetWidth(), evt.GetHeight())
+
+			e.textures = append(e.textures, rl.LoadTextureFromImage(img))
+		}
+	}
+
+}
 
 // TODO This needs to change to use multiple images...
 // TODO This eliminated preloading of images in favor of
@@ -70,24 +93,14 @@ func (e *engine) playAudio() {
 // so can be better consolidated later along with multiple layered
 // drawing and background color.
 func (e *engine) drawImages() {
-	rl.BeginDrawing()
+	//Need to store coordinate and other information along with the texture as necessary.
 
-	rl.ClearBackground(rl.RayWhite)
-	//rl.DrawText("Congrats! You created your first window!", 190, 200, 20, rl.LightGray)
+	for _, texture := range e.textures {
+		log.Default().Print(texture.Height)
+		rl.DrawTexture(texture, 0, 0, rl.LightGray)
 
-	evt := e.controller.GetImageDrawEvents()
-	if evt != nil {
-		var img = e.imageLibrary[evt.GetImage()]
-		if img == nil {
-			e.imageLibrary[evt.GetImage()] = rl.LoadImage(evt.GetImage())
-			img = e.imageLibrary[evt.GetImage()]
-			rl.ImageResize(img, evt.GetWidth(), evt.GetHeight())
-		} else { //Give it time to load the image...
-			texture := rl.LoadTextureFromImage(img)
-			rl.DrawTexture(texture, evt.GetX(), evt.GetY(), rl.White)
-		}
 	}
-	rl.EndDrawing()
+
 }
 
 // TODO Rethink the mouse event as it probably should be static...

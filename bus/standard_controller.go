@@ -7,19 +7,20 @@ import (
 type StandardMediaPeerController interface {
 	EngineListener
 	ControllerListener
-	GetImageDrawEvents() DrawEvent //TODO This needs to be an array of arrays of events for different layers.
-	GetAudioEvent() AudioEvent     //One event at at time...
+
+	GetImageDrawEvents() map[int32]DrawEvent
+	GetAudioEvent() AudioEvent //One event at at time...
 	GetTextEvent() TextEvent
 }
 
 type controller struct {
 	bus          VorpalBus
-	imagesToDraw DrawEvent  //Should be multiple draw events sorted by layer and ordered within layer...
+	imagesToDraw map[int32]DrawEvent
 	audioEvent   AudioEvent //Only one audio event at a time but need controller flags for load, start, pause, unload...
 	mouseEvent   MouseEvent //Keep the last state of mouse and keys.
 	textEvent    TextEvent
 	keyEvents    []string //TODO use the actuaal key events and not the strings...
-
+	newDrawEvent bool
 }
 
 var c = controller{}
@@ -27,6 +28,8 @@ var c = controller{}
 func NewGameController() StandardMediaPeerController {
 	c.bus = GetVorpalBus()
 	InitKeys()
+	c.imagesToDraw = make(map[int32]DrawEvent) //100 possible layers. Could have layers within layers...
+	c.newDrawEvent = false
 	c.bus.AddControllerListener(&c)
 	c.bus.AddEngineListener(&c)
 	return &c
@@ -37,7 +40,8 @@ func (c *controller) OnDrawEvent(drawChannel <-chan DrawEvent) {
 	for evt := range drawChannel {
 
 		log.Default().Println("Received draw event: " + evt.GetImage())
-		c.imagesToDraw = evt
+		c.imagesToDraw[evt.GetZ()] = evt
+		c.newDrawEvent = true
 	}
 }
 
@@ -74,7 +78,7 @@ func (c *controller) OnMouseEvent(mouseChannel <-chan MouseEvent) {
 }
 
 // TODO return multiples...
-func (c *controller) GetImageDrawEvents() DrawEvent {
+func (c *controller) GetImageDrawEvents() map[int32]DrawEvent {
 	//log.Default().Println("Get Draw Image")
 	return c.imagesToDraw
 }
@@ -88,9 +92,8 @@ func (c *controller) GetAudioEvent() AudioEvent {
 	return temp
 }
 
-// TODO fix the bug with the event not coming trough with correc text...
 func (c *controller) GetTextEvent() TextEvent {
-	log.Default().Println("Get Text Event")
+	//log.Default().Println("Get Text Event")
 
 	return c.textEvent
 
