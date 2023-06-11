@@ -9,22 +9,18 @@ import (
 
 //T
 
-var e = engine{}
-
 type engine struct {
-	controller   bus.StandardMediaPeerController
-	bus          bus.VorpalBus
-	imageLibrary map[string]*rl.Image
-	textures     []rl.Texture2D
+	controller bus.StandardMediaPeerController
+	bus        bus.VorpalBus
+	cache      MediaCache
 }
 
 //Need to disambiguate the controller and bus uses as one call the controller as if its't the bus and that's undesirable.
 
 func NewEngine() bus.Engine {
 	log.Println("Init'd")
-
-	e.imageLibrary = make(map[string]*rl.Image)
-	e.textures = make([]rl.Texture2D, 0, 100)
+	var e = engine{}
+	e.cache = NewMediaCache()
 	e.controller = bus.NewGameController()
 	e.bus = bus.GetVorpalBus()
 
@@ -42,8 +38,11 @@ func (e *engine) Start() {
 		e.sendKeyEvents()
 
 		rl.BeginDrawing()
-		e.loadImages()
-		e.drawImages()
+		rl.ClearBackground(rl.RayWhite)
+		if e.controller.GetDrawEvent() != nil {
+			e.cacheImages()
+			e.drawImages()
+		}
 		e.showText()
 		rl.EndDrawing()
 		e.playAudio()
@@ -68,22 +67,8 @@ func (e *engine) playAudio() {
 
 	}
 }
-func (e *engine) loadImages() {
-	//Continue looping and loading as necessary.
-	//TODO need mechanism to load and unload.
-
-	drawEvents := e.controller.GetImageDrawEvents()
-
-	for _, evt := range drawEvents {
-		img := e.imageLibrary[evt.GetImage()]
-		if img == nil {
-			e.imageLibrary[evt.GetImage()] = rl.LoadImage(evt.GetImage())
-			img = e.imageLibrary[evt.GetImage()]
-			rl.ImageResize(img, evt.GetWidth(), evt.GetHeight())
-
-			e.textures = append(e.textures, rl.LoadTextureFromImage(img))
-		}
-	}
+func (e *engine) cacheImages() {
+	e.cache.CacheImages(e.controller.GetDrawEvent())
 
 }
 
@@ -93,12 +78,13 @@ func (e *engine) loadImages() {
 // so can be better consolidated later along with multiple layered
 // drawing and background color.
 func (e *engine) drawImages() {
-	//Need to store coordinate and other information along with the texture as necessary.
+	imageLayers := e.controller.GetDrawEvent().GetImageLayers()
 
-	for _, texture := range e.textures {
-		log.Default().Print(texture.Height)
-		rl.DrawTexture(texture, 0, 0, rl.LightGray)
-
+	for _, img := range imageLayers {
+		if img != nil {
+			texture := rl.LoadTextureFromImage(e.cache.GetImage(img.GetImage())) //not sure why this can't be done inside the append???
+			rl.DrawTexture(texture, img.GetX(), img.GetY(), rl.LightGray)
+		}
 	}
 
 }

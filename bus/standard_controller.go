@@ -8,19 +8,18 @@ type StandardMediaPeerController interface {
 	EngineListener
 	ControllerListener
 
-	GetImageDrawEvents() map[int32]DrawEvent
+	GetDrawEvent() DrawEvent
 	GetAudioEvent() AudioEvent //One event at at time...
 	GetTextEvent() TextEvent
 }
 
 type controller struct {
-	bus          VorpalBus
-	imagesToDraw map[int32]DrawEvent
-	audioEvent   AudioEvent //Only one audio event at a time but need controller flags for load, start, pause, unload...
-	mouseEvent   MouseEvent //Keep the last state of mouse and keys.
-	textEvent    TextEvent
-	keyEvents    []string //TODO use the actuaal key events and not the strings...
-	newDrawEvent bool
+	bus        VorpalBus
+	drawEvent  DrawEvent
+	audioEvent AudioEvent //Only one audio event at a time but need controller flags for load, start, pause, unload...
+	mouseEvent MouseEvent //Keep the last state of mouse and keys.
+	textEvent  TextEvent  //TODO put multiple keys in one event...
+	keyEvents  []string   //TODO use the actual key events and not the strings...
 }
 
 var c = controller{}
@@ -28,8 +27,6 @@ var c = controller{}
 func NewGameController() StandardMediaPeerController {
 	c.bus = GetVorpalBus()
 	InitKeys()
-	c.imagesToDraw = make(map[int32]DrawEvent) //100 possible layers. Could have layers within layers...
-	c.newDrawEvent = false
 	c.bus.AddControllerListener(&c)
 	c.bus.AddEngineListener(&c)
 	return &c
@@ -38,10 +35,7 @@ func NewGameController() StandardMediaPeerController {
 // Usig the tag/name instead of actual imge assures race condtions aren't a problem.
 func (c *controller) OnDrawEvent(drawChannel <-chan DrawEvent) {
 	for evt := range drawChannel {
-
-		log.Default().Println("Received draw event: " + evt.GetImage())
-		c.imagesToDraw[evt.GetZ()] = evt
-		c.newDrawEvent = true
+		c.drawEvent = evt
 	}
 }
 
@@ -78,9 +72,9 @@ func (c *controller) OnMouseEvent(mouseChannel <-chan MouseEvent) {
 }
 
 // TODO return multiples...
-func (c *controller) GetImageDrawEvents() map[int32]DrawEvent {
+func (c *controller) GetDrawEvent() DrawEvent {
 	//log.Default().Println("Get Draw Image")
-	return c.imagesToDraw
+	return c.drawEvent
 }
 
 func (c *controller) GetAudioEvent() AudioEvent {
