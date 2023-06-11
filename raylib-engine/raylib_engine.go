@@ -10,9 +10,11 @@ import (
 //T
 
 type engine struct {
-	controller bus.StandardMediaPeerController
-	bus        bus.VorpalBus
-	cache      MediaCache
+	controller    bus.StandardMediaPeerController
+	bus           bus.VorpalBus
+	cache         MediaCache
+	currentEvtId  int32
+	renderTexture rl.RenderTexture2D
 }
 
 //Need to disambiguate the controller and bus uses as one call the controller as if its't the bus and that's undesirable.
@@ -23,6 +25,7 @@ func NewEngine() bus.Engine {
 	e.cache = NewMediaCache()
 	e.controller = bus.NewGameController()
 	e.bus = bus.GetVorpalBus()
+	e.currentEvtId = -1
 
 	return &e
 }
@@ -33,20 +36,42 @@ func (e *engine) Start() {
 
 	rl.InitAudioDevice()
 	for !rl.WindowShouldClose() {
-
+		e.cacheImages()
 		e.sendMouseEvents()
 		e.sendKeyEvents()
-
 		rl.BeginDrawing()
-		rl.ClearBackground(rl.RayWhite)
-		if e.controller.GetDrawEvent() != nil {
-			e.cacheImages()
-			e.drawImages()
+		// if e.controller.GetDrawEvent() != nil && e.currentEvtId != e.controller.GetDrawEvent().GetId() {
+
+		// 	e.currentEvtId = e.controller.GetDrawEvent().GetId()
+		// 	e.drawImages()
+		// }
+		// rl.DrawTexture(e.renderTexture.Texture, 0, 0, rl.RayWhite)
+		for _, img := range e.controller.GetDrawEvent().GetImageLayers() {
+			if img != nil {
+				currentImg := e.cache.GetImage(img.GetImage())
+				rl.DrawTexture(rl.LoadTextureFromImage(currentImg), img.GetX(), img.GetY(), rl.RayWhite)
+
+			}
 		}
 		e.showText()
 		rl.EndDrawing()
 		e.playAudio()
 	}
+}
+
+func (e *engine) drawImages() {
+	imageLayers := e.controller.GetDrawEvent().GetImageLayers()
+	rl.UnloadRenderTexture(e.renderTexture)
+	e.renderTexture = rl.LoadRenderTexture(1920, 1080)
+	rl.BeginTextureMode(e.renderTexture)
+	for _, img := range imageLayers {
+		if img != nil {
+			currentImg := e.cache.GetImage(img.GetImage())
+			rl.DrawTexture(rl.LoadTextureFromImage(currentImg), img.GetX(), img.GetY(), rl.RayWhite)
+
+		}
+	}
+	rl.EndTextureMode()
 }
 
 // TODO Add font and color. Color must haave a controller/Volrpal version that
@@ -77,17 +102,23 @@ func (e *engine) cacheImages() {
 // of lazy loading, scaling and then storing for further use
 // so can be better consolidated later along with multiple layered
 // drawing and background color.
-func (e *engine) drawImages() {
-	imageLayers := e.controller.GetDrawEvent().GetImageLayers()
+// func (e *engine) drawImages() {
+// 	imageLayers := e.controller.GetDrawEvent().GetImageLayers()
+// 	rl.UnloadRenderTexture(e.renderTexture)
+// 	e.renderTexture = rl.LoadRenderTexture(1920, 1080)
+// 	rl.BeginTextureMode(e.renderTexture)
+// 	rl.BeginDrawing()
+// 	for _, img := range imageLayers {
+// 		if img != nil {
+// 			texture := rl.LoadTextureFromImage(e.cache.GetImage(img.GetImage())) //not sure why this can't be done inside the append???
+// 			rl.DrawTexture(texture, img.GetX(), img.GetY(), rl.RayWhite)
 
-	for _, img := range imageLayers {
-		if img != nil {
-			texture := rl.LoadTextureFromImage(e.cache.GetImage(img.GetImage())) //not sure why this can't be done inside the append???
-			rl.DrawTexture(texture, img.GetX(), img.GetY(), rl.LightGray)
-		}
-	}
+// 		}
+// 	}
+// 	rl.EndTextureMode()
+// 	rl.EndDrawing()
 
-}
+// }
 
 // TODO Rethink the mouse event as it probably should be static...
 // Need enums for values...

@@ -5,4 +5,5 @@ type ControllerListener interface {
 	DrawEventListener
 	AudioEventListener
 	TextEventListener
+	ImageCacheEventListener
 }

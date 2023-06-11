@@ -35,18 +35,18 @@ func GetDeck() Deck {
 }
 
 func (d *deck) Init() {
-	loadImagesEvent := bus.NewImagesEvent()
-	for _, suit := range suits {
-		for _, value := range values {
+	// loadImagesEvent := bus.NewImagesEvent()
+	// for _, suit := range suits {
+	// 	for _, value := range values {
 
-			cardSuit := "resources/" + value + "_of_" + suit + ".png"
+	// 		cardSuit := "resources/" + value + "_of_" + suit + ".png"
 
-			d.cards = append(d.cards, &card{value, suit, cardSuit})
-			loadImagesEvent.AddImage(cardSuit)
+	// 		d.cards = append(d.cards, &card{value, suit, cardSuit})
+	// 		loadImagesEvent.AddImage(cardSuit)
 
-		}
+	// 	}
 
-	}
+	// }
 	//fmt.Println(len(loadImagesEvent.GetImages()))
 
 }

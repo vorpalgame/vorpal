@@ -11,15 +11,17 @@ type StandardMediaPeerController interface {
 	GetDrawEvent() DrawEvent
 	GetAudioEvent() AudioEvent //One event at at time...
 	GetTextEvent() TextEvent
+	GetImageCacheEvent() ImageCacheEvent
 }
 
 type controller struct {
-	bus        VorpalBus
-	drawEvent  DrawEvent
-	audioEvent AudioEvent //Only one audio event at a time but need controller flags for load, start, pause, unload...
-	mouseEvent MouseEvent //Keep the last state of mouse and keys.
-	textEvent  TextEvent  //TODO put multiple keys in one event...
-	keyEvents  []string   //TODO use the actual key events and not the strings...
+	bus             VorpalBus
+	drawEvent       DrawEvent
+	audioEvent      AudioEvent      //Only one audio event at a time but need controller flags for load, start, pause, unload...
+	mouseEvent      MouseEvent      //Keep the last state of mouse and keys.
+	textEvent       TextEvent       //TODO put multiple keys in one event...
+	imageCacheEvent ImageCacheEvent //Could have multiples so should be slice...
+	keyEvents       []string        //TODO use the actual key events and not the strings...
 }
 
 var c = controller{}
@@ -36,6 +38,12 @@ func NewGameController() StandardMediaPeerController {
 func (c *controller) OnDrawEvent(drawChannel <-chan DrawEvent) {
 	for evt := range drawChannel {
 		c.drawEvent = evt
+	}
+}
+
+func (c *controller) OnImageCacheEvent(cacheChannel <-chan ImageCacheEvent) {
+	for evt := range cacheChannel {
+		c.imageCacheEvent = evt
 	}
 }
 
@@ -75,6 +83,11 @@ func (c *controller) OnMouseEvent(mouseChannel <-chan MouseEvent) {
 func (c *controller) GetDrawEvent() DrawEvent {
 	//log.Default().Println("Get Draw Image")
 	return c.drawEvent
+}
+
+func (c *controller) GetImageCacheEvent() ImageCacheEvent {
+	//log.Default().Println("Get Draw Image")
+	return c.imageCacheEvent
 }
 
 func (c *controller) GetAudioEvent() AudioEvent {

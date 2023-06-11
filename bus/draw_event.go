@@ -10,16 +10,27 @@ type DrawEventListener interface {
 type DrawEvent interface {
 	GetImageLayers() []ImageLayer
 	AddImageLayer(imgLayer ImageLayer)
+	GetId() int32
 }
 
 type drawEvent struct {
 	imageLayers []ImageLayer
+	id          int32
 }
+
+//TODO This should use a UUID but that's external
+var id int32 = 0
 
 func NewDrawEvent() DrawEvent {
 	evt := drawEvent{}
 	evt.imageLayers = make([]ImageLayer, 0, 100)
+	id = id + 1
+	evt.id = id
 	return &evt
+}
+
+func (evt *drawEvent) GetId() int32 {
+	return evt.id
 }
 
 func (evt *drawEvent) AddImageLayer(img ImageLayer) {

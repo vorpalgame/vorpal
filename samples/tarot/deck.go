@@ -20,7 +20,6 @@ type tarotDeck struct {
 type TarotDeck interface {
 	Shuffle()
 	GetTopCard() TarotCard
-	Init()
 }
 
 var d = tarotDeck{}
@@ -28,26 +27,17 @@ var d = tarotDeck{}
 func NewDeck() TarotDeck {
 	d.currentCard = 0
 	d.bus = bus.GetVorpalBus()
-
-	return &d
-}
-
-func (d *tarotDeck) Init() {
-	log.Print("Load tarot images...")
 	files, err := ioutil.ReadDir("samples/resources/tarot")
 	if err != nil {
 		log.Fatal(err)
 	}
-	loadImagesEvent := bus.NewImagesEvent()
 	for _, file := range files {
-		//fmt.Println(file.Name(), file.IsDir())
 
 		resource := "samples/resources/tarot/" + file.Name()
 		d.cards = append(d.cards, &tarotCard{resource})
-		loadImagesEvent.AddImage(resource)
 
 	}
-
+	return &d
 }
 
 func (d *tarotDeck) GetTopCard() TarotCard {

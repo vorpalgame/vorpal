@@ -3,7 +3,6 @@ package tarot
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/vorpalgame/vorpal/bus"
 )
@@ -21,14 +20,14 @@ func InitGame() {
 	cards.bus = bus.GetVorpalBus()
 	cards.bus.AddEngineListener(&cards)
 	cards.tarotDeck = NewDeck()
-	cards.tarotDeck.Init()
 
 }
 
 // TODO Need a better mechanism for start up mechanics so that listeners get registered before we send
 func StartGame() {
-	time.Sleep(time.Second * 1)
-
+	drawEvent := bus.NewDrawEvent()
+	drawEvent.AddImageLayer(bus.NewImageLayer("samples/resources/tarot/table.png", 0, 0, 1900, 1200))
+	cards.bus.SendDrawEvent(drawEvent)
 	cards.bus.SendTextEvent(bus.NewTextEvent("Press S to shuffle the deck and show a card.\nPress N to show the next card.", 800, 200))
 
 }
@@ -41,6 +40,7 @@ func (g *tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 		var sendCard = false
 		if evt.GetKey().EqualsIgnoreCase("S") {
 			g.tarotDeck.Shuffle()
+
 			g.bus.SendAudioEvent(bus.NewAudioEvent("samples/resources/audio/shuffle.mp3"))
 			sendCard = true
 		} else if evt.GetKey().EqualsIgnoreCase("N") {

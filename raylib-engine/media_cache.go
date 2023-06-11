@@ -10,6 +10,7 @@ import (
 type MediaCache interface {
 	CacheImages(event bus.DrawEvent)
 	GetImage(img string) *rl.Image
+	DoCacheControl(event bus.ImageCacheEvent)
 }
 
 type mediaCache struct {
@@ -33,5 +34,17 @@ func (c *mediaCache) CacheImages(evt bus.DrawEvent) {
 			rl.ImageResize(img, evt.GetWidth(), evt.GetHeight())
 		}
 
+	}
+}
+
+func (c *mediaCache) DoCacheControl(evt bus.ImageCacheEvent) {
+	if evt != nil {
+		for _, op := range evt.GetImageCacheOperations() {
+			if op.GetOperation() == "add" {
+				if c.imageCache[op.GetImage()] == nil {
+					c.imageCache[op.GetImage()] = rl.LoadImage(op.GetImage())
+				}
+			}
+		}
 	}
 }
