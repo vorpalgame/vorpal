@@ -11,6 +11,7 @@ type DrawEvent interface {
 	GetImageLayers() []ImageLayer
 	AddImageLayer(imgLayer ImageLayer)
 	GetId() int32
+	SetId(id int32)
 }
 
 type drawEvent struct {
@@ -31,6 +32,10 @@ func NewDrawEvent() DrawEvent {
 
 func (evt *drawEvent) GetId() int32 {
 	return evt.id
+}
+
+func (evt *drawEvent) SetId(id int32) {
+	evt.id = id
 }
 
 func (evt *drawEvent) AddImageLayer(img ImageLayer) {

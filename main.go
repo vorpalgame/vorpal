@@ -13,9 +13,6 @@ func main() {
 
 	c := raylibengine.NewEngine()
 	tarot.InitGame()
-	//TODO Still working through the start up mechanics of lifecycle.
-	//The listeners need to be registered before we start sending events.
-	go tarot.StartGame() //hack for now..
 
 	c.Start()
 
