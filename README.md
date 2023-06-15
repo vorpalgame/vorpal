@@ -15,7 +15,9 @@ Currently we are working an implementation with raylib but ebitten or other engi
 
 Why a Tarot card sample? Well, it's fun but it  is also the kind of problem set that emphasizes the development of the mechanics and not of implementing game logic. For example, we need to ask users for input, capture keystrokes, draw to different layers for a board and cards on it, and play sounds for cards flipping and shuffling. What we don't want to focus on, at least at first, is implemeting rules and states for a game. Even a simple game like Solitaire has to have logic based on what column a card is in and what numeric value and color the cards are. That can all be done easily enough once the Vorpal engine is in place and all the events are implemented but it isn't the focus of the project. 
 
-![image](https://github.com/vorpalgame/vorpal/assets/3209869/187091a0-f237-4d29-a802-8d3e866580a2)
+*Apologies about the bouncing screen...my grabs weren't precise. I'll get them programmatically later.
+
+![tarot](https://github.com/vorpalgame/vorpal/assets/3209869/769c6cde-56c3-4358-bd56-262eb6940a8d)
 
 ## How It Works
 The front end game logic sends a DrawEvent that lists one to N images along with the coordinates and size they should be rendered at by the game engine. The slice of ImageLayer treated as a Z coordinate system. The image file name, x, y, width and height coordinates are specified in the ImageLayer. 
@@ -47,6 +49,7 @@ type TextEvent interface {
 Like the DrawEvent, the engine monitors the text event to see if a new identifier has been received. If so, it renders the text onto the background image and creates a new texture from it. In a narrative, text might change continually while the background remains fairly static or they might change at the same time. This allows the text and image drawing events to vary independently. There is still more work and testing to be done to verify that race conditions don't exist.
 
 Font loading is currently done up front but the TTF font could be specified in the TextEvent in the future to permit for active swapping. 
+TODO Update this section to reflect passing of font, size and lines in text event for headers and body text as in diagram. 
 
 ### AudioEvent
 Audio events can be sent to play clips. Currently there isn't any play/paus/stop functionality but that could be added, as needed, in the future. 
