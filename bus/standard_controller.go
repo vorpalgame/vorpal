@@ -82,7 +82,9 @@ func (c *controller) OnMouseEvent(mouseChannel <-chan MouseEvent) {
 // TODO return multiples...
 func (c *controller) GetDrawEvent() DrawEvent {
 	//log.Default().Println("Get Draw Image")
-	return c.drawEvent
+	evt := c.drawEvent
+	c.drawEvent = nil
+	return evt
 }
 
 func (c *controller) GetImageCacheEvent() ImageCacheEvent {
@@ -101,7 +103,8 @@ func (c *controller) GetAudioEvent() AudioEvent {
 
 func (c *controller) GetTextEvent() TextEvent {
 	//log.Default().Println("Get Text Event")
-
-	return c.textEvent
+	temp := c.textEvent
+	c.textEvent = nil
+	return temp
 
 }

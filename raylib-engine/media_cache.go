@@ -32,9 +32,15 @@ func (c *mediaCache) GetFont(fontName string) *rl.Font {
 
 }
 func (c *mediaCache) CacheFonts(evt bus.TextEvent) {
-	if c.fontCache[evt.GetFont()] == nil {
-		font := rl.LoadFont(evt.GetFont())
-		c.fontCache[evt.GetFont()] = &font
+	c.doFontCache(evt.GetFont())
+	for _, line := range evt.GetText() {
+		c.doFontCache(line.GetFont())
+	}
+}
+func (c *mediaCache) doFontCache(fontName string) {
+	if c.fontCache[fontName] == nil {
+		font := rl.LoadFont(fontName)
+		c.fontCache[fontName] = &font
 	}
 }
 

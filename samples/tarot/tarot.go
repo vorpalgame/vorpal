@@ -19,6 +19,7 @@ type tarot struct {
 // TODO The fonts and text layers need to be added to the text event.
 var cards = tarot{}
 var fontName = "samples/resources/fonts/Roboto-Regular.ttf"
+var headerFontName = "samples/resources/fonts/Roboto-Black.ttf"
 
 func InitGame() {
 	log.Println("New card game")
@@ -33,7 +34,7 @@ func InitGame() {
 	//Need better coordination on the event numbers...
 	cards.drawEvent.SetId(-2)
 	cards.bus.SendDrawEvent(cards.drawEvent)
-	cards.textEvent = bus.NewTextEvent(fontName, 18, 0, 0)
+	cards.textEvent = bus.NewTextEvent(fontName, 18, 0, 0).AddText("Press S to shuffle and N to deal next card.").SetX(120).SetY(100)
 	cards.bus.SendTextEvent(cards.textEvent)
 
 }
@@ -64,7 +65,7 @@ func (g *tarot) doSendCard() {
 	card := g.tarotDeck.GetTopCard()
 	//TODO iterate over it and split into lines.
 	cards.textEvent.Reinitialize().SetX(120).SetY(100)
-	g.lineWrap(card.GetCardText(), 70)
+	g.formatCardText(card)
 	cards.bus.SendTextEvent(cards.textEvent)
 	displayCard := card.GetCardImg()
 	cardWidth := int32(200)
@@ -99,23 +100,29 @@ func (g *tarot) doSendCard() {
 	g.bus.SendDrawEvent(g.drawEvent)
 }
 
-func (e *tarot) lineWrap(text string, lineLength int32) {
-	sentences := strings.Split(text, "\n")
+func (e *tarot) formatCardText(card TarotCard) {
+	lineLength := 70
 
-	for _, sentence := range sentences {
+	sentences := strings.Split(card.GetCardText(), "\n")
+
+	for lineNo, sentence := range sentences {
 		sentence = strings.Trim(sentence, " ")
+		if lineNo == 0 {
+			cards.textEvent.AddTextLine(bus.NewTextLine(sentence, headerFontName, 24))
+		} else {
+			words := strings.Split(sentence, " ")
+			var line string
+			for _, word := range words {
+				line += word + " "
+				if len(line) > int(lineLength) {
+					cards.textEvent.AddText(strings.Trim(line, " "))
+					line = ""
+				}
 
-		words := strings.Split(sentence, " ")
-		var line string
-		for _, word := range words {
-			line += word + " "
-			if len(line) > int(lineLength) {
-				cards.textEvent.AddText(strings.Trim(line, " "))
-				line = ""
 			}
-
+			cards.textEvent.AddText(strings.Trim(line, " "))
 		}
-		cards.textEvent.AddText(strings.Trim(line, " "))
+
 	}
 }
 func (g *tarot) OnMouseEvent(mouseChannel <-chan bus.MouseEvent) {
