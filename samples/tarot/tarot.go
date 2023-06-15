@@ -3,6 +3,7 @@ package tarot
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/vorpalgame/vorpal/bus"
 )
@@ -10,24 +11,30 @@ import (
 type tarot struct {
 	bus       bus.VorpalBus
 	tarotDeck TarotDeck
-	evt       bus.DrawEvent
+	drawEvent bus.DrawEvent
+	textEvent bus.TextEvent
 }
 
 // TODO The cards should have locations or the game/board should dictate those...
+// TODO The fonts and text layers need to be added to the text event.
 var cards = tarot{}
+var fontName = "samples/resources/fonts/Roboto-Regular.ttf"
 
 func InitGame() {
 	log.Println("New card game")
 	cards.bus = bus.GetVorpalBus()
 	cards.bus.AddEngineListener(&cards)
 	cards.tarotDeck = NewDeck()
-	cards.evt = bus.NewDrawEvent()
-	cards.evt.AddImageLayer(bus.NewImageLayer("samples/resources/tarot/table.png", 0, 0, 1900, 1400))
+	cards.drawEvent = bus.NewDrawEvent()
+
+	cards.drawEvent.AddImageLayer(bus.NewImageLayer("samples/resources/tarot/table.png", 0, 0, 1920, 1080))
 	//We are making event id do double duty here to track state as well as identify uniqueness. But its primary
 	//purpose is for uniqueness and state should be tracked separately.
-	cards.evt.SetId(0)
-	cards.bus.SendDrawEvent(cards.evt)
-	cards.bus.SendTextEvent(bus.NewTextEvent("Press S to shuffle the deck and show a card.\nPress N to show the next card.", 800, 200))
+	//Need better coordination on the event numbers...
+	cards.drawEvent.SetId(-2)
+	cards.bus.SendDrawEvent(cards.drawEvent)
+	cards.textEvent = bus.NewTextEvent(fontName, 18, 0, 0)
+	cards.bus.SendTextEvent(cards.textEvent)
 
 }
 
@@ -38,13 +45,13 @@ func (g *tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 			g.tarotDeck.Shuffle()
 
 			g.bus.SendAudioEvent(bus.NewAudioEvent("samples/resources/audio/shuffle.mp3"))
-			cards.evt = bus.NewDrawEvent()
-			cards.evt.AddImageLayer(bus.NewImageLayer("samples/resources/tarot/table.png", 0, 0, 1900, 1400))
-			cards.evt.SetId(0)
-			cards.bus.SendTextEvent(bus.NewTextEvent("", 800, 200)) //Clear this way for now....need clear event..
+			cards.drawEvent = bus.NewDrawEvent()
+			cards.drawEvent.AddImageLayer(bus.NewImageLayer("samples/resources/tarot/table.png", 0, 0, 1920, 1080))
+			cards.drawEvent.SetId(0)
+			cards.bus.SendTextEvent(cards.textEvent.Reinitialize().AddText(""))
 			g.doSendCard()
-		} else if evt.GetKey().EqualsIgnoreCase("N") {
-			g.evt.SetId(g.evt.GetId() + 1)
+		} else if evt.GetKey().EqualsIgnoreCase("N") && cards.drawEvent.GetId() >= 0 {
+			g.drawEvent.SetId(g.drawEvent.GetId() + 1)
 			g.doSendCard()
 			//TODO Check for max cards and end game...
 		}
@@ -54,36 +61,62 @@ func (g *tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 }
 
 func (g *tarot) doSendCard() {
-	displayCard := g.tarotDeck.GetTopCard().GetCardImg()
+	card := g.tarotDeck.GetTopCard()
+	//TODO iterate over it and split into lines.
+	cards.textEvent.Reinitialize().SetX(120).SetY(100)
+	g.lineWrap(card.GetCardText(), 70)
+	cards.bus.SendTextEvent(cards.textEvent)
+	displayCard := card.GetCardImg()
 	cardWidth := int32(200)
 	cardHeight := int32(340)
 	mainY := int32(360)
-	mainX := int32(600)
-	rightY := int32(710)
-	rightX := int32(1100)
+	mainX := int32(1000)
 
-	switch g.evt.GetId() {
+	rightY := int32(mainY + 350)
+	rightX := int32(mainX + 500)
+
+	switch g.drawEvent.GetId() {
 
 	case 0:
-		g.evt.AddImageLayer(bus.NewImageLayer(displayCard, mainX, mainY, cardWidth, cardHeight))
+		g.drawEvent.AddImageLayer(bus.NewImageLayer(displayCard, mainX, mainY, cardWidth, cardHeight))
 	case 1:
-		g.evt.AddImageLayer(bus.NewImageLayer(displayCard, mainX+50, mainY, cardWidth, cardHeight)) //TODO rotate..
+		g.drawEvent.AddImageLayer(bus.NewImageLayer(displayCard, mainX+50, mainY, cardWidth, cardHeight)) //TODO rotate..
 	case 2:
-		g.evt.AddImageLayer(bus.NewImageLayer(displayCard, mainX-cardWidth-50, mainY, cardWidth, cardHeight))
+		g.drawEvent.AddImageLayer(bus.NewImageLayer(displayCard, mainX-cardWidth-50, mainY, cardWidth, cardHeight))
 	case 3:
-		g.evt.AddImageLayer(bus.NewImageLayer(displayCard, mainX+cardWidth+75, mainY, cardWidth, cardHeight))
+		g.drawEvent.AddImageLayer(bus.NewImageLayer(displayCard, mainX+cardWidth+75, mainY, cardWidth, cardHeight))
 	case 4:
-		g.evt.AddImageLayer(bus.NewImageLayer(displayCard, mainX, mainY+cardHeight+10, cardWidth, cardHeight))
+		g.drawEvent.AddImageLayer(bus.NewImageLayer(displayCard, mainX, mainY+cardHeight+10, cardWidth, cardHeight))
 	case 5:
-		g.evt.AddImageLayer(bus.NewImageLayer(displayCard, mainX, mainY-cardHeight-10, cardWidth, cardHeight))
+		g.drawEvent.AddImageLayer(bus.NewImageLayer(displayCard, mainX, mainY-cardHeight-10, cardWidth, cardHeight))
 	case 6:
-		g.evt.AddImageLayer(bus.NewImageLayer(displayCard, rightX, rightY, cardWidth, cardHeight))
+		g.drawEvent.AddImageLayer(bus.NewImageLayer(displayCard, rightX, rightY, cardWidth, cardHeight))
 	case 7:
-		g.evt.AddImageLayer(bus.NewImageLayer(displayCard, rightX, rightY-cardHeight-10, cardWidth, cardHeight))
+		g.drawEvent.AddImageLayer(bus.NewImageLayer(displayCard, rightX, rightY-cardHeight-10, cardWidth, cardHeight))
 	case 8:
-		g.evt.AddImageLayer(bus.NewImageLayer(displayCard, rightX, rightY-(2*cardHeight)-20, cardWidth, cardHeight))
+		g.drawEvent.AddImageLayer(bus.NewImageLayer(displayCard, rightX, rightY-(2*cardHeight)-20, cardWidth, cardHeight))
 	}
-	g.bus.SendDrawEvent(g.evt)
+	g.bus.SendDrawEvent(g.drawEvent)
+}
+
+func (e *tarot) lineWrap(text string, lineLength int32) {
+	sentences := strings.Split(text, "\n")
+
+	for _, sentence := range sentences {
+		sentence = strings.Trim(sentence, " ")
+
+		words := strings.Split(sentence, " ")
+		var line string
+		for _, word := range words {
+			line += word + " "
+			if len(line) > int(lineLength) {
+				cards.textEvent.AddText(strings.Trim(line, " "))
+				line = ""
+			}
+
+		}
+		cards.textEvent.AddText(strings.Trim(line, " "))
+	}
 }
 func (g *tarot) OnMouseEvent(mouseChannel <-chan bus.MouseEvent) {
 	for evt := range mouseChannel {

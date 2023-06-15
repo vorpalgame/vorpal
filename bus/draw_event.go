@@ -20,13 +20,13 @@ type drawEvent struct {
 }
 
 //TODO This should use a UUID but that's external
-var id int32 = 0
+var nextDrawEventId int32 = 0
 
 func NewDrawEvent() DrawEvent {
 	evt := drawEvent{}
 	evt.imageLayers = make([]ImageLayer, 0, 100)
-	id = id + 1
-	evt.id = id
+	nextDrawEventId++
+	evt.id = nextDrawEventId
 	return &evt
 }
 

@@ -9,19 +9,35 @@ import (
 // even out of scope but textures wouldn't be.
 type MediaCache interface {
 	CacheImages(event bus.DrawEvent)
+	CacheFonts(event bus.TextEvent)
 	GetImage(img string) *rl.Image
 	DoCacheControl(event bus.ImageCacheEvent)
+	GetFont(fontName string) *rl.Font
 }
 
 type mediaCache struct {
 	imageCache map[string]*rl.Image
+	fontCache  map[string]*rl.Font
 }
 
 func NewMediaCache() MediaCache {
 	cache := mediaCache{}
 	cache.imageCache = make(map[string]*rl.Image)
+	cache.fontCache = make(map[string]*rl.Font)
 	return &cache
 }
+
+func (c *mediaCache) GetFont(fontName string) *rl.Font {
+	return c.fontCache[fontName]
+
+}
+func (c *mediaCache) CacheFonts(evt bus.TextEvent) {
+	if c.fontCache[evt.GetFont()] == nil {
+		font := rl.LoadFont(evt.GetFont())
+		c.fontCache[evt.GetFont()] = &font
+	}
+}
+
 func (c *mediaCache) GetImage(img string) *rl.Image {
 	return c.imageCache[img]
 }

@@ -2,9 +2,10 @@ package tarot
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 	"math/rand"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/vorpalgame/vorpal/bus"
@@ -27,19 +28,23 @@ var d = tarotDeck{}
 func NewDeck() TarotDeck {
 	d.currentCard = 0
 	d.bus = bus.GetVorpalBus()
-	files, err := ioutil.ReadDir("samples/resources/tarot")
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, file := range files {
 
-		resource := "samples/resources/tarot/" + file.Name()
-		d.cards = append(d.cards, &tarotCard{resource})
-
+	dir := "samples/resources/tarot/"
+	for i := 0; i < 40; i++ {
+		base := dir + strconv.Itoa(i)
+		content, _ := os.ReadFile(base + ".txt")
+		d.cards = append(d.cards, &tarotCard{base + ".png", d.formatText(string(content))})
 	}
+
 	return &d
 }
 
+func (d *tarotDeck) formatText(text string) string {
+	//TODO shoudl we strip \n as well?
+	text = strings.ReplaceAll(text, "\r", "")
+	// return strings.Join(sentences, ".\n")
+	return text
+}
 func (d *tarotDeck) GetTopCard() TarotCard {
 	if d.currentCard >= len(d.cards) {
 		d.currentCard = 0

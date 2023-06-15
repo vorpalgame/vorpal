@@ -10,14 +10,16 @@ import (
 //T
 
 type engine struct {
-	controller    bus.StandardMediaPeerController
-	bus           bus.VorpalBus
-	cache         MediaCache
-	currentEvtId  int32
-	renderTexture rl.RenderTexture2D
+	controller     bus.StandardMediaPeerController
+	bus            bus.VorpalBus
+	cache          MediaCache
+	currentEvtId   int32
+	currentTextId  int32
+	renderedImg    *rl.Image
+	currentTexture rl.Texture2D
 }
 
-//Need to disambiguate the controller and bus uses as one call the controller as if its't the bus and that's undesirable.
+//
 
 func NewEngine() bus.Engine {
 	log.Println("Init'd")
@@ -33,54 +35,69 @@ func (e *engine) Start() {
 	rl.InitWindow(1920, 1080, "Get Window Title from Event!")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
-
 	rl.InitAudioDevice()
+
+	//e.currentFont = rl.LoadFontEx(fontName, 12, make([]rune, 95))
 	for !rl.WindowShouldClose() {
-		e.cacheImages()
+		rl.ClearBackground(rl.RayWhite)
+		e.cacheResources()
 		e.sendMouseEvents()
 		e.sendKeyEvents()
 		rl.BeginDrawing()
-		// if e.controller.GetDrawEvent() != nil && e.currentEvtId != e.controller.GetDrawEvent().GetId() {
-
-		// 	e.currentEvtId = e.controller.GetDrawEvent().GetId()
-		// 	e.drawImages()
-		// }
-		// rl.DrawTexture(e.renderTexture.Texture, 0, 0, rl.RayWhite)
-		for _, img := range e.controller.GetDrawEvent().GetImageLayers() {
-			if img != nil {
-				currentImg := e.cache.GetImage(img.GetImage())
-				rl.DrawTexture(rl.LoadTextureFromImage(currentImg), img.GetX(), img.GetY(), rl.RayWhite)
-
-			}
-		}
-		e.showText()
+		e.renderImages()
+		e.renderText()
+		rl.DrawTexture(e.currentTexture, 0, 0, rl.RayWhite)
 		rl.EndDrawing()
 		e.playAudio()
 	}
 }
 
-func (e *engine) drawImages() {
-	imageLayers := e.controller.GetDrawEvent().GetImageLayers()
-	rl.UnloadRenderTexture(e.renderTexture)
-	e.renderTexture = rl.LoadRenderTexture(1920, 1080)
-	rl.BeginTextureMode(e.renderTexture)
-	for _, img := range imageLayers {
-		if img != nil {
-			currentImg := e.cache.GetImage(img.GetImage())
-			rl.DrawTexture(rl.LoadTextureFromImage(currentImg), img.GetX(), img.GetY(), rl.RayWhite)
+func (e *engine) renderImages() {
+	if e.controller.GetDrawEvent() != nil && e.controller.GetDrawEvent().GetId() != e.currentEvtId {
+
+		if e.renderedImg != nil {
+			rl.UnloadImage(e.renderedImg)
+		}
+
+		e.currentEvtId = e.controller.GetDrawEvent().GetId()
+		var baseImg *rl.Image
+		for _, img := range e.controller.GetDrawEvent().GetImageLayers() {
+			if img != nil {
+				currentImg := rl.ImageCopy(e.cache.GetImage(img.GetImage()))
+				if baseImg == nil {
+					baseImg = currentImg
+				} else {
+					rl.ImageDraw(baseImg, currentImg, rl.NewRectangle(0, 0, float32(currentImg.Width), float32(currentImg.Height)), rl.NewRectangle(float32(img.GetX()), float32(img.GetY()), float32(currentImg.Width), float32(currentImg.Height)), rl.RayWhite)
+
+				}
+
+			}
 
 		}
+		e.renderedImg = baseImg
+		rl.UnloadTexture(e.currentTexture)
+		e.currentTexture = rl.LoadTextureFromImage(baseImg)
 	}
-	rl.EndTextureMode()
 }
 
-// TODO Add font and color. Color must haave a controller/Volrpal version that
-// is translated here to the raylib.
-func (e *engine) showText() {
-	evt := e.controller.GetTextEvent()
-
-	if evt != nil {
-		rl.DrawText(evt.GetText(), evt.GetX(), evt.GetY(), 20, rl.Black)
+func (e *engine) renderText() {
+	txtEvt := e.controller.GetTextEvent()
+	if txtEvt != nil && txtEvt.GetId() != e.currentTextId {
+		e.currentTextId = txtEvt.GetId()
+		baseImg := rl.ImageCopy(e.renderedImg)
+		//TODO The lines will not be wrapped here so this is temporary
+		//The next step is to send each presplit line from the other side of the bus
+		//and then iterate over it here.
+		//
+		var tempTxt string
+		for _, txt := range txtEvt.GetText() {
+			log.Default().Println(tempTxt)
+			tempTxt = tempTxt + txt.GetText() + "\n"
+		}
+		log.Default().Println(tempTxt)
+		rl.ImageDrawTextEx(baseImg, rl.Vector2{float32(txtEvt.GetX()), float32(txtEvt.GetY())}, *e.cache.GetFont(txtEvt.GetFont()), tempTxt, float32(txtEvt.GetFontSize()), 0, rl.Black)
+		rl.UnloadTexture(e.currentTexture)
+		e.currentTexture = rl.LoadTextureFromImage(baseImg)
 	}
 }
 
@@ -92,33 +109,11 @@ func (e *engine) playAudio() {
 
 	}
 }
-func (e *engine) cacheImages() {
+func (e *engine) cacheResources() {
+	e.cache.CacheFonts(e.controller.GetTextEvent())
 	e.cache.CacheImages(e.controller.GetDrawEvent())
 
 }
-
-// TODO This needs to change to use multiple images...
-// TODO This eliminated preloading of images in favor of
-// of lazy loading, scaling and then storing for further use
-// so can be better consolidated later along with multiple layered
-// drawing and background color.
-// func (e *engine) drawImages() {
-// 	imageLayers := e.controller.GetDrawEvent().GetImageLayers()
-// 	rl.UnloadRenderTexture(e.renderTexture)
-// 	e.renderTexture = rl.LoadRenderTexture(1920, 1080)
-// 	rl.BeginTextureMode(e.renderTexture)
-// 	rl.BeginDrawing()
-// 	for _, img := range imageLayers {
-// 		if img != nil {
-// 			texture := rl.LoadTextureFromImage(e.cache.GetImage(img.GetImage())) //not sure why this can't be done inside the append???
-// 			rl.DrawTexture(texture, img.GetX(), img.GetY(), rl.RayWhite)
-
-// 		}
-// 	}
-// 	rl.EndTextureMode()
-// 	rl.EndDrawing()
-
-// }
 
 // TODO Rethink the mouse event as it probably should be static...
 // Need enums for values...
