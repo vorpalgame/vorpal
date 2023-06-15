@@ -15,7 +15,8 @@ Currently we are working an implementation with raylib but ebitten or other engi
 
 Why a Tarot card sample? Well, it's fun but it  is also the kind of problem set that emphasizes the development of the mechanics and not of implementing game logic. For example, we need to ask users for input, capture keystrokes, draw to different layers for a board and cards on it, and play sounds for cards flipping and shuffling. What we don't want to focus on, at least at first, is implemeting rules and states for a game. Even a simple game like Solitaire has to have logic based on what column a card is in and what numeric value and color the cards are. That can all be done easily enough once the Vorpal engine is in place and all the events are implemented but it isn't the focus of the project. 
 
-![image](https://github.com/vorpalgame/vorpal/assets/3209869/b843659b-b46b-4899-b13d-7aaa41bb2787)
+
+![tarot](https://github.com/vorpalgame/vorpal/assets/3209869/769c6cde-56c3-4358-bd56-262eb6940a8d)
 
 ## How It Works
 The front end game logic sends a DrawEvent that lists one to N images along with the coordinates and size they should be rendered at by the game engine. The slice of ImageLayer treated as a Z coordinate system. The image file name, x, y, width and height coordinates are specified in the ImageLayer. 
