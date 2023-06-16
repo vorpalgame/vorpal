@@ -60,17 +60,15 @@ func Init() {
 				go animation.drawAttack()
 			} else {
 				point := animation.calculateMove()
-
-				animation.currentLocation.Add(point) //In future point dimension/direction/size may determine behavior.
-				animation.drawWalk()
-
+				if point.x == 0 && point.y == 0 {
+					animation.drawIdle()
+				} else {
+					animation.currentLocation.Add(point) //In future point dimension/direction/size may determine behavior.
+					animation.drawWalk()
+				}
 			}
 			time.Sleep(50 * time.Millisecond)
 		}
-		//
-		// animation.drawAttack(currentX)
-		// currentX = animation.drawWalk(currentX)
-		// animation.drawDead(currentX)
 
 	}
 
@@ -122,6 +120,16 @@ func (z *zombie) drawAttack() {
 	attackFrame++
 	if attackFrame > 8 {
 		attackFrame = 1
+	}
+}
+
+var idleFrame = 1
+
+func (z *zombie) drawIdle() {
+	z.drawImage(200, 300, idleFrame, "Idle")
+	idleFrame++
+	if idleFrame > 15 {
+		idleFrame = 1
 	}
 }
 
