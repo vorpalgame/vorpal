@@ -6,36 +6,20 @@ type DrawEventListener interface {
 	OnDrawEvent(drawChannel <-chan DrawEvent)
 }
 
-//TODO review to ensure use of pointers/addresses and not end up with copies....
+//TODO remove the ids...
 type DrawEvent interface {
 	GetImageLayers() []ImageLayer
 	AddImageLayer(imgLayer ImageLayer)
-	GetId() int32
-	SetId(id int32)
 }
 
 type drawEvent struct {
 	imageLayers []ImageLayer
-	id          int32
 }
-
-//TODO This should use a UUID but that's external
-var nextDrawEventId int32 = 0
 
 func NewDrawEvent() DrawEvent {
 	evt := drawEvent{}
 	evt.imageLayers = make([]ImageLayer, 0, 100)
-	nextDrawEventId++
-	evt.id = nextDrawEventId
 	return &evt
-}
-
-func (evt *drawEvent) GetId() int32 {
-	return evt.id
-}
-
-func (evt *drawEvent) SetId(id int32) {
-	evt.id = id
 }
 
 func (evt *drawEvent) AddImageLayer(img ImageLayer) {
