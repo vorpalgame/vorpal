@@ -73,7 +73,7 @@ func (bus *vorpalEventBus) SendImageCacheEvent(event ImageCacheEvent) {
 
 // ///MOUSE BUTTON EVENTS
 func (bus *vorpalEventBus) AddMouseListener(eventListener MouseEventListener) {
-	listenerChannel := make(chan MouseEvent, 100)
+	listenerChannel := make(chan MouseEvent, 1)
 	bus.mouseListenerChannels = append(bus.mouseListenerChannels, listenerChannel)
 	go eventListener.OnMouseEvent(listenerChannel)
 }
@@ -86,7 +86,7 @@ func (bus *vorpalEventBus) SendMouseEvent(event MouseEvent) {
 
 // The controller events to the engine probably only need a single channel.
 func (bus *vorpalEventBus) AddDrawEventListener(eventListener DrawEventListener) {
-	listenerChannel := make(chan DrawEvent, 100)
+	listenerChannel := make(chan DrawEvent, 1)
 	bus.drawEventListenerChannels = append(bus.drawEventListenerChannels, listenerChannel)
 	go eventListener.OnDrawEvent(listenerChannel)
 }

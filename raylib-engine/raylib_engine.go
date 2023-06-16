@@ -119,6 +119,7 @@ func (e *engine) playAudio() {
 }
 
 func (e *engine) sendMouseEvents() {
+
 	evt := bus.NewMouseEvent(getMouseButton(rl.MouseLeftButton, "Left"), getMouseButton(rl.MouseMiddleButton, "Center"), getMouseButton(rl.MouseRightButton, "Right"), int32(rl.GetMouseX()), int32(rl.GetMouseY()))
 	e.bus.SendMouseEvent(evt)
 

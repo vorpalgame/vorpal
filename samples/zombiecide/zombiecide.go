@@ -52,17 +52,20 @@ func Init() {
 
 	animation.background = bus.NewImageLayer("samples/resources/zombiecide/background.png", 0, 0, 1920, 1080)
 
-	animation.currentLocation = point{0, 600}
+	animation.currentLocation = point{600, 600}
 	for {
 		if animation.mouseEvent != nil {
+
 			if animation.mouseEvent.LeftButton().IsDown() {
-				animation.drawAttack()
+				go animation.drawAttack()
 			} else {
 				point := animation.calculateMove()
+
 				animation.currentLocation.Add(point) //In future point dimension/direction/size may determine behavior.
 				animation.drawWalk()
 
 			}
+			time.Sleep(50 * time.Millisecond)
 		}
 		//
 		// animation.drawAttack(currentX)
@@ -75,7 +78,7 @@ func Init() {
 
 func (z *zombie) calculateMove() *point {
 
-	point := point{-25, -25}
+	point := point{-6, -6}
 	//abs math function is floating point so just -1 multiple
 	if z.mouseEvent.GetX() > z.currentLocation.x {
 		point.x = point.x * -1
@@ -83,21 +86,42 @@ func (z *zombie) calculateMove() *point {
 	if z.mouseEvent.GetY() > z.currentLocation.y {
 		point.y = point.y * -1
 	}
+
+	var xOffset = z.mouseEvent.GetX() - z.currentLocation.x
+	if xOffset < 0 {
+		xOffset *= -1
+	}
+	if xOffset < 5 {
+		point.x = 0
+	}
+	yOffset := z.mouseEvent.GetY() - z.currentLocation.y
+	if yOffset < 0 {
+		yOffset *= -1
+	}
+	if yOffset < 5 {
+		point.y = 0
+	}
 	return &point
 }
+
+var walkFrame = 1
+
 func (z *zombie) drawWalk() {
 
-	for i := 1; i < 10; i++ {
-		z.drawImage(200, 300, i, "walk")
-
+	z.drawImage(200, 300, walkFrame, "walk")
+	walkFrame++
+	if walkFrame > 10 {
+		walkFrame = 1
 	}
-
 }
 
-func (z *zombie) drawAttack() {
+var attackFrame = 1
 
-	for i := 1; i < 9; i++ {
-		z.drawImage(200, 300, i, "attack")
+func (z *zombie) drawAttack() {
+	z.drawImage(200, 300, attackFrame, "attack")
+	attackFrame++
+	if attackFrame > 8 {
+		attackFrame = 1
 	}
 }
 
@@ -113,7 +137,7 @@ func (z *zombie) drawImage(width, height int32, frame int, name string) {
 	drawEvent.AddImageLayer(z.background)
 	drawEvent.AddImageLayer(bus.NewImageLayer("samples/resources/zombiecide/"+name+" ("+strconv.Itoa(frame)+").png", z.currentLocation.x, z.currentLocation.y, width, height))
 	z.bus.SendDrawEvent(drawEvent)
-	time.Sleep(25 * time.Millisecond)
+
 }
 func (z *zombie) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
