@@ -118,15 +118,14 @@ func (e *engine) playAudio() {
 	}
 }
 
-// TODO Rethink the mouse event as it probably should be static...
-// Need enums for values...
 func (e *engine) sendMouseEvents() {
-	e.bus.SendMouseEvent(bus.NewMouseEvent(getMouseButton(rl.MouseLeftButton, "Left"), getMouseButton(rl.MouseMiddleButton, "Center"), getMouseButton(rl.MouseRightButton, "Right"), int32(rl.GetMouseX()), int32(rl.GetMouseY())))
+	evt := bus.NewMouseEvent(getMouseButton(rl.MouseLeftButton, "Left"), getMouseButton(rl.MouseMiddleButton, "Center"), getMouseButton(rl.MouseRightButton, "Right"), int32(rl.GetMouseX()), int32(rl.GetMouseY()))
+	e.bus.SendMouseEvent(evt)
 
 }
 
 func getMouseButton(button int32, buttonName string) bus.MouseButtonState {
-	return bus.NewMouseButtonState(buttonName, rl.IsMouseButtonDown(button), rl.IsMouseButtonUp(button))
+	return bus.NewMouseButtonState(buttonName, rl.IsMouseButtonDown(button))
 }
 
 // TODO Need registration mechanism to tell which keys to listen for...

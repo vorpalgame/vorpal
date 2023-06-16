@@ -141,7 +141,7 @@ func (t *tarot) formatCardText(card TarotCard) {
 }
 func (t *tarot) OnMouseEvent(mouseChannel <-chan bus.MouseEvent) {
 	for evt := range mouseChannel {
-		if evt.IsButtonToggled() {
+		if evt.LeftButton().IsDown() {
 			fmt.Println(evt)
 		}
 	}

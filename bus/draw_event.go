@@ -10,6 +10,7 @@ type DrawEventListener interface {
 type DrawEvent interface {
 	GetImageLayers() []ImageLayer
 	AddImageLayer(imgLayer ImageLayer)
+	Reset()
 }
 
 type drawEvent struct {
@@ -20,6 +21,10 @@ func NewDrawEvent() DrawEvent {
 	evt := drawEvent{}
 	evt.imageLayers = make([]ImageLayer, 0, 100)
 	return &evt
+}
+
+func (evt *drawEvent) Reset() {
+	evt.imageLayers = make([]ImageLayer, 0, 100)
 }
 
 func (evt *drawEvent) AddImageLayer(img ImageLayer) {

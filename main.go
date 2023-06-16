@@ -5,8 +5,8 @@ import (
 	//"time"
 
 	raylibengine "github.com/vorpalgame/vorpal/raylib-engine"
-	"github.com/vorpalgame/vorpal/samples/flipbook"
 	"github.com/vorpalgame/vorpal/samples/tarot"
+	"github.com/vorpalgame/vorpal/samples/zombiecide"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 	if selection == 0 {
 		go tarot.NewGame()
 	} else {
-		go flipbook.Init()
+		go zombiecide.Init()
 	}
 	c.Start()
 

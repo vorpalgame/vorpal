@@ -15,7 +15,6 @@ type MouseEvent interface {
 	LeftButton() MouseButtonState
 	RightButton() MouseButtonState
 	MiddleButton() MouseButtonState
-	IsButtonToggled() bool
 	GetX() int32
 	GetY() int32
 }
@@ -43,33 +42,28 @@ func (evt *mouseEvent) GetY() int32 {
 	return evt.y
 }
 
-//TODO...
-func (evt *mouseEvent) IsButtonToggled() bool {
-	return evt.left.isReleased() || evt.left.IsPressed() || evt.middle.isReleased() || evt.middle.IsPressed() || evt.right.isReleased() || evt.right.IsPressed()
-}
-
 //////
 
 type MouseButtonState interface {
 	Name() string
-	IsPressed() bool
-	isReleased() bool
+	IsDown() bool
+	IsUp() bool
 }
 
 type mouseButtonState struct {
-	name              string
-	pressed, released bool
+	name string
+	down bool
 }
 
-func NewMouseButtonState(name string, pressed bool, released bool) MouseButtonState {
-	return &mouseButtonState{name, pressed, released}
+func NewMouseButtonState(name string, down bool) MouseButtonState {
+	return &mouseButtonState{name, down}
 }
-func (btn *mouseButtonState) IsPressed() bool {
-	return btn.pressed
+func (btn *mouseButtonState) IsDown() bool {
+	return btn.down
 }
 
-func (btn *mouseButtonState) isReleased() bool {
-	return btn.released
+func (btn *mouseButtonState) IsUp() bool {
+	return !btn.down
 }
 
 func (btn *mouseButtonState) Name() string {
