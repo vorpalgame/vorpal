@@ -36,7 +36,7 @@ func (evt *drawEvent) GetImageLayers() []ImageLayer {
 }
 
 func NewImageLayer(img string, x, y, width, height int32) ImageLayer {
-	return &imageLayer{img, x, y, width, height}
+	return &imageLayer{img, x, y, width, height, false}
 }
 
 type ImageLayer interface {
@@ -45,13 +45,22 @@ type ImageLayer interface {
 	GetY() int32
 	GetHeight() int32
 	GetWidth() int32
+	IsFlipHorizontal() bool
+	SetFlipHorizontal(bool)
 }
 
 type imageLayer struct {
 	img                 string
 	x, y, width, height int32
+	horizontalFlip      bool
 }
 
+func (e *imageLayer) SetFlipHorizontal(horizontalFlip bool) {
+	e.horizontalFlip = horizontalFlip
+}
+func (e *imageLayer) IsFlipHorizontal() bool {
+	return e.horizontalFlip
+}
 func (e *imageLayer) GetImage() string {
 	return e.img
 }

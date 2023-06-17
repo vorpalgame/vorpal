@@ -75,6 +75,9 @@ func (e *engine) renderImages(evt bus.DrawEvent) {
 			if baseImg == nil {
 				baseImg = currentImg
 			} else {
+				if img.IsFlipHorizontal() {
+					rl.ImageFlipHorizontal(currentImg)
+				}
 				rl.ImageDraw(baseImg, currentImg, rl.NewRectangle(0, 0, float32(currentImg.Width), float32(currentImg.Height)), rl.NewRectangle(float32(img.GetX()), float32(img.GetY()), float32(currentImg.Width), float32(currentImg.Height)), rl.RayWhite)
 
 			}
@@ -126,6 +129,7 @@ func (e *engine) sendMouseEvents() {
 }
 
 func getMouseButton(button int32, buttonName string) bus.MouseButtonState {
+	//We have an error on occasion wher the mouse button is nil and it isn't clear why or how...May be start up race or bug.
 	return bus.NewMouseButtonState(buttonName, rl.IsMouseButtonDown(button))
 }
 

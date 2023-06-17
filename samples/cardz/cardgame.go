@@ -50,8 +50,6 @@ func (g *cardGame) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 
 func (g *cardGame) OnMouseEvent(mouseChannel <-chan bus.MouseEvent) {
 	for evt := range mouseChannel {
-		if evt.IsButtonToggled() {
-			fmt.Println(evt)
-		}
+		_ = evt
 	}
 }

@@ -1,39 +1,53 @@
 package zombiecide
 
 import (
-	"strconv"
-
 	"github.com/vorpalgame/vorpal/bus"
 )
 
+// Duplicate functions for walk, dead, idle, attack can be refactored and paramaterized...
 type Zombie interface {
 	RenderImage(evt bus.MouseEvent) *bus.ImageLayer
 }
 type zombie struct {
-	currentLocation Point
+	currentLocation          Point
+	walk, dead, idle, attack Sprite
+	numberIdle               int
 }
 
 func NewZombie() Zombie {
-	return &zombie{&point{600, 600}}
+
+	z := zombie{&point{600, 600}, NewSprite(10, 3, 200, 300, "walk"), NewSprite(12, 3, 300, 300, "dead"), NewSprite(15, 3, 200, 300, "idle"), NewSprite(9, 3, 200, 300, "attack"), 0}
+	z.dead.SetToLoop(false)
+	return &z
 }
 
-var walkFrame = 1
-var walkRepeatFrame = 0
-
-// Should we be passing * to evt?
+// Note we aren't really "rendering" anything. We are specifying the name of the source file, x,y, width and height coordianates.
+// It is metadata for the actual rendering by the engine.
 func (z *zombie) RenderImage(evt bus.MouseEvent) *bus.ImageLayer {
+	var imageLayer *bus.ImageLayer
+	point := z.calculateMove(evt)
+	flipHorizontal := evt.GetX() < z.currentLocation.GetX()
 	if evt.LeftButton().IsDown() {
-		return z.renderAttack()
+		imageLayer = z.attack.RenderNext(z.currentLocation, flipHorizontal)
 	} else {
-		point := z.calculateMove(evt)
 		if point.x == 0 && point.y == 0 {
-			return z.renderIdle()
+			z.numberIdle++
+			if z.numberIdle < 100 {
+				imageLayer = z.idle.RenderNext(z.currentLocation, flipHorizontal)
+			} else {
+				imageLayer = z.dead.RenderNext(z.currentLocation, flipHorizontal)
+			}
 		} else {
+			z.numberIdle = 0
+
 			z.currentLocation.Add(point) //In future point dimension/direction/size may determine behavior.
-			return z.renderWalk()
+			imageLayer = z.walk.RenderNext(z.currentLocation, flipHorizontal)
 		}
 	}
+	return imageLayer
 }
+
+// TODO The calcs are using the upper left for location relative to image and that probably isn't desired.
 func (z *zombie) calculateMove(evt bus.MouseEvent) *point {
 	x := int32(-4)
 	y := int32(-4)
@@ -61,57 +75,4 @@ func (z *zombie) calculateMove(evt bus.MouseEvent) *point {
 		point.y = 0
 	}
 	return &point
-}
-
-func (z *zombie) renderWalk() *bus.ImageLayer {
-
-	walkRepeatFrame++
-	if walkRepeatFrame > 3 {
-		walkFrame++
-		walkRepeatFrame = 0
-	}
-	if walkFrame > 10 {
-		walkFrame = 1
-	}
-
-	return z.renderImage(200, 300, walkFrame, "walk")
-}
-
-var attackFrame = 1
-var attackRepeatFrame = 0
-
-func (z *zombie) renderAttack() *bus.ImageLayer {
-
-	attackRepeatFrame++
-	if attackRepeatFrame > 3 {
-		attackFrame++
-		attackRepeatFrame = 0
-	}
-	if attackFrame > 8 {
-		attackFrame = 1
-	}
-
-	return z.renderImage(200, 300, attackFrame, "attack")
-}
-
-var idleFrame = 1
-var idleRepeatFrame = 0
-
-func (z *zombie) renderIdle() *bus.ImageLayer {
-
-	idleRepeatFrame++
-	if idleRepeatFrame > 2 {
-		idleFrame++
-		idleRepeatFrame = 0
-	}
-	if idleFrame > 15 {
-		idleFrame = 1
-	}
-	return z.renderImage(200, 300, idleFrame, "Idle")
-}
-
-// Cache image layers for zombie???
-func (z *zombie) renderImage(width, height int32, frame int, name string) *bus.ImageLayer {
-	imgLayer := bus.NewImageLayer("samples/resources/zombiecide/"+name+" ("+strconv.Itoa(frame)+").png", z.currentLocation.GetX(), z.currentLocation.GetY(), width, height)
-	return &imgLayer
 }

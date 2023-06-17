@@ -51,6 +51,7 @@ func Init() {
 	zombies.bus.AddEngineListener(&zombies)
 
 	zombies.background = bus.NewImageLayer("samples/resources/zombiecide/background.png", 0, 0, 1920, 1080)
+	zombies.mouseEvent = nil
 
 	for {
 		if zombies.mouseEvent != nil {
