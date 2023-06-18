@@ -141,9 +141,4 @@ func (e *engine) sendKeyEvents() {
 			}
 		}
 	}
-	if rl.IsKeyReleased(rl.KeyS) {
-		e.bus.SendKeyEvent(bus.NewKeyEvent(bus.GetKeyByString("s")))
-	} else if rl.IsKeyReleased(rl.KeyN) {
-		e.bus.SendKeyEvent(bus.NewKeyEvent(bus.GetKeyByString("n")))
-	}
 }

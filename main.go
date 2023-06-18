@@ -13,7 +13,7 @@ func main() {
 	fmt.Println("New game engine")
 
 	c := raylibengine.NewEngine()
-	selection := 1
+	selection := 0
 	if selection == 0 {
 		go tarot.NewGame()
 	} else {

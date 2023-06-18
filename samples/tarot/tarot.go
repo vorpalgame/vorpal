@@ -59,6 +59,8 @@ func (t *tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 
 func (t *tarot) doStart() {
 	t.currentCard = 0
+	//The keys we are interested in.
+	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("s", "n"))
 	t.drawEvent = bus.NewDrawEvent()
 
 	t.drawEvent.AddImageLayer(bus.NewImageLayer("samples/resources/tarot/table.png", 0, 0, 1920, 1080))
