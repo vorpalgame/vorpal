@@ -133,8 +133,14 @@ func getMouseButton(button int32, buttonName string) bus.MouseButtonState {
 	return bus.NewMouseButtonState(buttonName, rl.IsMouseButtonDown(button))
 }
 
-// TODO Need registration mechanism to tell which keys to listen for...
 func (e *engine) sendKeyEvents() {
+	if e.controller.GetKeysRegistrationEvent() != nil {
+		for _, key := range e.controller.GetKeysRegistrationEvent().GetKeys() {
+			if rl.IsKeyReleased(int32(key.ToAscii())) {
+				e.bus.SendKeyEvent(bus.NewKeyEvent(key))
+			}
+		}
+	}
 	if rl.IsKeyReleased(rl.KeyS) {
 		e.bus.SendKeyEvent(bus.NewKeyEvent(bus.GetKeyByString("s")))
 	} else if rl.IsKeyReleased(rl.KeyN) {

@@ -28,7 +28,8 @@ func NewGame() TarotGame {
 
 	var t = tarot{}
 	t.bus = bus.GetVorpalBus()
-	t.bus.AddEngineListener(&t)
+	t.bus.AddMouseListener(&t)
+	t.bus.AddKeyEventListener(&t)
 	t.tarotDeck = NewDeck()
 	t.doStart()
 	return t

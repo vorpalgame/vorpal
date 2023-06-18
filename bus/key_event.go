@@ -1,7 +1,29 @@
 package bus
 
-//TODO Need key constants and upper/lower case.
-//TODO Need key registration listener events.
+type KeysRegistrationEventListener interface {
+	OnKeyRegistrationEvent(keyRegistrationChannel <-chan KeysRegistrationEvent)
+}
+
+type KeysRegistrationEvent interface {
+	GetKeys() []Key
+}
+
+type keyRegistration struct {
+	keys []Key
+}
+
+func NewKeysRegistrationEvent(keys ...string) KeysRegistrationEvent {
+	var evt = keyRegistration{}
+	for _, key := range keys {
+		evt.keys = append(evt.keys, GetKeyByString(key))
+	}
+	return &evt
+}
+
+func (l *keyRegistration) GetKeys() []Key {
+	return l.keys
+}
+
 type KeyEventListener interface {
 	OnKeyEvent(keyChannel <-chan KeyEvent)
 }
@@ -39,7 +61,7 @@ func (evt *key) ToAscii() int {
 	return evt.ascii
 }
 
-//Need unit tests...
+// Need unit tests...
 func (evt *key) IsUpperCase() bool {
 	return evt.ascii >= 65 || evt.ascii <= 90
 }
@@ -47,7 +69,7 @@ func (evt *key) IsLowerCase() bool {
 	return evt.ascii >= 97 || evt.ascii <= 112
 }
 
-//Yuck. Rewrite to store uc/lc when relevant....
+// Yuck. Rewrite to store uc/lc when relevant....
 func (evt *key) EqualsIgnoreCase(keyStr string) bool {
 	keyToCheckVal := int(keyStr[0])
 	return (keyToCheckVal == evt.ascii || keyToCheckVal == evt.ascii-32 || keyToCheckVal == evt.ascii+32)

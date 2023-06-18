@@ -6,4 +6,5 @@ type ControllerListener interface {
 	AudioEventListener
 	TextEventListener
 	ImageCacheEventListener
+	KeysRegistrationEventListener
 }

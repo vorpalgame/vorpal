@@ -1,18 +1,18 @@
 package bus
 
 type vorpalEventBus struct {
-	keyEventListenerChannels        []chan KeyEvent
-	mouseListenerChannels           []chan MouseEvent
-	drawEventListenerChannels       []chan DrawEvent
-	audioEventListenerChannels      []chan AudioEvent
-	textEventListenerChannels       []chan TextEvent
-	imageCacheEventListenerChannels []chan ImageCacheEvent
+	keyEventListenerChannels             []chan KeyEvent
+	mouseListenerChannels                []chan MouseEvent
+	drawEventListenerChannels            []chan DrawEvent
+	audioEventListenerChannels           []chan AudioEvent
+	textEventListenerChannels            []chan TextEvent
+	imageCacheEventListenerChannels      []chan ImageCacheEvent
+	keysRegistrationEventListenerChannel []chan KeysRegistrationEvent
 }
 
 type VorpalBus interface {
 	//Convenience listener collectionss...
 	AddControllerListener(eventListener ControllerListener)
-	AddEngineListener(eventListener EngineListener)
 	///Individual listeners....
 	AddKeyEventListener(eventListener KeyEventListener)
 	AddMouseListener(eventListener MouseEventListener)
@@ -20,8 +20,10 @@ type VorpalBus interface {
 	AddAudioEventListener(eventListener AudioEventListener)
 	AddTextEventListener(eventListener TextEventListener)
 	AddImageCacheEventListener(eventListener ImageCacheEventListener)
+	AddKeysRegistrationEventListener(eventLiustener KeysRegistrationEventListener)
 
 	SendMouseEvent(event MouseEvent)
+	SendKeysRegistrationEvent(event KeysRegistrationEvent)
 	SendKeyEvent(event KeyEvent)
 	SendDrawEvent(event DrawEvent)
 	SendAudioEvent(event AudioEvent)
@@ -39,11 +41,19 @@ func (eb *vorpalEventBus) AddControllerListener(eventListener ControllerListener
 	eb.AddDrawEventListener(eventListener)
 	eb.AddAudioEventListener(eventListener)
 	eb.AddTextEventListener(eventListener)
+	eb.AddKeysRegistrationEventListener(eventListener)
 }
 
-func (eb *vorpalEventBus) AddEngineListener(eventListener EngineListener) {
-	eb.AddMouseListener(eventListener)
-	eb.AddKeyEventListener(eventListener)
+func (bus *vorpalEventBus) AddKeysRegistrationEventListener(eventListener KeysRegistrationEventListener) {
+	listenerChannel := make(chan KeysRegistrationEvent, 1)
+	bus.keysRegistrationEventListenerChannel = append(bus.keysRegistrationEventListenerChannel, listenerChannel)
+	go eventListener.OnKeyRegistrationEvent(listenerChannel)
+}
+
+func (bus *vorpalEventBus) SendKeysRegistrationEvent(event KeysRegistrationEvent) {
+	for _, channel := range bus.keysRegistrationEventListenerChannel {
+		channel <- event
+	}
 }
 
 // /KEY EVENTS
@@ -84,7 +94,6 @@ func (bus *vorpalEventBus) SendMouseEvent(event MouseEvent) {
 	}
 }
 
-// The controller events to the engine probably only need a single channel.
 func (bus *vorpalEventBus) AddDrawEventListener(eventListener DrawEventListener) {
 	listenerChannel := make(chan DrawEvent, 1)
 	bus.drawEventListenerChannels = append(bus.drawEventListenerChannels, listenerChannel)
@@ -97,7 +106,7 @@ func (bus *vorpalEventBus) SendDrawEvent(event DrawEvent) {
 }
 
 func (bus *vorpalEventBus) AddAudioEventListener(eventListener AudioEventListener) {
-	listenerChannel := make(chan AudioEvent, 100)
+	listenerChannel := make(chan AudioEvent, 1)
 	bus.audioEventListenerChannels = append(bus.audioEventListenerChannels, listenerChannel)
 	go eventListener.OnAudioEvent(listenerChannel)
 }

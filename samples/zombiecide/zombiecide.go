@@ -2,14 +2,15 @@ package zombiecide
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/vorpalgame/vorpal/bus"
 )
 
 type zombiecide struct {
-	bus        bus.VorpalBus
-	textEvent  bus.TextEvent
+	bus bus.VorpalBus
+	//textEvent  bus.TextEvent
 	mouseEvent bus.MouseEvent
 	background bus.ImageLayer
 	zombie     Zombie
@@ -47,8 +48,13 @@ var headerFontName = "samples/resources/fonts/Roboto-Black.ttf"
 func Init() {
 	log.Println("New card game")
 	zombies.zombie = NewZombie()
-	zombies.bus = bus.GetVorpalBus()
-	zombies.bus.AddEngineListener(&zombies)
+	vbus := bus.GetVorpalBus()
+	vbus.AddMouseListener(&zombies)
+	vbus.AddKeyEventListener(&zombies)
+	//e for exit
+	//r for reset zombie to beginning
+	vbus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("e", "r"))
+	zombies.bus = vbus
 
 	zombies.background = bus.NewImageLayer("samples/resources/zombiecide/background.png", 0, 0, 1920, 1080)
 	zombies.mouseEvent = nil
@@ -76,10 +82,12 @@ func (z *zombiecide) drawImage(img *bus.ImageLayer) {
 func (z *zombiecide) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 
-		if evt.GetKey().EqualsIgnoreCase("S") {
-			//TODO
-		} else if evt.GetKey().EqualsIgnoreCase("N") {
-			//TODO
+		log.Default().Println(evt.GetKey().ToString())
+		if evt.GetKey().EqualsIgnoreCase("e") {
+			os.Exit(0)
+		}
+		if evt.GetKey().EqualsIgnoreCase("r") {
+			zombies.zombie = NewZombie()
 		}
 
 	}

@@ -50,7 +50,7 @@ func (z *zombie) RenderImage(evt bus.MouseEvent) *bus.ImageLayer {
 // TODO The calcs are using the upper left for location relative to image and that probably isn't desired.
 func (z *zombie) calculateMove(evt bus.MouseEvent) *point {
 	x := int32(-4)
-	y := int32(-4)
+	y := int32(-2)
 	point := point{x, y}
 	//abs math function is floating point so just -1 multiple
 	if evt.GetX() > z.currentLocation.GetX() {
