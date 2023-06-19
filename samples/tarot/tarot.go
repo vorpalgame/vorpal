@@ -42,7 +42,7 @@ func (t *tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 		if evt.GetKey().EqualsIgnoreCase("S") {
 			t.tarotDeck.Shuffle()
 
-			t.bus.SendAudioEvent(bus.NewAudioEvent("samples/resources/audio/shuffle.mp3"))
+			t.bus.SendAudioEvent(bus.NewAudioEvent("samples/resources/audio/shuffle.mp3", true))
 			t.drawEvent = bus.NewDrawEvent()
 			t.drawEvent.AddImageLayer(bus.NewImageLayer("samples/resources/tarot/table.png", 0, 0, 1920, 1080))
 

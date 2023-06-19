@@ -1,9 +1,5 @@
 package bus
 
-import (
-	"log"
-)
-
 // TODO We need to look at race condition handling. While in many cases, lke the DrawEvent, we
 // usually won't care because they should be processed much faster than we are sending and if not,
 // we don't want to fill a queue up with draw events hoping they get caught up.
@@ -66,8 +62,6 @@ func (c *controller) OnAudioEvent(audioChannel <-chan AudioEvent) {
 
 func (c *controller) OnTextEvent(textChannel <-chan TextEvent) {
 	for evt := range textChannel {
-		log.Default().Println(evt)
-
 		c.textEvent = evt
 
 	}

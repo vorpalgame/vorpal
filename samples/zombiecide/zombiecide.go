@@ -56,26 +56,20 @@ func Init() {
 	vbus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("e", "r"))
 	zombies.bus = vbus
 
+	//TODO We need config probably through JSON file when prototyping is complete.
 	zombies.background = bus.NewImageLayer("samples/resources/zombiecide/background.png", 0, 0, 1920, 1080)
 	zombies.mouseEvent = nil
 
 	for {
 		if zombies.mouseEvent != nil {
-			zombies.drawImage(zombies.zombie.RenderImage(zombies.mouseEvent))
+			evt := bus.NewDrawEvent()
+			evt.AddImageLayer(zombies.background)
+			zombies.zombie.RunZombie(evt, zombies.mouseEvent)
+
 			time.Sleep(20 * time.Millisecond)
 		}
 
 	}
-
-}
-
-// TODO Current location should be center or front of center.
-
-func (z *zombiecide) drawImage(img *bus.ImageLayer) {
-	drawEvent := bus.NewDrawEvent()
-	drawEvent.AddImageLayer(z.background)
-	drawEvent.AddImageLayer(*img)
-	z.bus.SendDrawEvent(drawEvent)
 
 }
 

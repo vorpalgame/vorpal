@@ -8,17 +8,29 @@ type AudioEventListener interface {
 
 type AudioEvent interface {
 	GetAudio() string
+	Play() bool
+	SetPlay(play bool) AudioEvent
 }
 
 type audioEvent struct {
 	audio string
+	play  bool
 }
 
-func NewAudioEvent(audio string) AudioEvent {
-	return &audioEvent{audio}
+func NewAudioEvent(audio string, play bool) AudioEvent {
+	return &audioEvent{audio, play}
 
 }
 
 func (e *audioEvent) GetAudio() string {
 	return e.audio
+}
+
+func (e *audioEvent) Play() bool {
+	return e.play
+}
+
+func (e *audioEvent) SetPlay(play bool) AudioEvent {
+	e.play = play
+	return e
 }

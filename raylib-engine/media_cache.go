@@ -13,17 +13,20 @@ type MediaCache interface {
 	GetImage(img string) *rl.Image
 	DoCacheControl(event bus.ImageCacheEvent)
 	GetFont(fontName string) *rl.Font
+	GetAudio(fileName string) *rl.Sound
 }
 
 type mediaCache struct {
 	imageCache map[string]*rl.Image
 	fontCache  map[string]*rl.Font
+	audioCache map[string]*rl.Sound
 }
 
 func NewMediaCache() MediaCache {
 	cache := mediaCache{}
 	cache.imageCache = make(map[string]*rl.Image)
 	cache.fontCache = make(map[string]*rl.Font)
+	cache.audioCache = make(map[string]*rl.Sound)
 	return &cache
 }
 
@@ -31,6 +34,15 @@ func (c *mediaCache) GetFont(fontName string) *rl.Font {
 	return c.fontCache[fontName]
 
 }
+func (c *mediaCache) GetAudio(fileName string) *rl.Sound {
+	if c.audioCache[fileName] == nil {
+		audio := rl.LoadSound(fileName)
+		c.audioCache[fileName] = &audio
+	}
+	return c.audioCache[fileName]
+
+}
+
 func (c *mediaCache) CacheFonts(evt bus.TextEvent) {
 	c.doFontCache(evt.GetFont())
 	for _, line := range evt.GetText() {

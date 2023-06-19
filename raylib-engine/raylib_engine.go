@@ -40,7 +40,7 @@ func (e *engine) Start() {
 
 		e.sendMouseEvents()
 		e.sendKeyEvents()
-		e.playAudio()
+		e.runAudio()
 
 		//Perhaps clone the event for concurrency issues...
 		//Maybe get should nullify the event in the controller...
@@ -112,11 +112,26 @@ func (e *engine) renderText(txtEvt bus.TextEvent) {
 	}
 
 }
-func (e *engine) playAudio() {
+
+func (e *engine) runAudio() {
 	evt := e.controller.GetAudioEvent()
 	if evt != nil {
-		var audio = rl.LoadSound(evt.GetAudio())
-		rl.PlaySound(audio)
+		//TODO UnloadSound??
+		audio := e.cache.GetAudio(evt.GetAudio())
+		if evt.Play() {
+
+			if !rl.IsSoundPlaying(*audio) {
+				rl.PlaySound(*audio)
+			}
+		} else {
+			if !evt.Play() {
+
+				if rl.IsSoundPlaying(*audio) {
+					rl.StopSound(*audio)
+				}
+
+			}
+		}
 
 	}
 }
