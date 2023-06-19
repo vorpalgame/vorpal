@@ -2,6 +2,7 @@ package zombiecide
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/vorpalgame/vorpal/bus"
 )
@@ -10,25 +11,30 @@ type SpriteController interface {
 	RunSprite(drawEvent bus.DrawEvent, p Point, flipHorizontal bool)
 	StopSprite() SpriteController
 	SetAudio(fileName string) SpriteController
+	SetImageTemplate(fileTemplate string) SpriteController
 	SetToLoop(repeat bool) SpriteController
 }
 
 type spriteControllerData struct {
 	currentFrame, maxFrame, repeatFrame int
 	width, height                       int32
-	fileTemplateName                    string
+	fileTemplate                        string
+	audio                               string
 	repeat                              bool
-	audioName                           string
-	bus                                 bus.VorpalBus
 }
 
 // TODO regularize this constructor to either take the audio event or to remove the file and use builder pattern only.
-func NewSpriteController(maxFrame, repeatFrame int, width, height int32, fileTemplateName string) SpriteController {
-	return &spriteControllerData{1, maxFrame, repeatFrame, width, height, fileTemplateName, true, "", bus.GetVorpalBus()} //Loop by default//no audio by default
+func NewSpriteController(maxFrame, repeatFrame int, width, height int32) SpriteController {
+	return &spriteControllerData{1, maxFrame, repeatFrame, width, height, "", "", true} //Loop by default//no audio by default
+}
+
+func (s *spriteControllerData) SetImageTemplate(fileTemplate string) SpriteController {
+	s.fileTemplate = fileTemplate
+	return s
 }
 
 func (s *spriteControllerData) SetAudio(fileName string) SpriteController {
-	s.audioName = fileName
+	s.audio = fileName
 	return s
 }
 func (s *spriteControllerData) SetToLoop(repeat bool) SpriteController {
@@ -36,11 +42,12 @@ func (s *spriteControllerData) SetToLoop(repeat bool) SpriteController {
 	return s
 }
 func (s *spriteControllerData) StopSprite() SpriteController {
-	if s.audioName != "" {
-		s.bus.SendAudioEvent(bus.NewAudioEvent(s.audioName, false))
-	}
+	bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.audio, false))
+
 	return s
 }
+
+// TODO Need sanity checks on empty string names for audio and image. Perhaps on receiver side as well.
 func (s *spriteControllerData) RunSprite(drawEvent bus.DrawEvent, p Point, flipHorizontal bool) {
 
 	s.repeatFrame++
@@ -53,14 +60,13 @@ func (s *spriteControllerData) RunSprite(drawEvent bus.DrawEvent, p Point, flipH
 	} else if s.currentFrame >= s.maxFrame && !s.repeat {
 		s.currentFrame = s.maxFrame
 	}
-	//TODO Need a better template file name mechanism.
-	layer := bus.NewImageLayer(fmt.Sprintf(s.fileTemplateName, s.currentFrame), p.GetX(), p.GetY(), s.width, s.height)
+
+	layer := bus.NewImageLayer(fmt.Sprintf(s.fileTemplate, s.currentFrame), p.GetX(), p.GetY(), s.width, s.height)
+	log.Default().Println(layer.GetImage())
 	layer.SetFlipHorizontal(flipHorizontal)
 	drawEvent.AddImageLayer(layer)
-	s.bus.SendDrawEvent(drawEvent)
-	//Can probably cache the audio event between calls.
-	if s.audioName != "" {
-		s.bus.SendAudioEvent(bus.NewAudioEvent(s.audioName, true))
-	}
+	bus.GetVorpalBus().SendDrawEvent(drawEvent)
+
+	bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.audio, true))
 
 }

@@ -1,8 +1,6 @@
 package zombiecide
 
 import (
-	"log"
-
 	"github.com/vorpalgame/vorpal/bus"
 )
 
@@ -11,24 +9,33 @@ type Zombie interface {
 	RunZombie(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent)
 }
 type zombie struct {
-	currentLocation                         Point
-	walk, dead, idle, attack, currentSprite SpriteController
-
-	numberIdle int
+	currentLocation          Point
+	walk, dead, idle, attack SpriteController
+	numberIdle               int
 }
 
 func NewZombie() Zombie {
 	//"samples/resources/zombiecide/"+s.fileBaseName+" ("+strconv.Itoa(s.currentFrame)+").png"
 
-	z := zombie{&point{600, 600}, NewSpriteController(10, 3, 200, 300, getFileTemplate("walk")), NewSpriteController(12, 3, 300, 300, getFileTemplate("dead")), NewSpriteController(15, 3, 200, 300, getFileTemplate("idle")), NewSpriteController(9, 3, 200, 300, getFileTemplate("attack")), nil, 0}
+	z := zombie{&point{600, 600}, newSprite(10, 3, 200, 300, "walk"), newSprite(12, 3, 300, 300, "dead"), newSprite(15, 3, 200, 300, "idle"), newSprite(8, 3, 200, 300, "attack"), 0}
 	z.dead.SetToLoop(false)
-	z.walk.SetAudio("samples/resources/zombiecide/moan.mp3")
-	z.attack.SetAudio("samples/resources/zombiecide/roar.mp3")
+
 	return &z
 }
 
-func getFileTemplate(name string) string {
+func newSprite(x, y, width, height int, name string) SpriteController {
+	sprite := NewSpriteController(10, 3, 200, 300)
+	sprite.SetImageTemplate(getImageTemplate(name))
+	sprite.SetAudio(getAudioTemplate(name))
+	return sprite
+}
+
+func getImageTemplate(name string) string {
 	return "samples/resources/zombiecide/" + name + " (%d).png"
+}
+
+func getAudioTemplate(name string) string {
+	return "samples/resources/zombiecide/" + name + ".mp3"
 }
 
 // Note we aren't really "rendering" anything. We are specifying the name of the source file, x,y, width and height coordianates.
@@ -42,7 +49,7 @@ func (z *zombie) RunZombie(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
 	} else {
 		if point.x == 0 && point.y == 0 {
 			z.numberIdle++
-			if z.numberIdle < 100 {
+			if z.numberIdle < 250 {
 				sprite = z.idle
 			} else {
 				sprite = z.dead
@@ -53,14 +60,8 @@ func (z *zombie) RunZombie(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
 			sprite = z.walk
 		}
 	}
-	log.Default().Println(sprite)
-	if sprite != nil {
-		if z.currentSprite != nil && z.currentSprite != sprite {
-			z.currentSprite.StopSprite()
-		}
-		z.currentSprite = sprite
-		sprite.RunSprite(drawEvent, z.currentLocation, flipHorizontal)
-	}
+
+	sprite.RunSprite(drawEvent, z.currentLocation, flipHorizontal)
 }
 
 // TODO The calcs are using the upper left for location relative to image and that probably isn't desired.

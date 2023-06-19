@@ -15,6 +15,7 @@ type engine struct {
 	cache          MediaCache
 	renderedImg    *rl.Image
 	currentTexture rl.Texture2D
+	currentAudio   *rl.Sound //TODO Should probably be a map for multiple sounds.
 }
 
 //
@@ -113,27 +114,27 @@ func (e *engine) renderText(txtEvt bus.TextEvent) {
 
 }
 
+// Temp debug...
+// This is a bit of a mess and needs to have better logic between the
+// event, caller and this controller logic...
+
 func (e *engine) runAudio() {
 	evt := e.controller.GetAudioEvent()
+
 	if evt != nil {
-		//TODO UnloadSound??
 		audio := e.cache.GetAudio(evt.GetAudio())
-		if evt.Play() {
-
-			if !rl.IsSoundPlaying(*audio) {
-				rl.PlaySound(*audio)
+		if !evt.Play() && e.currentAudio != nil {
+			rl.StopSound(*e.currentAudio)
+		} else if evt.Play() && !rl.IsSoundPlaying(*audio) {
+			if e.currentAudio != nil {
+				rl.StopSound(*e.currentAudio)
 			}
-		} else {
-			if !evt.Play() {
-
-				if rl.IsSoundPlaying(*audio) {
-					rl.StopSound(*audio)
-				}
-
-			}
+			e.currentAudio = audio
+			rl.PlaySound(*e.currentAudio)
 		}
 
 	}
+
 }
 
 func (e *engine) sendMouseEvents() {
