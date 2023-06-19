@@ -37,10 +37,12 @@ func NewGameController() StandardMediaPeerController {
 	return &c
 }
 
+//We don't want to consume from the channel if we still have an event waiting for processing.
 func (c *controller) OnDrawEvent(drawChannel <-chan DrawEvent) {
 	for evt := range drawChannel {
 		c.drawEvent = evt
 	}
+
 }
 
 func (c *controller) OnImageCacheEvent(cacheChannel <-chan ImageCacheEvent) {
@@ -54,9 +56,13 @@ func (c *controller) OnKeyRegistrationEvent(keyRegistrationChannel <-chan KeysRe
 	}
 }
 
+//We spin on the channela and then spin on the c.AudioEvent until it is nil
+//in order to ensure the event is handed off.
 func (c *controller) OnAudioEvent(audioChannel <-chan AudioEvent) {
 	for evt := range audioChannel {
-		c.audioEvent = evt
+		for c.audioEvent == nil {
+			c.audioEvent = evt
+		}
 	}
 }
 

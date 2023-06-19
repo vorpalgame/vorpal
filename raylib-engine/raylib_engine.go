@@ -10,12 +10,12 @@ import (
 //T
 
 type engine struct {
-	controller     bus.StandardMediaPeerController
-	bus            bus.VorpalBus
-	cache          MediaCache
-	renderedImg    *rl.Image
-	currentTexture rl.Texture2D
-	currentAudio   *rl.Sound //TODO Should probably be a map for multiple sounds.
+	controller            bus.StandardMediaPeerController
+	bus                   bus.VorpalBus
+	cache                 MediaCache
+	renderedImg           *rl.Image
+	currentTexture        rl.Texture2D
+	currentlyPlayingAudio map[string]*rl.Sound
 }
 
 //
@@ -23,6 +23,7 @@ type engine struct {
 func NewEngine() bus.Engine {
 	log.Println("Init'd")
 	var e = engine{}
+	e.currentlyPlayingAudio = make(map[string]*rl.Sound)
 	e.cache = NewMediaCache()
 	e.controller = bus.NewGameController()
 	e.bus = bus.GetVorpalBus()
@@ -114,25 +115,20 @@ func (e *engine) renderText(txtEvt bus.TextEvent) {
 
 }
 
-// Temp debug...
-// This is a bit of a mess and needs to have better logic between the
-// event, caller and this controller logic...
-
 func (e *engine) runAudio() {
 	evt := e.controller.GetAudioEvent()
 
 	if evt != nil {
-		audio := e.cache.GetAudio(evt.GetAudio())
-		if !evt.Play() && e.currentAudio != nil {
-			rl.StopSound(*e.currentAudio)
-		} else if evt.Play() && !rl.IsSoundPlaying(*audio) {
-			if e.currentAudio != nil {
-				rl.StopSound(*e.currentAudio)
+		currentAudio := e.cache.GetAudio(evt.GetAudio())
+		if !evt.IsPlaying() && rl.IsSoundPlaying(*currentAudio) {
+			rl.StopSound(*currentAudio)
+			//rl.UnloadSound(*currentAudio)
+		} else {
+			if evt.IsPlaying() && !rl.IsSoundPlaying(*currentAudio) {
+				rl.PlaySound(*currentAudio)
 			}
-			e.currentAudio = audio
-			rl.PlaySound(*e.currentAudio)
-		}
 
+		}
 	}
 
 }

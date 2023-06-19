@@ -9,22 +9,22 @@ type Zombie interface {
 	RunZombie(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent)
 }
 type zombie struct {
-	currentLocation          Point
-	walk, dead, idle, attack SpriteController
-	numberIdle               int
+	currentLocation                         Point
+	walk, dead, idle, attack, currentSprite SpriteController
+	numberIdle                              int
 }
 
 func NewZombie() Zombie {
 	//"samples/resources/zombiecide/"+s.fileBaseName+" ("+strconv.Itoa(s.currentFrame)+").png"
 
-	z := zombie{&point{600, 600}, newSprite(10, 3, 200, 300, "walk"), newSprite(12, 3, 300, 300, "dead"), newSprite(15, 3, 200, 300, "idle"), newSprite(8, 3, 200, 300, "attack"), 0}
+	z := zombie{&point{600, 600}, newSprite(10, 3, 200, 300, "walk"), newSprite(12, 3, 300, 300, "dead"), newSprite(15, 3, 200, 300, "idle"), newSprite(7, 3, 200, 300, "attack"), nil, 0}
 	z.dead.SetToLoop(false)
-
+	z.attack.SetToLoop(false)
 	return &z
 }
 
-func newSprite(x, y, width, height int, name string) SpriteController {
-	sprite := NewSpriteController(10, 3, 200, 300)
+func newSprite(x, y int, width, height int32, name string) SpriteController {
+	sprite := NewSpriteController(x, y, width, height)
 	sprite.SetImageTemplate(getImageTemplate(name))
 	sprite.SetAudio(getAudioTemplate(name))
 	return sprite
@@ -49,19 +49,23 @@ func (z *zombie) RunZombie(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
 	} else {
 		if point.x == 0 && point.y == 0 {
 			z.numberIdle++
-			if z.numberIdle < 250 {
+			if z.numberIdle < 150 {
 				sprite = z.idle
 			} else {
 				sprite = z.dead
 			}
 		} else {
 			z.numberIdle = 0
-			z.currentLocation.Add(point) //In future point dimension/direction/size may determine behavior.
+			z.currentLocation.Add(point)
 			sprite = z.walk
 		}
 	}
+	if z.currentSprite != nil && z.currentSprite != sprite {
+		z.currentSprite.StopSprite()
+	}
+	z.currentSprite = sprite
 
-	sprite.RunSprite(drawEvent, z.currentLocation, flipHorizontal)
+	z.currentSprite.RunSprite(drawEvent, z.currentLocation, flipHorizontal)
 }
 
 // TODO The calcs are using the upper left for location relative to image and that probably isn't desired.
