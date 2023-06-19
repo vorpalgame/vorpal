@@ -15,16 +15,15 @@ type SpriteController interface {
 }
 
 type spriteControllerData struct {
-	currentFrame, maxFrame, repeatFrame int
-	width, height                       int32
-	fileTemplate                        string
-	audioFile                           string
-	repeat                              bool
+	currentFrame, maxFrame, repeatFrame, width, height int32
+	fileTemplate                                       string
+	audioFile                                          string
+	repeat                                             bool
 }
 
 // TODO Redesign to remove nil checks for audio event
 // TODO regularize this constructor to either take the audio event or to remove the file and use builder pattern only.
-func NewSpriteController(maxFrame, repeatFrame int, width, height int32) SpriteController {
+func NewSpriteController(maxFrame, repeatFrame, width, height int32) SpriteController {
 	return &spriteControllerData{1, maxFrame, repeatFrame, width, height, "", "", true} //Loop by default//no audio by default
 }
 

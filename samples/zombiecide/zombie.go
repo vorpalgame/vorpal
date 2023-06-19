@@ -17,29 +17,17 @@ type zombie struct {
 func NewZombie() Zombie {
 	//"samples/resources/zombiecide/"+s.fileBaseName+" ("+strconv.Itoa(s.currentFrame)+").png"
 
-	z := zombie{&point{600, 600}, newSprite(10, 3, 200, 300, "walk"), newSprite(12, 3, 300, 300, "dead"), newSprite(15, 3, 200, 300, "idle"), newSprite(7, 3, 200, 300, "attack"), nil, 0}
+	z := zombie{&point{600, 600}, NewWalkingZombie(), NewDeadZombie(), NewIdleZombie(), NewAttackZombie(), nil, 0}
 	z.dead.SetToLoop(false)
 	z.attack.SetToLoop(false)
 	return &z
 }
 
-func newSprite(x, y int, width, height int32, name string) SpriteController {
-	sprite := NewSpriteController(x, y, width, height)
-	sprite.SetImageTemplate(getImageTemplate(name))
-	sprite.SetAudio(getAudioTemplate(name))
-	return sprite
-}
-
-func getImageTemplate(name string) string {
-	return "samples/resources/zombiecide/" + name + " (%d).png"
-}
-
-func getAudioTemplate(name string) string {
-	return "samples/resources/zombiecide/" + name + ".mp3"
-}
-
 // Note we aren't really "rendering" anything. We are specifying the name of the source file, x,y, width and height coordianates.
 // It is metadata for the actual rendering by the engine.
+
+// TODO break out behavior for different sprites into separate logic elements.
+// Some repeat in loops others do not. Some repeat audio etc. So make that separately settable.
 func (z *zombie) RunZombie(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
 	var sprite SpriteController
 	point := z.calculateMove(mouseEvent)
