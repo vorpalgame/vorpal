@@ -55,9 +55,9 @@ func (e *engine) Start() {
 			e.cache.CacheFonts(textEvt)
 			e.renderText(textEvt)
 		}
-
+		rl.ClearBackground(rl.RayWhite)
 		rl.BeginDrawing()
-		//rl.ClearBackground(rl.RayWhite)
+
 		rl.DrawTexture(e.currentTexture, 0, 0, rl.RayWhite)
 		rl.EndDrawing()
 

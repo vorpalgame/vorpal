@@ -1,7 +1,7 @@
 package zombiecide
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/vorpalgame/vorpal/bus"
 )
@@ -9,40 +9,55 @@ import (
 // Specific zombie types...
 type walkingZombie struct {
 	spriteControllerData
+	idleZombie   ZombieSprite
+	attackZombie ZombieSprite
+	framesIdle   int32
 }
 type deadZombie struct {
 	spriteControllerData
+	walkingZombie ZombieSprite
 }
 type idleZombie struct {
 	spriteControllerData
+	attackZombie  ZombieSprite
+	deadZombie    ZombieSprite
+	walkingZombie ZombieSprite
+	framesIdle    int32
 }
 type attackZombie struct {
 	spriteControllerData
+	walkingZombie ZombieSprite
 }
 
 type ZombieSprite interface {
 	SpriteController
-	RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, p Point, flipHorizontal bool) ZombieSprite
+	RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite
 }
 
-func NewWalkingZombie() ZombieSprite {
-	return &walkingZombie{newSpriteControllerData(10, 3, 200, 300, "walk")}
-}
+// Probably a better factory pattern for this in idiomatic Golang
+func NewZombie() ZombieSprite {
 
-func NewDeadZombie() ZombieSprite {
-	return &deadZombie{newSpriteControllerData(12, 3, 300, 300, "dead")}
-}
+	walking := walkingZombie{newSpriteControllerData(10, 3, 200, 300, "walk"), nil, nil, 0}
+	dead := deadZombie{newSpriteControllerData(12, 3, 300, 300, "dead"), nil}
+	idle := idleZombie{newSpriteControllerData(15, 3, 200, 300, "idle"), nil, nil, nil, 0}
+	attack := attackZombie{newSpriteControllerData(7, 3, 200, 300, "attack"), nil}
 
-func NewIdleZombie() ZombieSprite {
-	return &idleZombie{newSpriteControllerData(15, 3, 200, 300, "idle")}
-}
+	walking.attackZombie = &attack
+	walking.idleZombie = &idle
 
-func NewAttackZombie() ZombieSprite {
-	return &attackZombie{newSpriteControllerData(7, 3, 200, 300, "attack")}
+	dead.walkingZombie = &walking
+
+	idle.deadZombie = &dead
+	idle.walkingZombie = &walking
+	idle.attackZombie = &attack
+
+	attack.walkingZombie = &walking
+	//Start walking...
+	return &walking
 }
 
 func newSpriteControllerData(x, y, width, height int32, name string) spriteControllerData {
-	return spriteControllerData{1, x, y, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name)}
+	return spriteControllerData{1, x, y, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name), &point{600, 600}, false}
 }
 
 func getZombieImageTemplate(name string) string {
@@ -53,72 +68,102 @@ func getZombieAudioTemplate(name string) string {
 	return "samples/resources/zombiecide/" + name + ".mp3"
 }
 
-func (s *walkingZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, p Point, flipHorizontal bool) ZombieSprite {
-	s.sendAudio()
-	s.renderImage(drawEvent, p, flipHorizontal)
-	s.incrementFrame()
-	s.loop()
-	return s
+// TODO The functions below have a lot of commonality that can be separated out into helper functions while keeping
+// the state specific logic intact.
+func (s *walkingZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
+	var zReturn ZombieSprite = s
+	if mouseEvent.LeftButton().IsDown() {
+		zReturn = doTransition(s, s.attackZombie)
+	} else {
+		doSendAudio(s)
+		point := s.calculateMove(mouseEvent)
+		s.framesIdle = doIdleCount(s.framesIdle, point)
+
+		if s.framesIdle < 50 {
+			s.currentLocation.Add(point)
+			s.sendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
+			s.incrementFrame()
+			s.loop()
+		} else {
+			zReturn = doTransition(s, s.idleZombie)
+		}
+	}
+	return zReturn
 }
 
 // Attack zombie is on left mouse down so a bit more sensitive and we don't want to do on frame number.
-func (s *attackZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, p Point, flipHorizontal bool) ZombieSprite {
-	bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.audioFile).Play())
-	s.renderImage(drawEvent, p, flipHorizontal)
-	s.incrementFrame()
-	s.noLoop()
-	return s
+func (s *attackZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
+	var zReturn ZombieSprite = s
+	if mouseEvent.LeftButton().IsDown() {
+		doSendAudio(s)
+		s.sendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
+		s.incrementFrame()
+		s.noLoop()
+	} else {
+		zReturn = doTransition(s, s.walkingZombie)
+	}
+	return zReturn
 }
 
-func (s *idleZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, p Point, flipHorizontal bool) ZombieSprite {
-	s.sendAudio()
-	s.renderImage(drawEvent, p, flipHorizontal)
-	s.incrementFrame()
-	s.loop()
-	return s
+func (s *idleZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
+	var zReturn ZombieSprite = s
+	if mouseEvent.LeftButton().IsDown() {
+		zReturn = doTransition(s, s.attackZombie)
+	} else {
+		doSendAudio(s)
+		point := s.calculateMove(mouseEvent)
+		s.framesIdle = doIdleCount(s.framesIdle, point)
+		log.Default().Println(s.framesIdle)
+		if s.framesIdle < 150 {
+			s.currentLocation.Add(point)
+			s.sendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
+			s.incrementFrame()
+			s.loop()
+		} else {
+			zReturn = doTransition(s, s.deadZombie)
+			s.framesIdle = 0
+		}
+
+	}
+	return zReturn
 }
 
-func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, p Point, flipHorizontal bool) ZombieSprite {
-	s.sendAudio()
-	s.renderImage(drawEvent, p, flipHorizontal)
-	s.incrementFrame()
-	s.noLoop()
-	return s
+// TODO Move calcs of point/flip to the zombie sprites
+func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
+	var zReturn ZombieSprite = s
+	doSendAudio(s)
+	point := s.calculateMove(mouseEvent)
+
+	if doIdleCount(0, point) > 0 {
+		s.sendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
+		s.incrementFrame()
+		s.noLoop()
+	} else {
+		zReturn = doTransition(s, s.walkingZombie)
+	}
+	return zReturn
 }
 
-func (s *spriteControllerData) loop() {
-	if s.currentFrame+1 >= s.maxFrame {
-		s.currentFrame = 1
+// Any zombie state can be passed so not entirely type safe...and swapped current/attack is possible without
+// specialized interfaces.
+func doTransition(currentState, nextState ZombieSprite) ZombieSprite {
+	currentState.Stop()
+	nextState.SetCurrentLocation(currentState.GetCurrentLocation())
+	return nextState
+}
+
+func doSendAudio(currentState ZombieSprite) {
+	if !currentState.IsStarted() {
+		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(currentState.GetAudioFile()).Play())
+		currentState.Start()
 	}
 }
 
-func (s *spriteControllerData) noLoop() {
-	if s.currentFrame+1 >= s.maxFrame {
-		s.currentFrame = s.maxFrame
+func doIdleCount(idleCount int32, point Point) int32 {
+	if point.GetY() == 0 && point.GetX() == 0 {
+		idleCount++
+	} else {
+		idleCount = 0
 	}
-}
-
-func (s *spriteControllerData) incrementFrame() {
-	s.repeatFrame++
-	if s.repeatFrame > 4 {
-		s.currentFrame++
-		s.repeatFrame = 0
-	}
-
-}
-func (s *spriteControllerData) renderImage(drawEvent bus.DrawEvent, p Point, flipHorizontal bool) {
-
-	//We repeat frames to prevent blur and jitters and make it smoother.
-	layer := bus.NewImageLayer(fmt.Sprintf(s.fileTemplate, s.currentFrame), p.GetX(), p.GetY(), s.width, s.height)
-
-	layer.SetFlipHorizontal(flipHorizontal)
-	drawEvent.AddImageLayer(layer)
-	bus.GetVorpalBus().SendDrawEvent(drawEvent)
-}
-
-func (s *spriteControllerData) sendAudio() {
-	if s.currentFrame == 1 {
-		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.audioFile).Play())
-	}
-
+	return idleCount
 }

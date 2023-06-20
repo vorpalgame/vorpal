@@ -13,30 +13,7 @@ type zombiecide struct {
 	//textEvent  bus.TextEvent
 	mouseEvent bus.MouseEvent
 	background bus.ImageLayer
-	zombie     Zombie
-}
-
-type Point interface {
-	GetX() int32
-	GetY() int32
-	Add(Point)
-}
-
-type point struct {
-	x, y int32
-}
-
-func (p *point) GetX() int32 {
-	return p.x
-}
-
-func (p *point) GetY() int32 {
-	return p.y
-}
-
-func (p *point) Add(addPoint Point) {
-	p.x += addPoint.GetX()
-	p.y += addPoint.GetY()
+	zombie     ZombieSprite
 }
 
 // TODO The cards should have locations or the game/board should dictate those...
@@ -45,8 +22,9 @@ var zombies = zombiecide{}
 var fontName = "samples/resources/fonts/Roboto-Regular.ttf"
 var headerFontName = "samples/resources/fonts/Roboto-Black.ttf"
 
+// TODO Refactor this start up to make it more idiomatic.
 func Init() {
-	log.Println("New card game")
+	log.Println("New z game")
 	zombies.zombie = NewZombie()
 	vbus := bus.GetVorpalBus()
 	vbus.AddMouseListener(&zombies)
@@ -64,7 +42,7 @@ func Init() {
 		if zombies.mouseEvent != nil {
 			evt := bus.NewDrawEvent()
 			evt.AddImageLayer(zombies.background)
-			zombies.zombie.RunZombie(evt, zombies.mouseEvent)
+			zombies.zombie = zombies.zombie.RunSprite(evt, zombies.mouseEvent)
 
 			time.Sleep(20 * time.Millisecond)
 		}
