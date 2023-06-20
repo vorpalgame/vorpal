@@ -56,13 +56,9 @@ func (c *controller) OnKeyRegistrationEvent(keyRegistrationChannel <-chan KeysRe
 	}
 }
 
-//We spin on the channela and then spin on the c.AudioEvent until it is nil
-//in order to ensure the event is handed off.
 func (c *controller) OnAudioEvent(audioChannel <-chan AudioEvent) {
 	for evt := range audioChannel {
-		for c.audioEvent == nil {
-			c.audioEvent = evt
-		}
+		c.audioEvent = evt
 	}
 }
 
@@ -73,17 +69,15 @@ func (c *controller) OnTextEvent(textChannel <-chan TextEvent) {
 	}
 }
 
-// Temporary until we decide on better mechanism for either limiting to a single event or buffering in their own queues.
 func (c *controller) GetDrawEvent() DrawEvent {
 	evt := c.drawEvent
 	c.drawEvent = nil
 	return evt
 }
 
+//Default behavior is that it won't repeat.
 func (c *controller) GetAudioEvent() AudioEvent {
-	temp := c.audioEvent
-	c.audioEvent = nil
-	return temp
+	return c.audioEvent
 }
 
 func (c *controller) GetTextEvent() TextEvent {

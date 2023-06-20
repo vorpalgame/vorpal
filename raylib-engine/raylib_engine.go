@@ -126,7 +126,9 @@ func (e *engine) runAudio() {
 		if evt.IsPlay() && !rl.IsSoundPlaying(*currentAudio) {
 			for !rl.IsSoundReady(*currentAudio) {
 			}
-			rl.PlaySound(*currentAudio)
+			if evt.IncrementCount() == 1 || evt.IsLoop() {
+				rl.PlaySound(*currentAudio)
+			}
 		}
 
 	}
