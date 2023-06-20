@@ -12,10 +12,15 @@ From the perspective a game or training simulation, it is simply sending events 
 Currently we are working an implementation with raylib but ebitten or other engines could be implemented as well. The event system and game/training logic are decoupled from the concerns of the multimedia engine. 
 
 ## Sample
-What can be more straightforward than a zombie walking across the screen, attacking, falling down dead only rise back up and continue on?
+The samples are works in progress but both are currently functional. 
+
+### Zombiecide
+What can be more straightforward than a zombie walking across the screen, groaning, moaning, attacking, falling down dead only rise back up and continue on?
+
+The sample code separates the zombie sprites into state machines each responsible for their own actions and transitions to next states as well as firing events off to the engine.
 ![image](https://github.com/vorpalgame/vorpal/assets/3209869/95c3be51-a423-405b-8825-f5114160776d)
 
-
+### Tarot
 Why a Tarot card sample? Well, it's fun but it  is also the kind of problem set that emphasizes the development of the mechanics and not of implementing game logic. For example, we need to ask users for input, capture keystrokes, draw to different layers for a board and cards on it, and play sounds for cards flipping and shuffling. What we don't want to focus on, at least at first, is implemeting rules and states for a game. Even a simple game like Solitaire has to have logic based on what column a card is in and what numeric value and color the cards are. That can all be done easily enough once the Vorpal engine is in place and all the events are implemented but it isn't the focus of the project. 
 
 *Apologies about the bouncing screen...my grabs weren't precise. I'll get them programmatically later.
@@ -30,8 +35,17 @@ The front end game logic sends a DrawEvent that lists one to N images along with
 type DrawEvent interface {
 	GetImageLayers() []ImageLayer
 	AddImageLayer(imgLayer ImageLayer)
-	GetId() int32
-	SetId(id int32)
+	Reset()
+}
+
+type ImageLayer interface {
+	GetImage() string
+	GetX() int32
+	GetY() int32
+	GetHeight() int32
+	GetWidth() int32
+	IsFlipHorizontal() bool
+	SetFlipHorizontal(bool)
 }
 ```
 The game logic only needs to send this event when something about the scene changes. Since it is only sending a few strings and integers, this isn't a lot memory traffic. The game engine loads the images in whatever way makes sense. For example, Raylib has an rl.Image that it uses instead of the standard Golang image class. The game logic is simply passing the name of the resource so is decoupled from the back end implementation. As a design philosophy, the aim is to keep the front end events and bus vendor neutral to a great extent. If someone created an ebiten or SDL2 or other back end implemetnation, it should be possible or at least should be a design goal that the front end wouldn't change. Your game and its logic would send the same events and they'd be handled by the back end implementation. Any impedance mismatch would then be localize to the Golang implementation of the engine peer class. The bus and the events would be the dividing line. 
@@ -55,10 +69,32 @@ Font loading is currently done up front but the TTF font could be specified in t
 TODO Update this section to reflect passing of font, size and lines in text event for headers and body text as in diagram. 
 
 ### AudioEvent
-Audio events can be sent to play clips. Currently there isn't any play/paus/stop functionality but that could be added, as needed, in the future. 
+Audio events can be sent to play clips. 
+
+```
+type AudioEvent interface {
+	GetAudio() string
+	SetAudio(string) AudioEvent
+	IsStop() bool
+	IsPlay() bool
+	Play() AudioEvent
+	Stop() AudioEvent
+}
+```
 
 ### Listening
-In addition to the game logic being able to send events, it can also listen for key and mouse events sent from the engine. The listeners and events are wired in but still under development. A complete set of enums for key values, for example, is still needed. 
+In addition to the game logic being able to send events, it can also listen for key and mouse events sent from the engine. The listeners and events are wired in but still under development.
 
-
-
+Key registration sends a slice of the keys one is interested in listening for and those are used by by the engine on the event loop to determine which keys to check. One can listen for as many different keys and combinations as one wishes and it only require this single event.
+```
+type KeysRegistrationEvent interface {
+	GetKeys() []Key
+}
+type Key interface {
+	ToString() string
+	ToAscii() int
+	IsUpperCase() bool
+	IsLowerCase() bool
+	EqualsIgnoreCase(key string) bool
+}
+```
