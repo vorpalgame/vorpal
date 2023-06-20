@@ -18,16 +18,13 @@ func NewZombie() Zombie {
 	//"samples/resources/zombiecide/"+s.fileBaseName+" ("+strconv.Itoa(s.currentFrame)+").png"
 
 	z := zombie{&point{600, 600}, NewWalkingZombie(), NewDeadZombie(), NewIdleZombie(), NewAttackZombie(), nil, 0}
-	z.dead.SetToLoop(false)
-	z.attack.SetToLoop(false)
 	return &z
 }
 
 // Note we aren't really "rendering" anything. We are specifying the name of the source file, x,y, width and height coordianates.
 // It is metadata for the actual rendering by the engine.
 
-// TODO break out behavior for different sprites into separate logic elements.
-// Some repeat in loops others do not. Some repeat audio etc. So make that separately settable.
+// Move functionality into actual zombie run methods for less global control...
 func (z *zombie) RunZombie(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
 	var sprite SpriteController
 	point := z.calculateMove(mouseEvent)

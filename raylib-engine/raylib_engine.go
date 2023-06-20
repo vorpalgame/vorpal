@@ -120,15 +120,16 @@ func (e *engine) runAudio() {
 
 	if evt != nil {
 		currentAudio := e.cache.GetAudio(evt.GetAudio())
-		if !evt.IsPlaying() && rl.IsSoundPlaying(*currentAudio) {
+		if evt.IsStop() {
 			rl.StopSound(*currentAudio)
 			//rl.UnloadSound(*currentAudio)
-		} else {
-			if evt.IsPlaying() && !rl.IsSoundPlaying(*currentAudio) {
-				rl.PlaySound(*currentAudio)
-			}
-
 		}
+		if evt.IsPlay() && !rl.IsSoundPlaying(*currentAudio) {
+			for !rl.IsSoundReady(*currentAudio) {
+			}
+			rl.PlaySound(*currentAudio)
+		}
+
 	}
 
 }

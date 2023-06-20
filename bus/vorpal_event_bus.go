@@ -44,25 +44,18 @@ func (eb *vorpalEventBus) AddControllerListener(eventListener ControllerListener
 	eb.AddKeysRegistrationEventListener(eventListener)
 }
 
-// This section is for channels that block on 1 message because we want
-// guaranteed delivery. See also the standard controller where the consumer
-// will spin until it can hand the event off to the controller. That ensures all
-// messages get processed. Start/stop audio is a good case in point. If we don't
-// wait for the processing and overwrite instead, a stop or start might be missed.
-// Contrast that to the draw event where we generally want to process the latest only
-func (bus *vorpalEventBus) AddAudioEventListener(eventListener AudioEventListener) {
-	listenerChannel := make(chan AudioEvent, 1)
-	bus.audioEventListenerChannels = append(bus.audioEventListenerChannels, listenerChannel)
-	go eventListener.OnAudioEvent(listenerChannel)
-}
-func (bus *vorpalEventBus) SendAudioEvent(event AudioEvent) {
-	for _, channel := range bus.audioEventListenerChannels {
-		channel <- event
-	}
-}
+// Channels that can buffer multiple events or where we don't care for only the latest
+// event. For example, if the 10 mouse events are sent but the consumer is only concerned
+// with the last one, they can ignore all but the last. We don't want to block the caller.
+//
+// These also give the consumer the choice whether to igonre or process all the events. If there are
+// multiple DrawEvents we may wish to process them al in one context while ignore all but the latest
+// and consider the earlier  ones to be frame misses.
+//The controller determines correct behavior
+//Practical limit of 10 though as more indicates a lot of processing misses.
 
 func (bus *vorpalEventBus) AddKeysRegistrationEventListener(eventListener KeysRegistrationEventListener) {
-	listenerChannel := make(chan KeysRegistrationEvent, 1)
+	listenerChannel := make(chan KeysRegistrationEvent, 10)
 	bus.keysRegistrationEventListenerChannel = append(bus.keysRegistrationEventListenerChannel, listenerChannel)
 	go eventListener.OnKeyRegistrationEvent(listenerChannel)
 }
@@ -74,7 +67,7 @@ func (bus *vorpalEventBus) SendKeysRegistrationEvent(event KeysRegistrationEvent
 }
 
 func (bus *vorpalEventBus) AddTextEventListener(eventListener TextEventListener) {
-	listenerChannel := make(chan TextEvent, 1)
+	listenerChannel := make(chan TextEvent, 10)
 	bus.textEventListenerChannels = append(bus.textEventListenerChannels, listenerChannel)
 	go eventListener.OnTextEvent(listenerChannel)
 }
@@ -84,16 +77,20 @@ func (bus *vorpalEventBus) SendTextEvent(event TextEvent) {
 	}
 }
 
-// Channels that can buffer multiple events or where we don't care for only the latest
-// event. For example, if the 10 mouse events are sent but the consumer is only concerned
-// with the last one, they can ignore all but the last. We don't want to block the caller.
-//
-// These also give the consumer the choice whether to igonre or process all the events. If there are
-// multiple DrawEvents we may wish to process them al in one context while ignore all but the latest
-// and consider the earlier  ones to be frame misses.
+func (bus *vorpalEventBus) AddAudioEventListener(eventListener AudioEventListener) {
+	listenerChannel := make(chan AudioEvent, 10)
+	bus.audioEventListenerChannels = append(bus.audioEventListenerChannels, listenerChannel)
+	go eventListener.OnAudioEvent(listenerChannel)
+}
+func (bus *vorpalEventBus) SendAudioEvent(event AudioEvent) {
+	for _, channel := range bus.audioEventListenerChannels {
+		channel <- event
+	}
+}
+
 // /KEY EVENTS
 func (bus *vorpalEventBus) AddKeyEventListener(eventListener KeyEventListener) {
-	listenerChannel := make(chan KeyEvent, 100)
+	listenerChannel := make(chan KeyEvent, 10)
 	bus.keyEventListenerChannels = append(bus.keyEventListenerChannels, listenerChannel)
 	go eventListener.OnKeyEvent(listenerChannel)
 }
@@ -105,7 +102,7 @@ func (bus *vorpalEventBus) SendKeyEvent(event KeyEvent) {
 }
 
 func (bus *vorpalEventBus) AddImageCacheEventListener(eventListener ImageCacheEventListener) {
-	listenerChannel := make(chan ImageCacheEvent, 100)
+	listenerChannel := make(chan ImageCacheEvent, 10)
 	bus.imageCacheEventListenerChannels = append(bus.imageCacheEventListenerChannels, listenerChannel)
 	go eventListener.OnImageCacheEvent(listenerChannel)
 }
@@ -118,7 +115,7 @@ func (bus *vorpalEventBus) SendImageCacheEvent(event ImageCacheEvent) {
 
 // ///MOUSE BUTTON EVENTS
 func (bus *vorpalEventBus) AddMouseListener(eventListener MouseEventListener) {
-	listenerChannel := make(chan MouseEvent, 100)
+	listenerChannel := make(chan MouseEvent, 10)
 	bus.mouseListenerChannels = append(bus.mouseListenerChannels, listenerChannel)
 	go eventListener.OnMouseEvent(listenerChannel)
 }
@@ -130,7 +127,7 @@ func (bus *vorpalEventBus) SendMouseEvent(event MouseEvent) {
 }
 
 func (bus *vorpalEventBus) AddDrawEventListener(eventListener DrawEventListener) {
-	listenerChannel := make(chan DrawEvent, 100)
+	listenerChannel := make(chan DrawEvent, 10)
 	bus.drawEventListenerChannels = append(bus.drawEventListenerChannels, listenerChannel)
 	go eventListener.OnDrawEvent(listenerChannel)
 }

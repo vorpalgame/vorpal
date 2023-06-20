@@ -9,7 +9,8 @@ type AudioEventListener interface {
 type AudioEvent interface {
 	GetAudio() string
 	SetAudio(string) AudioEvent
-	IsPlaying() bool
+	IsStop() bool
+	IsPlay() bool
 	Play() AudioEvent
 	Stop() AudioEvent
 }
@@ -33,8 +34,12 @@ func (e *audioEvent) GetAudio() string {
 	return e.audio
 }
 
-func (e *audioEvent) IsPlaying() bool {
+func (e *audioEvent) IsPlay() bool {
 	return e.play
+}
+
+func (e *audioEvent) IsStop() bool {
+	return !e.play
 }
 
 func (e *audioEvent) Play() AudioEvent {
