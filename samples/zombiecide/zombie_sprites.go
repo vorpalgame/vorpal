@@ -86,6 +86,7 @@ func (s *walkingZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseE
 			s.loop()
 		} else {
 			zReturn = doTransition(s, s.idleZombie)
+			s.framesIdle = 0
 		}
 	}
 	return zReturn
@@ -128,7 +129,6 @@ func (s *idleZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEven
 	return zReturn
 }
 
-// TODO Move calcs of point/flip to the zombie sprites
 func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
 	var zReturn ZombieSprite = s
 	doSendAudio(s)
