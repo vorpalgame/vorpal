@@ -22,6 +22,7 @@ type attackZombie struct {
 
 type ZombieSprite interface {
 	SpriteController
+	RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, p Point, flipHorizontal bool) ZombieSprite
 }
 
 func NewWalkingZombie() ZombieSprite {
@@ -52,33 +53,37 @@ func getZombieAudioTemplate(name string) string {
 	return "samples/resources/zombiecide/" + name + ".mp3"
 }
 
-func (s *walkingZombie) RunSprite(drawEvent bus.DrawEvent, p Point, flipHorizontal bool) {
+func (s *walkingZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, p Point, flipHorizontal bool) ZombieSprite {
 	s.sendAudio()
 	s.renderImage(drawEvent, p, flipHorizontal)
 	s.incrementFrame()
 	s.loop()
+	return s
 }
 
 // Attack zombie is on left mouse down so a bit more sensitive and we don't want to do on frame number.
-func (s *attackZombie) RunSprite(drawEvent bus.DrawEvent, p Point, flipHorizontal bool) {
+func (s *attackZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, p Point, flipHorizontal bool) ZombieSprite {
 	bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.audioFile).Play())
 	s.renderImage(drawEvent, p, flipHorizontal)
 	s.incrementFrame()
 	s.noLoop()
+	return s
 }
 
-func (s *idleZombie) RunSprite(drawEvent bus.DrawEvent, p Point, flipHorizontal bool) {
+func (s *idleZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, p Point, flipHorizontal bool) ZombieSprite {
 	s.sendAudio()
 	s.renderImage(drawEvent, p, flipHorizontal)
 	s.incrementFrame()
 	s.loop()
+	return s
 }
 
-func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, p Point, flipHorizontal bool) {
+func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, p Point, flipHorizontal bool) ZombieSprite {
 	s.sendAudio()
 	s.renderImage(drawEvent, p, flipHorizontal)
 	s.incrementFrame()
 	s.noLoop()
+	return s
 }
 
 func (s *spriteControllerData) loop() {

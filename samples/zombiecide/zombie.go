@@ -10,7 +10,7 @@ type Zombie interface {
 }
 type zombie struct {
 	currentLocation                         Point
-	walk, dead, idle, attack, currentSprite SpriteController
+	walk, dead, idle, attack, currentSprite ZombieSprite
 	numberIdle                              int
 }
 
@@ -25,8 +25,9 @@ func NewZombie() Zombie {
 // It is metadata for the actual rendering by the engine.
 
 // Move functionality into actual zombie run methods for less global control...
+// The sprite controllers can be state machines that switch without this global knowledge.
 func (z *zombie) RunZombie(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
-	var sprite SpriteController
+	var sprite ZombieSprite
 	point := z.calculateMove(mouseEvent)
 	flipHorizontal := mouseEvent.GetX() < z.currentLocation.GetX()
 	if mouseEvent.LeftButton().IsDown() {
@@ -49,8 +50,9 @@ func (z *zombie) RunZombie(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
 		z.currentSprite.StopSprite()
 	}
 	z.currentSprite = sprite
-
-	z.currentSprite.RunSprite(drawEvent, z.currentLocation, flipHorizontal)
+	//Builder pattern so we can start moving behavior into the sprites to transition
+	//instead of using the if/else above...
+	z.currentSprite = z.currentSprite.RunSprite(drawEvent, mouseEvent, z.currentLocation, flipHorizontal)
 }
 
 // TODO The calcs are using the upper left for location relative to image and that probably isn't desired.

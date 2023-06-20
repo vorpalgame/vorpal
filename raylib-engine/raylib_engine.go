@@ -38,7 +38,6 @@ func (e *engine) Start() {
 
 	//TODO We can check for id changes before doing caching...
 	for !rl.WindowShouldClose() {
-		rl.ClearBackground(rl.RayWhite)
 
 		e.sendMouseEvents()
 		e.sendKeyEvents()
@@ -58,6 +57,7 @@ func (e *engine) Start() {
 		}
 
 		rl.BeginDrawing()
+		//rl.ClearBackground(rl.RayWhite)
 		rl.DrawTexture(e.currentTexture, 0, 0, rl.RayWhite)
 		rl.EndDrawing()
 
