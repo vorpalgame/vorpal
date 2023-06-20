@@ -6,7 +6,6 @@ type DrawEventListener interface {
 	OnDrawEvent(drawChannel <-chan DrawEvent)
 }
 
-//TODO remove the ids...
 type DrawEvent interface {
 	GetImageLayers() []ImageLayer
 	AddImageLayer(imgLayer ImageLayer)
