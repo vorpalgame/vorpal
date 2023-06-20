@@ -87,9 +87,7 @@ func (c *controller) GetAudioEvent() AudioEvent {
 }
 
 func (c *controller) GetTextEvent() TextEvent {
-	temp := c.textEvent
-	c.textEvent = nil
-	return temp
+	return c.textEvent
 }
 func (c *controller) GetKeysRegistrationEvent() KeysRegistrationEvent {
 	return c.keysRegistrationEvent

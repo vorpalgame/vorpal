@@ -37,13 +37,15 @@ func Init() {
 	//TODO We need config probably through JSON file when prototyping is complete.
 	zombies.background = bus.NewImageLayer("samples/resources/zombiecide/background.png", 0, 0, 1920, 1080)
 	zombies.mouseEvent = nil
-
+	//TODO text event is flickering...
+	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Henry follows mouse pointer. \nLeft Mouse Button to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.").SetX(1200).SetY(100)
+	vbus.SendTextEvent(textEvent)
 	for {
 		if zombies.mouseEvent != nil {
 			evt := bus.NewDrawEvent()
 			evt.AddImageLayer(zombies.background)
-			zombies.zombie = zombies.zombie.RunSprite(evt, zombies.mouseEvent)
 
+			zombies.zombie = zombies.zombie.RunSprite(evt, zombies.mouseEvent)
 			time.Sleep(20 * time.Millisecond)
 		}
 

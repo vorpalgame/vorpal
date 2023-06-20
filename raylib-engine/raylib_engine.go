@@ -36,7 +36,6 @@ func (e *engine) Start() {
 	rl.SetTargetFPS(60)
 	rl.InitAudioDevice()
 
-	//TODO We can check for id changes before doing caching...
 	for !rl.WindowShouldClose() {
 
 		e.sendMouseEvents()
@@ -55,9 +54,9 @@ func (e *engine) Start() {
 			e.cache.CacheFonts(textEvt)
 			e.renderText(textEvt)
 		}
-		rl.ClearBackground(rl.RayWhite)
-		rl.BeginDrawing()
 
+		rl.BeginDrawing()
+		rl.ClearBackground(rl.RayWhite)
 		rl.DrawTexture(e.currentTexture, 0, 0, rl.RayWhite)
 		rl.EndDrawing()
 
