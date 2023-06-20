@@ -40,16 +40,16 @@ func getZombieAudioTemplate(name string) string {
 	return "samples/resources/zombiecide/" + name + ".mp3"
 }
 
-func doTransition(currentState, nextState ZombieSprite) ZombieSprite {
-	currentState.Stop()
-	nextState.SetCurrentLocation(currentState.GetCurrentLocation())
+func (s *spriteControllerData) doTransition(nextState ZombieSprite) ZombieSprite {
+	s.Stop()
+	nextState.SetCurrentLocation(s.GetCurrentLocation())
 	return nextState
 }
 
-func doSendAudio(currentState ZombieSprite) {
-	if !currentState.IsStarted() {
-		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(currentState.GetAudioFile()).Play())
-		currentState.Start()
+func (s *spriteControllerData) doSendAudio() {
+	if !s.IsStarted() {
+		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.GetAudioFile()).Play())
+		s.Start()
 	}
 }
 

@@ -19,7 +19,7 @@ func newDeadZombie() DeadZombie {
 
 func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
 	var zReturn ZombieSprite = s
-	doSendAudio(s)
+	s.doSendAudio()
 	point := s.calculateMove(mouseEvent)
 
 	if doIdleCount(0, point) > 0 {
@@ -27,7 +27,7 @@ func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEven
 		s.incrementFrame()
 		s.noLoop()
 	} else {
-		zReturn = doTransition(s, s.walkingZombie)
+		zReturn = s.doTransition(s.walkingZombie)
 	}
 	return zReturn
 }
