@@ -6,9 +6,36 @@ import (
 	"github.com/vorpalgame/vorpal/bus"
 )
 
+type zombieData struct {
+	spriteControllerData
+	framesIdle int32
+}
+
 type ZombieSprite interface {
 	SpriteController
 	RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite
+	getIdleFrames() int32
+	updateIdleCount(p Point) int32
+}
+
+func (s *zombieData) doTransition(nextState ZombieSprite) ZombieSprite {
+	s.Stop()
+	s.framesIdle = 0
+	nextState.SetCurrentLocation(s.GetCurrentLocation())
+	return nextState
+}
+
+func (s *zombieData) getIdleFrames() int32 {
+	return s.framesIdle
+}
+
+func (s *zombieData) updateIdleCount(point Point) int32 {
+	if point.GetY() == 0 && point.GetX() == 0 {
+		s.framesIdle++
+	} else {
+		s.framesIdle = 0
+	}
+	return s.framesIdle
 }
 
 // Probably a better factory pattern for this in idiomatic Golang
@@ -28,8 +55,12 @@ func NewZombie() ZombieSprite {
 	return walking
 }
 
-func newSpriteControllerData(x, y, width, height int32, name string) spriteControllerData {
-	return spriteControllerData{1, x, y, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name), &point{600, 600}, false}
+func newZombieData(x, y, width, height int32, name string) zombieData {
+	return zombieData{newSpriteControllerData(x, y, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name)), 0}
+}
+
+func newSpriteControllerData(x, y, width, height int32, imageTemplate, audioFile string) spriteControllerData {
+	return spriteControllerData{1, x, y, width, height, imageTemplate, audioFile, &point{600, 600}, false}
 }
 
 func getZombieImageTemplate(name string) string {
@@ -38,26 +69,4 @@ func getZombieImageTemplate(name string) string {
 
 func getZombieAudioTemplate(name string) string {
 	return "samples/resources/zombiecide/" + name + ".mp3"
-}
-
-func (s *spriteControllerData) doTransition(nextState ZombieSprite) ZombieSprite {
-	s.Stop()
-	nextState.SetCurrentLocation(s.GetCurrentLocation())
-	return nextState
-}
-
-func (s *spriteControllerData) doSendAudio() {
-	if !s.IsStarted() {
-		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.GetAudioFile()).Play())
-		s.Start()
-	}
-}
-
-func doIdleCount(idleCount int32, point Point) int32 {
-	if point.GetY() == 0 && point.GetX() == 0 {
-		idleCount++
-	} else {
-		idleCount = 0
-	}
-	return idleCount
 }

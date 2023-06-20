@@ -3,7 +3,7 @@ package zombiecide
 import "github.com/vorpalgame/vorpal/bus"
 
 type deadZombie struct {
-	spriteControllerData
+	zombieData
 	walkingZombie ZombieSprite
 }
 
@@ -14,7 +14,7 @@ type DeadZombie interface {
 }
 
 func newDeadZombie() DeadZombie {
-	return &deadZombie{newSpriteControllerData(12, 3, 300, 300, "dead"), nil}
+	return &deadZombie{newZombieData(12, 3, 300, 300, "dead"), nil}
 }
 
 func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
@@ -22,7 +22,7 @@ func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEven
 	s.doSendAudio()
 	point := s.calculateMove(mouseEvent)
 
-	if doIdleCount(0, point) > 0 {
+	if s.updateIdleCount(point) > 0 {
 		s.sendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
 		s.incrementFrame()
 		s.noLoop()

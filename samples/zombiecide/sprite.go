@@ -70,6 +70,13 @@ func (s *spriteControllerData) GetCurrentLocation() Point {
 	return s.currentLocation
 }
 
+func (s *spriteControllerData) doSendAudio() {
+	if !s.IsStarted() {
+		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.GetAudioFile()).Play())
+		s.Start()
+	}
+}
+
 // Default behavior...
 func (s *spriteControllerData) Start() SpriteController {
 	s.started = true

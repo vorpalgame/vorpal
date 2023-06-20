@@ -3,10 +3,9 @@ package zombiecide
 import "github.com/vorpalgame/vorpal/bus"
 
 type walkingZombie struct {
-	spriteControllerData
+	zombieData
 	idleZombie   ZombieSprite
 	attackZombie ZombieSprite
-	framesIdle   int32
 }
 
 type WalkingZombie interface {
@@ -16,7 +15,7 @@ type WalkingZombie interface {
 }
 
 func newWalkingZombie() WalkingZombie {
-	return &walkingZombie{newSpriteControllerData(10, 3, 200, 300, "walk"), nil, nil, 0}
+	return &walkingZombie{newZombieData(10, 3, 200, 300, "walk"), nil, nil}
 }
 
 func (s *walkingZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
@@ -26,16 +25,14 @@ func (s *walkingZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseE
 	} else {
 		s.doSendAudio()
 		point := s.calculateMove(mouseEvent)
-		s.framesIdle = doIdleCount(s.framesIdle, point)
 
-		if s.framesIdle < 50 {
+		if s.updateIdleCount(point) < 50 {
 			s.currentLocation.Add(point)
 			s.sendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
 			s.incrementFrame()
 			s.loop()
 		} else {
 			zReturn = s.doTransition(s.idleZombie)
-			s.framesIdle = 0
 		}
 	}
 	return zReturn

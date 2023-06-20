@@ -1,17 +1,14 @@
 package zombiecide
 
 import (
-	"log"
-
 	"github.com/vorpalgame/vorpal/bus"
 )
 
 type idleZombie struct {
-	spriteControllerData
+	zombieData
 	attackZombie  AttackZombie
 	deadZombie    DeadZombie
 	walkingZombie WalkingZombie
-	framesIdle    int32
 }
 
 // TODO Some of the methods for setting shoudl be private to the package.
@@ -23,7 +20,7 @@ type IdleZombie interface {
 }
 
 func newIdleZombie() IdleZombie {
-	return &idleZombie{newSpriteControllerData(15, 3, 200, 300, "idle"), nil, nil, nil, 0}
+	return &idleZombie{newZombieData(15, 3, 200, 300, "idle"), nil, nil, nil}
 }
 
 func (s *idleZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
@@ -33,9 +30,8 @@ func (s *idleZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEven
 	} else {
 		s.doSendAudio()
 		point := s.calculateMove(mouseEvent)
-		s.framesIdle = doIdleCount(s.framesIdle, point)
-		log.Default().Println(s.framesIdle)
-		if s.framesIdle < 150 {
+
+		if s.updateIdleCount(point) < 250 {
 			s.currentLocation.Add(point)
 			s.sendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
 			s.incrementFrame()

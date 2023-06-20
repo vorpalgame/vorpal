@@ -3,7 +3,7 @@ package zombiecide
 import "github.com/vorpalgame/vorpal/bus"
 
 type attackZombie struct {
-	spriteControllerData
+	zombieData
 	walkingZombie ZombieSprite
 }
 
@@ -13,7 +13,7 @@ type AttackZombie interface {
 }
 
 func newAttackZombie() AttackZombie {
-	return &attackZombie{newSpriteControllerData(7, 3, 200, 300, "attack"), nil}
+	return &attackZombie{newZombieData(7, 3, 200, 300, "attack"), nil}
 
 }
 func (s *attackZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
