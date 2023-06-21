@@ -28,14 +28,14 @@ func (s *idleZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEven
 	if mouseEvent.LeftButton().IsDown() {
 		zReturn = s.doTransition(s.attackZombie)
 	} else {
-		s.doSendAudio()
+		s.DoSendAudio()
 		point := s.calculateMove(mouseEvent)
 
 		if s.updateIdleCount(point) < 250 {
 			s.currentLocation.Add(point)
-			s.sendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
-			s.incrementFrame()
-			s.loop()
+			s.SendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
+			s.IncrementFrame()
+			s.Loop()
 		} else {
 			zReturn = s.doTransition(s.deadZombie)
 			s.framesIdle = 0

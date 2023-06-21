@@ -21,10 +21,10 @@ func newAttackZombie() AttackZombie {
 func (s *attackZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
 	var zReturn ZombieSprite = s
 	if mouseEvent.LeftButton().IsDown() {
-		s.doSendAudio()
-		s.sendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
-		s.incrementFrame()
-		s.noLoop()
+		s.DoSendAudio()
+		s.SendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
+		s.IncrementFrame()
+		s.NoLoop()
 	} else {
 		zReturn = s.doTransition(s.walkingZombie)
 	}
