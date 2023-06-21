@@ -4,18 +4,19 @@ import (
 	//"log"
 
 	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/common/sprites"
 )
 
 type zombieData struct {
-	spriteControllerData
+	sprites.SpriteControllerData
 	framesIdle int32
 }
 
 type ZombieSprite interface {
-	SpriteController
+	sprites.SpriteController
 	RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite
 	getIdleFrames() int32
-	updateIdleCount(p Point) int32
+	updateIdleCount(p sprites.Point) int32
 }
 
 func (s *zombieData) doTransition(nextState ZombieSprite) ZombieSprite {
@@ -29,7 +30,7 @@ func (s *zombieData) getIdleFrames() int32 {
 	return s.framesIdle
 }
 
-func (s *zombieData) updateIdleCount(point Point) int32 {
+func (s *zombieData) updateIdleCount(point sprites.Point) int32 {
 	if point.GetY() == 0 && point.GetX() == 0 {
 		s.framesIdle++
 	} else {
@@ -56,11 +57,7 @@ func NewZombie() ZombieSprite {
 }
 
 func newZombieData(x, y, width, height int32, name string) zombieData {
-	return zombieData{newSpriteControllerData(x, y, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name)), 0}
-}
-
-func newSpriteControllerData(x, y, width, height int32, imageTemplate, audioFile string) spriteControllerData {
-	return spriteControllerData{1, x, y, width, height, imageTemplate, audioFile, &point{600, 600}, false}
+	return zombieData{sprites.NewSpriteControllerData(x, y, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name)), 0}
 }
 
 func getZombieImageTemplate(name string) string {

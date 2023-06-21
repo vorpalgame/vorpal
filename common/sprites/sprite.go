@@ -1,4 +1,4 @@
-package zombiecide
+package sprites
 
 import (
 	"fmt"
@@ -18,13 +18,18 @@ type SpriteController interface {
 	IsStarted() bool
 }
 
-type spriteControllerData struct {
+type SpriteControllerData struct {
 	currentFrame, maxFrame, repeatFrame, width, height int32
 	fileTemplate                                       string
 	audioFile                                          string
 	currentLocation                                    Point
 	started                                            bool
 }
+
+func NewSpriteControllerData(x, y, width, height int32, imageTemplate, audioFile string) SpriteControllerData {
+	return SpriteControllerData{1, x, y, width, height, imageTemplate, audioFile, &point{600, 600}, false}
+}
+
 type Point interface {
 	GetX() int32
 	GetY() int32
@@ -48,29 +53,29 @@ func (p *point) Add(addPoint Point) {
 	p.y += addPoint.GetY()
 }
 
-func (s *spriteControllerData) IsStarted() bool {
+func (s *SpriteControllerData) IsStarted() bool {
 	return s.started
 }
-func (s *spriteControllerData) SetImageTemplate(fileTemplate string) SpriteController {
+func (s *SpriteControllerData) SetImageTemplate(fileTemplate string) SpriteController {
 	s.fileTemplate = fileTemplate
 	return s
 }
-func (s *spriteControllerData) GetAudioFile() string {
+func (s *SpriteControllerData) GetAudioFile() string {
 	return s.audioFile
 }
-func (s *spriteControllerData) SetAudioFile(fileName string) SpriteController {
+func (s *SpriteControllerData) SetAudioFile(fileName string) SpriteController {
 	s.audioFile = fileName
 	return s
 }
-func (s *spriteControllerData) SetCurrentLocation(point Point) SpriteController {
+func (s *SpriteControllerData) SetCurrentLocation(point Point) SpriteController {
 	s.currentLocation = point
 	return s
 }
-func (s *spriteControllerData) GetCurrentLocation() Point {
+func (s *SpriteControllerData) GetCurrentLocation() Point {
 	return s.currentLocation
 }
 
-func (s *spriteControllerData) doSendAudio() {
+func (s *SpriteControllerData) doSendAudio() {
 	if !s.IsStarted() {
 		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.GetAudioFile()).Play())
 		s.Start()
@@ -78,31 +83,31 @@ func (s *spriteControllerData) doSendAudio() {
 }
 
 // Default behavior...
-func (s *spriteControllerData) Start() SpriteController {
+func (s *SpriteControllerData) Start() SpriteController {
 	s.started = true
 	return s
 }
 
-func (s *spriteControllerData) Stop() SpriteController {
+func (s *SpriteControllerData) Stop() SpriteController {
 	bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.audioFile).Stop())
 	s.currentFrame = 1
 	s.started = false
 	return s
 }
 
-func (s *spriteControllerData) loop() {
+func (s *SpriteControllerData) Loop() {
 	if s.currentFrame+1 >= s.maxFrame {
 		s.currentFrame = 1
 	}
 }
 
-func (s *spriteControllerData) noLoop() {
+func (s *SpriteControllerData) NoLoop() {
 	if s.currentFrame+1 >= s.maxFrame {
 		s.currentFrame = s.maxFrame
 	}
 }
 
-func (s *spriteControllerData) incrementFrame() {
+func (s *SpriteControllerData) IncrementFrame() {
 	s.repeatFrame++
 	if s.repeatFrame > 4 {
 		s.currentFrame++
@@ -110,7 +115,7 @@ func (s *spriteControllerData) incrementFrame() {
 	}
 
 }
-func (s *spriteControllerData) sendDrawEvent(drawEvent bus.DrawEvent, location Point, flip bool) {
+func (s *SpriteControllerData) sendDrawEvent(drawEvent bus.DrawEvent, location Point, flip bool) {
 
 	layer := bus.NewImageLayer(fmt.Sprintf(s.fileTemplate, s.currentFrame), location.GetX(), location.GetY(), s.width, s.height)
 
@@ -120,7 +125,7 @@ func (s *spriteControllerData) sendDrawEvent(drawEvent bus.DrawEvent, location P
 }
 
 // TODO The calcs are using the upper left for location relative to image and that probably isn't desired.
-func (z *spriteControllerData) calculateMove(evt bus.MouseEvent) Point {
+func (z *SpriteControllerData) calculateMove(evt bus.MouseEvent) Point {
 	x := int32(-4)
 	y := int32(-2)
 	point := point{x, y}
@@ -149,6 +154,6 @@ func (z *spriteControllerData) calculateMove(evt bus.MouseEvent) Point {
 	return &point
 }
 
-func (z *spriteControllerData) flipHorizontal(mouseEvent bus.MouseEvent) bool {
+func (z *SpriteControllerData) flipHorizontal(mouseEvent bus.MouseEvent) bool {
 	return mouseEvent.GetX() < z.currentLocation.GetX()
 }

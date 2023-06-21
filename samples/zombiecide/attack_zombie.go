@@ -1,6 +1,8 @@
 package zombiecide
 
-import "github.com/vorpalgame/vorpal/bus"
+import (
+	"github.com/vorpalgame/vorpal/bus"
+)
 
 type attackZombie struct {
 	zombieData
