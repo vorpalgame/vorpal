@@ -6,16 +6,14 @@ import (
 
 type attackZombie struct {
 	zombieData
-	walkingZombie ZombieSprite
 }
 
 type AttackZombie interface {
 	ZombieSprite
-	SetWalkingZombie(zombie WalkingZombie)
 }
 
-func newAttackZombie() AttackZombie {
-	return &attackZombie{newZombieData(7, 3, 200, 300, "attack"), nil}
+func newAttackZombie(sprites ZombieSprites) AttackZombie {
+	return &attackZombie{newZombieData(7, 3, 200, 300, "attack", sprites)}
 
 }
 func (s *attackZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
@@ -26,11 +24,7 @@ func (s *attackZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEv
 		s.IncrementFrame()
 		s.NoLoop()
 	} else {
-		zReturn = s.doTransition(s.walkingZombie)
+		zReturn = s.doTransition(s.sprites.GetWalkingZombie())
 	}
 	return zReturn
-}
-
-func (s *attackZombie) SetWalkingZombie(zombie WalkingZombie) {
-	s.walkingZombie = zombie
 }

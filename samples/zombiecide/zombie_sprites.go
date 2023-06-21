@@ -9,6 +9,7 @@ import (
 type zombieData struct {
 	SpriteData
 	framesIdle int32
+	sprites    ZombieSprites
 }
 
 type ZombieSprite interface {
@@ -16,6 +17,19 @@ type ZombieSprite interface {
 	RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite
 	getIdleFrames() int32
 	updateIdleCount(p Point) int32
+}
+
+type zombieSprites struct {
+	walkingZombie WalkingZombie
+	deadZombie    DeadZombie
+	idleZombie    IdleZombie
+	attackZombie  AttackZombie
+}
+type ZombieSprites interface {
+	GetAttackZombie() ZombieSprite
+	GetDeadZombie() ZombieSprite
+	GetIdleZombie() ZombieSprite
+	GetWalkingZombie() ZombieSprite
 }
 
 func (s *zombieData) doTransition(nextState ZombieSprite) ZombieSprite {
@@ -41,22 +55,31 @@ func (s *zombieData) updateIdleCount(point Point) int32 {
 // Probably a better factory pattern for this in idiomatic Golang
 func NewZombie() ZombieSprite {
 
-	walking := newWalkingZombie()
-	dead := newDeadZombie()
-	idle := newIdleZombie()
-	attack := newAttackZombie()
-
-	attack.SetWalkingZombie(walking)
-	dead.SetWalkingZombie(walking)
-	walking.SetAttackZombie(attack).SetIdleZombie(idle)
-	idle.SetDeadZombie(dead).SetWalkingZombie(walking).SetAttackZombie(attack)
+	var sprites = zombieSprites{}
+	sprites.walkingZombie = newWalkingZombie(&sprites)
+	sprites.deadZombie = newDeadZombie(&sprites)
+	sprites.idleZombie = newIdleZombie(&sprites)
+	sprites.attackZombie = newAttackZombie(&sprites)
 
 	//Start walking...
-	return walking
+	return sprites.walkingZombie
 }
 
-func newZombieData(x, y, width, height int32, name string) zombieData {
-	return zombieData{NewSpriteData(x, y, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name)), 0}
+func (zs zombieSprites) GetAttackZombie() ZombieSprite {
+	return zs.attackZombie
+}
+
+func (zs zombieSprites) GetDeadZombie() ZombieSprite {
+	return zs.deadZombie
+}
+func (zs zombieSprites) GetIdleZombie() ZombieSprite {
+	return zs.idleZombie
+}
+func (zs zombieSprites) GetWalkingZombie() ZombieSprite {
+	return zs.walkingZombie
+}
+func newZombieData(x, y, width, height int32, name string, sprites ZombieSprites) zombieData {
+	return zombieData{NewSpriteData(x, y, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name)), 0, sprites}
 }
 
 func getZombieImageTemplate(name string) string {

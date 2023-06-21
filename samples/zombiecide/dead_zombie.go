@@ -4,17 +4,15 @@ import "github.com/vorpalgame/vorpal/bus"
 
 type deadZombie struct {
 	zombieData
-	walkingZombie ZombieSprite
 }
 
 //TODO Some of the methods for setting shoudl be private to the package.
 type DeadZombie interface {
 	ZombieSprite
-	SetWalkingZombie(zombie WalkingZombie) DeadZombie
 }
 
-func newDeadZombie() DeadZombie {
-	return &deadZombie{newZombieData(12, 3, 300, 300, "dead"), nil}
+func newDeadZombie(sprites ZombieSprites) DeadZombie {
+	return &deadZombie{newZombieData(12, 3, 300, 300, "dead", sprites)}
 }
 
 func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
@@ -27,12 +25,7 @@ func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEven
 		s.IncrementFrame()
 		s.NoLoop()
 	} else {
-		zReturn = s.doTransition(s.walkingZombie)
+		zReturn = s.doTransition(s.sprites.GetWalkingZombie())
 	}
 	return zReturn
-}
-
-func (s *deadZombie) SetWalkingZombie(zombie WalkingZombie) DeadZombie {
-	s.walkingZombie = zombie
-	return s
 }
