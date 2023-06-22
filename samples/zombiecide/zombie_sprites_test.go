@@ -38,7 +38,7 @@ func TestWalkingToIdleZombie(t *testing.T) {
 
 	//Sit idle for enough frames without triggering transition.
 	z = doNoMouseMove(mouseEvent, 49, z)
-	assert.IsType(t, &walkingZombie{}, z, "Should still be in walking state")
+	assertWalkingState(t, z)
 
 	assert.True(t, z.GetFrameData().GetIdleFrames() == 49)
 	assert.NotNil(t, data.sprites.GetIdleZombie(), "Mock not available for idle transition")
