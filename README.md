@@ -50,7 +50,7 @@ type ImageLayer interface {
 ```
 The game logic only needs to send this event when something about the scene changes. Since it is only sending a few strings and integers, this isn't a lot memory traffic. The game engine loads the images in whatever way makes sense. For example, Raylib has an rl.Image that it uses instead of the standard Golang image class. The game logic is simply passing the name of the resource so is decoupled from the back end implementation. As a design philosophy, the aim is to keep the front end events and vendor neutral to a great extent. If someone created an ebiten or SDL2 or other back end implemetnation, the front end wouldn't change. Any impedance mismatch would then be localize to the Golang implementation of the engine peer class. The bus and the events would be the dividing line. 
 
-In the current Raylib implemetation, for example, when a DrawEvent is received, the back end Raylib peer class checks to see if there's a current DrawEvent and, if so, it renders all the image layers specified and then renders the TextEvent on that. That image is converted to a texture and cached. That texture is always used in draw by Raylib until a new DrawEvent or TextEvent triggers a recomposition. 
+In the current Raylib implemetation, for example, when a DrawEvent is received, the back end Raylib peer class checks renders all the image layers specified and then renders the TextEvent onto it. That image is converted to a texture and cached. That texture is always used in draw by Raylib until a new DrawEvent or TextEvent triggers a recomposition. 
 
 ### TextEvent
 ```
