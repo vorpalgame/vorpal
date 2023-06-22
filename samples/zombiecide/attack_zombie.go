@@ -13,8 +13,9 @@ type AttackZombie interface {
 }
 
 func newAttackZombie(sprites ZombieSprites) AttackZombie {
-	return &attackZombie{newZombieData(7, 3, 200, 300, "attack", sprites)}
-
+	zombie := &attackZombie{newZombieData(7, 3, 200, 300, "attack", sprites)}
+	zombie.GetFrameData().SetToLoop(true)
+	return zombie
 }
 
 func (currentZombie *attackZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
@@ -22,15 +23,13 @@ func (currentZombie *attackZombie) GetState(mouseEvent bus.MouseEvent) ZombieSpr
 	if mouseEvent.LeftButton().IsDown() {
 		return currentZombie
 	} else {
-		return currentZombie.doTransition(currentZombie.sprites.GetWalkingZombie())
+		return currentZombie.Transition(currentZombie.sprites.GetWalkingZombie())
 	}
 }
 
 func (currentZombie *attackZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
-
-	currentZombie.DoSendAudio()
+	currentZombie.RunAudio()
 	currentZombie.SendDrawEvent(drawEvent, currentZombie.currentLocation, currentZombie.flipHorizontal(mouseEvent))
-	currentZombie.IncrementFrame()
-	currentZombie.NoLoop()
+	currentZombie.GetFrameData().Increment()
 
 }

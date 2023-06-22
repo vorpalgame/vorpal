@@ -6,18 +6,25 @@ import (
 	"github.com/vorpalgame/vorpal/bus"
 )
 
+// TODO More general purpose functionality and duplicates can be pushed
+// to sprite. TBD
 type zombieData struct {
 	SpriteData
-	framesIdle int32
-	sprites    ZombieSprites
+	sprites ZombieSprites
 }
 
 type ZombieSprite interface {
 	Sprite
 	GetState(mouseEvent bus.MouseEvent) ZombieSprite
 	RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent)
-	getIdleFrames() int32
-	updateIdleCount(p Point) int32
+	Transition(sprite ZombieSprite) ZombieSprite
+}
+
+func (s *zombieData) Transition(nextState ZombieSprite) ZombieSprite {
+	s.Stop()
+	nextState.SetCurrentLocation(s.GetCurrentLocation())
+	nextState.Init()
+	return nextState
 }
 
 // TODO Would be better with a type keyed map but
@@ -61,8 +68,8 @@ func (zs zombieSprites) GetIdleZombie() ZombieSprite {
 func (zs zombieSprites) GetWalkingZombie() ZombieSprite {
 	return zs.walkingZombie
 }
-func newZombieData(x, y, width, height int32, name string, sprites ZombieSprites) zombieData {
-	return zombieData{NewSpriteData(x, y, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name)), 0, sprites}
+func newZombieData(maxFrames, repeatPerFrame, width, height int32, name string, sprites ZombieSprites) zombieData {
+	return zombieData{NewSpriteData(maxFrames, repeatPerFrame, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name)), sprites}
 }
 
 func getZombieImageTemplate(name string) string {
@@ -71,24 +78,4 @@ func getZombieImageTemplate(name string) string {
 
 func getZombieAudioTemplate(name string) string {
 	return "samples/resources/zombiecide/" + name + ".mp3"
-}
-
-func (s *zombieData) doTransition(nextState ZombieSprite) ZombieSprite {
-	s.Stop()
-	s.framesIdle = 0
-	nextState.SetCurrentLocation(s.GetCurrentLocation())
-	return nextState
-}
-
-func (s *zombieData) getIdleFrames() int32 {
-	return s.framesIdle
-}
-
-func (s *zombieData) updateIdleCount(point Point) int32 {
-	if point.GetY() == 0 && point.GetX() == 0 {
-		s.framesIdle++
-	} else {
-		s.framesIdle = 0
-	}
-	return s.framesIdle
 }

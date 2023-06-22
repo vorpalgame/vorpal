@@ -40,14 +40,14 @@ func Init() {
 	//TODO text event is flickering...
 	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Henry follows mouse pointer. \nLeft Mouse Button to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.").SetX(1200).SetY(100)
 	vbus.SendTextEvent(textEvent)
+
 	for {
 		if zombies.mouseEvent != nil {
 
 			//Execute to send image and sound
-			zombies.zombie.RunSprite(bus.NewDrawEvent().AddImageLayer(zombies.background), zombies.mouseEvent)
-			//Get new or same state
-			zombies.zombie = zombies.zombie.GetState(zombies.mouseEvent)
 
+			zombies.zombie.RunSprite(bus.NewDrawEvent().AddImageLayer(zombies.background), zombies.mouseEvent)
+			zombies.zombie = zombies.zombie.GetState(zombies.mouseEvent)
 			time.Sleep(20 * time.Millisecond)
 		}
 

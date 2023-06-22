@@ -11,29 +11,31 @@ type WalkingZombie interface {
 }
 
 func newWalkingZombie(sprites ZombieSprites) WalkingZombie {
-	return &walkingZombie{newZombieData(10, 3, 200, 300, "walk", sprites)}
+	zombie := &walkingZombie{newZombieData(10, 3, 200, 300, "walk", sprites)}
+	zombie.GetFrameData().SetToLoop(true)
+	return zombie
 }
 func (currentZombie *walkingZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
 
 	point := currentZombie.calculateMove(mouseEvent)
 	currentZombie.currentLocation.Add(point)
 	if mouseEvent.LeftButton().IsDown() {
-		return currentZombie.doTransition(currentZombie.sprites.GetAttackZombie())
+		return currentZombie.Transition(currentZombie.sprites.GetAttackZombie())
 	} else {
-		if currentZombie.updateIdleCount(point) < 50 {
+		if currentZombie.GetFrameData().UpdateIdleFrames(point) < 50 {
 			return currentZombie
 		} else {
-			return currentZombie.doTransition(currentZombie.sprites.GetIdleZombie())
+			return currentZombie.Transition(currentZombie.sprites.GetIdleZombie())
 		}
 	}
 
 }
 
-func (s *walkingZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
+func (currentZombie *walkingZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
 
-	s.DoSendAudio()
-	s.SendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
-	s.IncrementFrame()
-	s.Loop()
+	currentZombie.RunAudio()
+
+	currentZombie.SendDrawEvent(drawEvent, currentZombie.currentLocation, currentZombie.flipHorizontal(mouseEvent))
+	currentZombie.GetFrameData().Increment()
 
 }

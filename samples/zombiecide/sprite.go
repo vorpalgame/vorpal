@@ -7,30 +7,103 @@ import (
 	"github.com/vorpalgame/vorpal/bus"
 )
 
+func NewSpriteData(maxFrames, repeatPerFrame, width, height int32, imageTemplate, audioFile string) SpriteData {
+	return SpriteData{width, height, imageTemplate, audioFile, &point{600, 600}, false, false, &frameData{1, maxFrames, repeatPerFrame, 0, 0, false}}
+}
+
 // Sprite interface/structure can be used for any type.
 type Sprite interface {
-	SetAudioFile(fileName string) Sprite
-	GetAudioFile() string
-	DoSendAudio()
-	SendDrawEvent(drawEvent bus.DrawEvent, location Point, flip bool)
-	SetImageTemplate(fileTemplate string) Sprite
-	SetCurrentLocation(point Point) Sprite
-	GetCurrentLocation() Point
-	Start() Sprite
+	Init() Sprite
 	Stop() Sprite
 	IsStarted() bool
+
+	RunAudio()
+	StopAudio()
+	IsAudioRunning() bool
+
+	GetFrameData() FrameData
+
+	SetAudioFile(fileName string) Sprite
+	GetAudioFile() string
+	SetImageTemplate(fileTemplate string) Sprite
+	SetCurrentLocation(point Point) Sprite
+
+	SendAudioEvent(audioEvent bus.AudioEvent)
+	SendDrawEvent(drawEvent bus.DrawEvent, location Point, flip bool)
+	GetCurrentLocation() Point
 }
 
 type SpriteData struct {
-	currentFrame, maxFrame, repeatFrame, width, height int32
-	fileTemplate                                       string
-	audioFile                                          string
-	currentLocation                                    Point
-	started                                            bool
+	width, height   int32
+	fileTemplate    string
+	audioFile       string
+	currentLocation Point
+	started         bool
+	audioRunning    bool
+	frameData       FrameData
 }
 
-func NewSpriteData(x, y, width, height int32, imageTemplate, audioFile string) SpriteData {
-	return SpriteData{1, x, y, width, height, imageTemplate, audioFile, &point{600, 600}, false}
+type FrameData interface {
+	GetCurrentFrame() int32
+	GetMaxFrame() int32
+	SetToLoop(bool)
+	UpdateIdleFrames(point Point) int32
+	IsLoop() bool
+	Increment()
+	Reset()
+}
+type frameData struct {
+	currentFrame, maxFrame, repeatPerFrame, currentFrameRepeats, idleFrames int32
+	loop                                                                    bool
+}
+
+func (fd *frameData) Increment() {
+	fd.currentFrameRepeats++
+	if fd.currentFrameRepeats > fd.repeatPerFrame {
+		fd.currentFrameRepeats = 0
+		fd.currentFrame++
+		if fd.currentFrame > fd.maxFrame {
+
+			if fd.IsLoop() {
+				fd.currentFrame = 1
+			} else {
+				fd.currentFrame = fd.maxFrame
+			}
+		}
+	}
+}
+
+func (fd *frameData) UpdateIdleFrames(point Point) int32 {
+	if point.GetY() == 0 && point.GetX() == 0 {
+		fd.idleFrames++
+	} else {
+		fd.idleFrames = 0
+	}
+	return fd.idleFrames
+}
+
+func (fd *frameData) GetIdleFrames() int32 {
+	return fd.idleFrames
+}
+func (fd *frameData) SetToLoop(repeat bool) {
+	fd.loop = repeat
+}
+
+func (fd *frameData) IsLoop() bool {
+	return fd.loop
+}
+
+func (fd *frameData) Reset() {
+	fd.currentFrame = 1
+	fd.idleFrames = 0
+}
+
+func (fd *frameData) GetCurrentFrame() int32 {
+	return fd.currentFrame
+}
+
+func (fd *frameData) GetMaxFrame() int32 {
+	return fd.maxFrame
 }
 
 type Point interface {
@@ -55,7 +128,9 @@ func (p *point) Add(addPoint Point) {
 	p.x += addPoint.GetX()
 	p.y += addPoint.GetY()
 }
-
+func (s *SpriteData) GetFrameData() FrameData {
+	return s.frameData
+}
 func (s *SpriteData) IsStarted() bool {
 	return s.started
 }
@@ -78,49 +153,44 @@ func (s *SpriteData) GetCurrentLocation() Point {
 	return s.currentLocation
 }
 
-func (s *SpriteData) DoSendAudio() {
-	if !s.IsStarted() {
-		s.Start()
-		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.GetAudioFile()).Play())
+// Should get better name
+func (s *SpriteData) RunAudio() {
+	if !s.audioRunning {
+		s.audioRunning = true
+		s.SendAudioEvent(bus.NewAudioEvent(s.GetAudioFile()).Play())
 	}
+
+}
+func (s *SpriteData) StopAudio() {
+	s.audioRunning = false
+	s.SendAudioEvent(bus.NewAudioEvent(s.GetAudioFile()).Stop())
+}
+func (s *SpriteData) IsAudioRunning() bool {
+	return s.audioRunning
 }
 
-// Default behavior...
-func (s *SpriteData) Start() Sprite {
-	s.started = true
+func (s *SpriteData) Init() Sprite {
+	if !s.IsStarted() {
+		s.frameData.Reset()
+		s.started = true
+	}
 	return s
 }
 
 func (s *SpriteData) Stop() Sprite {
-	bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.GetAudioFile()).Stop())
-	s.currentFrame = 1
+	s.frameData.Reset()
+	s.StopAudio()
 	s.started = false
 	return s
 }
 
-func (s *SpriteData) Loop() {
-	if s.currentFrame+1 >= s.maxFrame {
-		s.currentFrame = 1
-	}
+func (s *SpriteData) SendAudioEvent(audioEvent bus.AudioEvent) {
+	bus.GetVorpalBus().SendAudioEvent(audioEvent)
 }
 
-func (s *SpriteData) NoLoop() {
-	if s.currentFrame+1 >= s.maxFrame {
-		s.currentFrame = s.maxFrame
-	}
-}
-
-func (s *SpriteData) IncrementFrame() {
-	s.repeatFrame++
-	if s.repeatFrame > 4 {
-		s.currentFrame++
-		s.repeatFrame = 0
-	}
-
-}
 func (s *SpriteData) SendDrawEvent(drawEvent bus.DrawEvent, location Point, flip bool) {
 
-	layer := bus.NewImageLayer(fmt.Sprintf(s.fileTemplate, s.currentFrame), location.GetX(), location.GetY(), s.width, s.height)
+	layer := bus.NewImageLayer(fmt.Sprintf(s.fileTemplate, s.frameData.GetCurrentFrame()), location.GetX(), location.GetY(), s.width, s.height)
 
 	layer.SetFlipHorizontal(flip)
 	drawEvent.AddImageLayer(layer)
@@ -128,6 +198,8 @@ func (s *SpriteData) SendDrawEvent(drawEvent bus.DrawEvent, location Point, flip
 }
 
 // TODO The calcs are using the upper left for location relative to image and that probably isn't desired.
+// values of x,y, and the width of window should be in configuration data in struct so they can be varied...
+// Clean up required...
 func (z *SpriteData) calculateMove(evt bus.MouseEvent) Point {
 	x := int32(-4)
 	y := int32(-2)
