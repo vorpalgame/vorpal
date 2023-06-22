@@ -86,8 +86,7 @@ func TestAttackZombie(t *testing.T) {
 func verifyAttackTransition(currentState ZombieSprite, t *testing.T) {
 	mouseEvent := createLeftDownMouseEvent()
 	nextState := currentState.GetState(mouseEvent)
-	assert.NotNil(t, nextState, "Failed to get state.")
-	assert.IsType(t, &attackZombie{}, nextState, "Didn't get attack type back")
+	assertAttackState(t, nextState)
 
 }
 func doNoMouseMove(mouseEvent bus.MouseEvent, count int, currentState ZombieSprite) ZombieSprite {
