@@ -31,6 +31,7 @@ type Sprite interface {
 	SendAudioEvent(audioEvent bus.AudioEvent)
 	SendDrawEvent(drawEvent bus.DrawEvent, location Point, flip bool)
 	GetCurrentLocation() Point
+	RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent)
 }
 
 type SpriteData struct {
@@ -195,6 +196,13 @@ func (s *SpriteData) SendDrawEvent(drawEvent bus.DrawEvent, location Point, flip
 	layer.SetFlipHorizontal(flip)
 	drawEvent.AddImageLayer(layer)
 	bus.GetVorpalBus().SendDrawEvent(drawEvent)
+}
+
+func (s *SpriteData) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
+	s.RunAudio()
+
+	s.SendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
+	s.GetFrameData().Increment()
 }
 
 // TODO The calcs are using the upper left for location relative to image and that probably isn't desired.

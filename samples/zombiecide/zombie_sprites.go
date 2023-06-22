@@ -16,7 +16,6 @@ type zombieData struct {
 type ZombieSprite interface {
 	Sprite
 	GetState(mouseEvent bus.MouseEvent) ZombieSprite
-	RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent)
 	Transition(sprite ZombieSprite) ZombieSprite
 }
 
@@ -30,10 +29,10 @@ func (s *zombieData) Transition(nextState ZombieSprite) ZombieSprite {
 // TODO Would be better with a type keyed map but
 // that appears problematic in Golang...TBD...
 type zombieSprites struct {
-	walkingZombie WalkingZombie
-	deadZombie    DeadZombie
-	idleZombie    IdleZombie
-	attackZombie  AttackZombie
+	walking WalkingZombie
+	dead    DeadZombie
+	idle    IdleZombie
+	attack  AttackZombie
 }
 type ZombieSprites interface {
 	GetAttackZombie() ZombieSprite
@@ -46,27 +45,27 @@ type ZombieSprites interface {
 func NewZombie() ZombieSprite {
 
 	var sprites = zombieSprites{}
-	sprites.walkingZombie = newWalkingZombie(&sprites)
-	sprites.deadZombie = newDeadZombie(&sprites)
-	sprites.idleZombie = newIdleZombie(&sprites)
-	sprites.attackZombie = newAttackZombie(&sprites)
+	sprites.walking = newWalkingZombie(&sprites)
+	sprites.dead = newDeadZombie(&sprites)
+	sprites.idle = newIdleZombie(&sprites)
+	sprites.attack = newAttackZombie(&sprites)
 
 	//Start walking...
-	return sprites.walkingZombie
+	return sprites.walking
 }
 
 func (zs zombieSprites) GetAttackZombie() ZombieSprite {
-	return zs.attackZombie
+	return zs.attack
 }
 
 func (zs zombieSprites) GetDeadZombie() ZombieSprite {
-	return zs.deadZombie
+	return zs.dead
 }
 func (zs zombieSprites) GetIdleZombie() ZombieSprite {
-	return zs.idleZombie
+	return zs.idle
 }
 func (zs zombieSprites) GetWalkingZombie() ZombieSprite {
-	return zs.walkingZombie
+	return zs.walking
 }
 func newZombieData(maxFrames, repeatPerFrame, width, height int32, name string, sprites ZombieSprites) zombieData {
 	return zombieData{NewSpriteData(maxFrames, repeatPerFrame, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name)), sprites}

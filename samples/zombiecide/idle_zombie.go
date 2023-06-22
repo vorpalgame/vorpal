@@ -33,12 +33,3 @@ func (currentZombie *idleZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprit
 
 	}
 }
-
-func (currentZombie *idleZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
-
-	currentZombie.RunAudio()
-
-	currentZombie.SendDrawEvent(drawEvent, currentZombie.currentLocation, currentZombie.flipHorizontal(mouseEvent))
-	currentZombie.GetFrameData().Increment()
-
-}
