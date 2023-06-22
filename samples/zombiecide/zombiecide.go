@@ -17,7 +17,7 @@ type zombiecide struct {
 }
 
 // TODO The cards should have locations or the game/board should dictate those...
-// TODO The fonts and text layers need to be added to the text event.
+// TODO Need a configuration mechanism with YAML or JSON to eliminate the need for hard code.
 var zombies = zombiecide{}
 var fontName = "samples/resources/fonts/Roboto-Regular.ttf"
 var headerFontName = "samples/resources/fonts/Roboto-Black.ttf"
