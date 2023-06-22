@@ -17,6 +17,7 @@ type ZombieSprite interface {
 	Sprite
 	GetState(mouseEvent bus.MouseEvent) ZombieSprite
 	Transition(sprite ZombieSprite) ZombieSprite
+	GetSprites() ZombieSprites //Mainly for testing...
 }
 
 func (s *zombieData) Transition(nextState ZombieSprite) ZombieSprite {
@@ -24,6 +25,9 @@ func (s *zombieData) Transition(nextState ZombieSprite) ZombieSprite {
 	nextState.SetCurrentLocation(s.GetCurrentLocation())
 	nextState.Init()
 	return nextState
+}
+func (s *zombieData) GetSprites() ZombieSprites {
+	return s.sprites
 }
 
 // TODO Would be better with a type keyed map but
@@ -41,23 +45,23 @@ type ZombieSprites interface {
 	GetWalkingZombie() ZombieSprite
 }
 
-// Probably a better factory pattern for this in idiomatic Golang
-func NewZombie() ZombieSprite {
-
+func NewZombieSprites() ZombieSprites {
 	var sprites = zombieSprites{}
 	sprites.walking = newWalkingZombie(&sprites)
 	sprites.dead = newDeadZombie(&sprites)
 	sprites.idle = newIdleZombie(&sprites)
 	sprites.attack = newAttackZombie(&sprites)
+	return sprites
+}
 
-	//Start walking...
-	return sprites.walking
+// Probably a better factory pattern for this in idiomatic Golang
+func NewZombie() ZombieSprite {
+	return NewZombieSprites().GetWalkingZombie()
 }
 
 func (zs zombieSprites) GetAttackZombie() ZombieSprite {
 	return zs.attack
 }
-
 func (zs zombieSprites) GetDeadZombie() ZombieSprite {
 	return zs.dead
 }

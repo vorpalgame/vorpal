@@ -58,7 +58,7 @@ func Init() {
 func (z *zombiecide) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 
-		log.Default().Println(evt.GetKey().ToString())
+		//log.Default().Println(evt.GetKey().ToString())
 		if evt.GetKey().EqualsIgnoreCase("e") {
 			os.Exit(0)
 		}

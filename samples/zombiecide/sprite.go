@@ -49,6 +49,7 @@ type FrameData interface {
 	GetMaxFrame() int32
 	SetToLoop(bool)
 	UpdateIdleFrames(point Point) int32
+	GetIdleFrames() int32
 	IsLoop() bool
 	Increment()
 	Reset()

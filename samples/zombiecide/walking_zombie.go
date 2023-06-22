@@ -1,6 +1,8 @@
 package zombiecide
 
-import "github.com/vorpalgame/vorpal/bus"
+import (
+	"github.com/vorpalgame/vorpal/bus"
+)
 
 type walkingZombie struct {
 	zombieData
@@ -19,6 +21,7 @@ func (currentZombie *walkingZombie) GetState(mouseEvent bus.MouseEvent) ZombieSp
 
 	point := currentZombie.calculateMove(mouseEvent)
 	currentZombie.currentLocation.Add(point)
+
 	if mouseEvent.LeftButton().IsDown() {
 		return currentZombie.Transition(currentZombie.sprites.GetAttackZombie())
 	} else {
