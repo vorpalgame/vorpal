@@ -20,6 +20,8 @@ type ZombieSprite interface {
 	updateIdleCount(p Point) int32
 }
 
+// TODO Would be better with a type keyed map but
+// that appears problematic in Golang...TBD...
 type zombieSprites struct {
 	walkingZombie WalkingZombie
 	deadZombie    DeadZombie

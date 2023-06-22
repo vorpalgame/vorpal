@@ -8,7 +8,7 @@ type DrawEventListener interface {
 
 type DrawEvent interface {
 	GetImageLayers() []ImageLayer
-	AddImageLayer(imgLayer ImageLayer)
+	AddImageLayer(imgLayer ImageLayer) DrawEvent
 	Reset()
 }
 
@@ -26,8 +26,9 @@ func (evt *drawEvent) Reset() {
 	evt.imageLayers = make([]ImageLayer, 0, 100)
 }
 
-func (evt *drawEvent) AddImageLayer(img ImageLayer) {
+func (evt *drawEvent) AddImageLayer(img ImageLayer) DrawEvent {
 	evt.imageLayers = append(evt.imageLayers, img)
+	return evt
 }
 
 func (evt *drawEvent) GetImageLayers() []ImageLayer {

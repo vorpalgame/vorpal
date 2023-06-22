@@ -42,11 +42,10 @@ func Init() {
 	vbus.SendTextEvent(textEvent)
 	for {
 		if zombies.mouseEvent != nil {
-			evt := bus.NewDrawEvent()
-			evt.AddImageLayer(zombies.background)
-			//Exeute to send image and sound
-			zombies.zombie.RunSprite(evt, zombies.mouseEvent)
-			//determine what's next...
+
+			//Execute to send image and sound
+			zombies.zombie.RunSprite(bus.NewDrawEvent().AddImageLayer(zombies.background), zombies.mouseEvent)
+			//Get new or same state
 			zombies.zombie = zombies.zombie.GetState(zombies.mouseEvent)
 
 			time.Sleep(20 * time.Millisecond)

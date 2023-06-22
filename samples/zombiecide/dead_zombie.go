@@ -15,21 +15,21 @@ func newDeadZombie(sprites ZombieSprites) DeadZombie {
 	return &deadZombie{newZombieData(12, 3, 300, 300, "dead", sprites)}
 }
 
-func (s *deadZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
+func (currentZombie *deadZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
 
-	point := s.calculateMove(mouseEvent)
-	s.currentLocation.Add(point)
-	if s.updateIdleCount(point) > 0 {
-		return s
+	point := currentZombie.calculateMove(mouseEvent)
+	currentZombie.currentLocation.Add(point)
+	if currentZombie.updateIdleCount(point) > 0 {
+		return currentZombie
 	} else {
-		return s.doTransition(s.sprites.GetWalkingZombie())
+		return currentZombie.doTransition(currentZombie.sprites.GetWalkingZombie())
 	}
 }
 
-func (s *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
-	s.DoSendAudio()
-	s.SendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
-	s.IncrementFrame()
-	s.NoLoop()
+func (currentZombie *deadZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
+	currentZombie.DoSendAudio()
+	currentZombie.SendDrawEvent(drawEvent, currentZombie.currentLocation, currentZombie.flipHorizontal(mouseEvent))
+	currentZombie.IncrementFrame()
+	currentZombie.NoLoop()
 
 }

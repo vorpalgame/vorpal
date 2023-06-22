@@ -80,8 +80,8 @@ func (s *SpriteData) GetCurrentLocation() Point {
 
 func (s *SpriteData) DoSendAudio() {
 	if !s.IsStarted() {
-		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.GetAudioFile()).Play())
 		s.Start()
+		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.GetAudioFile()).Play())
 	}
 }
 
