@@ -14,7 +14,8 @@ type zombieData struct {
 
 type ZombieSprite interface {
 	Sprite
-	RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite
+	GetState(mouseEvent bus.MouseEvent) ZombieSprite
+	RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent)
 	getIdleFrames() int32
 	updateIdleCount(p Point) int32
 }
@@ -30,26 +31,6 @@ type ZombieSprites interface {
 	GetDeadZombie() ZombieSprite
 	GetIdleZombie() ZombieSprite
 	GetWalkingZombie() ZombieSprite
-}
-
-func (s *zombieData) doTransition(nextState ZombieSprite) ZombieSprite {
-	s.Stop()
-	s.framesIdle = 0
-	nextState.SetCurrentLocation(s.GetCurrentLocation())
-	return nextState
-}
-
-func (s *zombieData) getIdleFrames() int32 {
-	return s.framesIdle
-}
-
-func (s *zombieData) updateIdleCount(point Point) int32 {
-	if point.GetY() == 0 && point.GetX() == 0 {
-		s.framesIdle++
-	} else {
-		s.framesIdle = 0
-	}
-	return s.framesIdle
 }
 
 // Probably a better factory pattern for this in idiomatic Golang
@@ -88,4 +69,24 @@ func getZombieImageTemplate(name string) string {
 
 func getZombieAudioTemplate(name string) string {
 	return "samples/resources/zombiecide/" + name + ".mp3"
+}
+
+func (s *zombieData) doTransition(nextState ZombieSprite) ZombieSprite {
+	s.Stop()
+	s.framesIdle = 0
+	nextState.SetCurrentLocation(s.GetCurrentLocation())
+	return nextState
+}
+
+func (s *zombieData) getIdleFrames() int32 {
+	return s.framesIdle
+}
+
+func (s *zombieData) updateIdleCount(point Point) int32 {
+	if point.GetY() == 0 && point.GetX() == 0 {
+		s.framesIdle++
+	} else {
+		s.framesIdle = 0
+	}
+	return s.framesIdle
 }

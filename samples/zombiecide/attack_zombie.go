@@ -16,15 +16,21 @@ func newAttackZombie(sprites ZombieSprites) AttackZombie {
 	return &attackZombie{newZombieData(7, 3, 200, 300, "attack", sprites)}
 
 }
-func (s *attackZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
-	var zReturn ZombieSprite = s
+
+func (s *attackZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
+
 	if mouseEvent.LeftButton().IsDown() {
-		s.DoSendAudio()
-		s.SendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
-		s.IncrementFrame()
-		s.NoLoop()
+		return s
 	} else {
-		zReturn = s.doTransition(s.sprites.GetWalkingZombie())
+		return s.doTransition(s.sprites.GetWalkingZombie())
 	}
-	return zReturn
+}
+
+func (s *attackZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
+
+	s.DoSendAudio()
+	s.SendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
+	s.IncrementFrame()
+	s.NoLoop()
+
 }

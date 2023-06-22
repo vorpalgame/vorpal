@@ -92,7 +92,7 @@ func (s *SpriteData) Start() Sprite {
 }
 
 func (s *SpriteData) Stop() Sprite {
-	bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.audioFile).Stop())
+	bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(s.GetAudioFile()).Stop())
 	s.currentFrame = 1
 	s.started = false
 	return s

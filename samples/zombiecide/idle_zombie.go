@@ -16,24 +16,28 @@ func newIdleZombie(sprites ZombieSprites) IdleZombie {
 	return &idleZombie{newZombieData(15, 3, 200, 300, "idle", sprites)}
 }
 
-func (s *idleZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) ZombieSprite {
-	var zReturn ZombieSprite = s
+func (s *idleZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
+
 	if mouseEvent.LeftButton().IsDown() {
-		zReturn = s.doTransition(s.sprites.GetAttackZombie())
+		return s.doTransition(s.sprites.GetAttackZombie())
 	} else {
-		s.DoSendAudio()
 		point := s.calculateMove(mouseEvent)
 
 		if s.updateIdleCount(point) < 250 {
 			s.currentLocation.Add(point)
-			s.SendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
-			s.IncrementFrame()
-			s.Loop()
+			return s
 		} else {
-			zReturn = s.doTransition(s.sprites.GetDeadZombie())
-			s.framesIdle = 0
+			return s.doTransition(s.sprites.GetDeadZombie())
 		}
 
 	}
-	return zReturn
+}
+
+func (s *idleZombie) RunSprite(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent) {
+
+	s.DoSendAudio()
+	s.SendDrawEvent(drawEvent, s.currentLocation, s.flipHorizontal(mouseEvent))
+	s.IncrementFrame()
+	s.Loop()
+
 }
