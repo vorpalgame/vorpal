@@ -19,16 +19,16 @@ func newWalkingZombie(sprites ZombieSprites) WalkingZombie {
 }
 func (currentZombie *walkingZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
 
-	point := currentZombie.calculateMove(mouseEvent)
-	currentZombie.currentLocation.Add(point)
+	point := currentZombie.CalculateMove(mouseEvent)
+	currentZombie.GetCurrentLocation().Add(point)
 
 	if mouseEvent.LeftButton().IsDown() {
-		return currentZombie.Transition(currentZombie.sprites.GetAttackZombie())
+		return currentZombie.sprites.GetAttackZombie()
 	} else {
 		if currentZombie.GetFrameData().UpdateIdleFrames(point) < 50 {
 			return currentZombie
 		} else {
-			return currentZombie.Transition(currentZombie.sprites.GetIdleZombie())
+			return currentZombie.sprites.GetIdleZombie()
 		}
 	}
 

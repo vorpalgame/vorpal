@@ -20,7 +20,7 @@ type StandardMediaPeerController interface {
 type controller struct {
 	bus                   VorpalBus
 	drawEvent             DrawEvent
-	audioEvent            AudioEvent            //Only one audio event at a time but need controller flags for load, start, pause, unload...
+	audioEvent            []AudioEvent          //Different audio events for stop, start, etc. so they need to be kept in slice for processing.
 	mouseEvent            MouseEvent            //Keep the last state of mouse and keys.
 	textEvent             TextEvent             //TODO put multiple keys in one event...
 	imageCacheEvent       ImageCacheEvent       //Could have multiples so should be slice...
@@ -33,7 +33,7 @@ func NewGameController() StandardMediaPeerController {
 	c.bus = GetVorpalBus()
 	InitKeys()
 	c.bus.AddControllerListener(&c)
-
+	c.audioEvent = make([]AudioEvent, 0, 50)
 	return &c
 }
 
@@ -58,7 +58,7 @@ func (c *controller) OnKeyRegistrationEvent(keyRegistrationChannel <-chan KeysRe
 
 func (c *controller) OnAudioEvent(audioChannel <-chan AudioEvent) {
 	for evt := range audioChannel {
-		c.audioEvent = evt
+		c.audioEvent = append(c.audioEvent, evt)
 	}
 }
 
@@ -75,9 +75,12 @@ func (c *controller) GetDrawEvent() DrawEvent {
 	return evt
 }
 
-//Default behavior is that it won't repeat.
 func (c *controller) GetAudioEvent() AudioEvent {
-	return c.audioEvent
+	var evt AudioEvent = nil
+	if len(c.audioEvent) > 0 {
+		evt, c.audioEvent = c.audioEvent[0], c.audioEvent[1:]
+	}
+	return evt
 }
 
 func (c *controller) GetTextEvent() TextEvent {

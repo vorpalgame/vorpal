@@ -13,19 +13,17 @@ type zombiecide struct {
 	//textEvent  bus.TextEvent
 	mouseEvent bus.MouseEvent
 	background bus.ImageLayer
-	zombie     ZombieSprite
 }
 
-// TODO The cards should have locations or the game/board should dictate those...
 // TODO Need a configuration mechanism with YAML or JSON to eliminate the need for hard code.
 var zombies = zombiecide{}
 var fontName = "samples/resources/fonts/Roboto-Regular.ttf"
-var headerFontName = "samples/resources/fonts/Roboto-Black.ttf"
+
+// var headerFontName = "samples/resources/fonts/Roboto-Black.ttf"
 
 // TODO Refactor this start up to make it more idiomatic.
 func Init() {
-	log.Println("New z game")
-	zombies.zombie = NewZombie()
+	log.Println("New zombie game")
 	vbus := bus.GetVorpalBus()
 	vbus.AddMouseListener(&zombies)
 	vbus.AddKeyEventListener(&zombies)
@@ -37,18 +35,29 @@ func Init() {
 	//TODO We need config probably through JSON file when prototyping is complete.
 	zombies.background = bus.NewImageLayer("samples/resources/zombiecide/background.png", 0, 0, 1920, 1080)
 	zombies.mouseEvent = nil
-	//TODO text event is flickering...
+
 	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Henry follows mouse pointer. \nLeft Mouse Button to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.").SetX(1200).SetY(100)
 	vbus.SendTextEvent(textEvent)
-
+	var currentState = NewZombie() //Convenience var until we refactor.
+	//
 	for {
 		if zombies.mouseEvent != nil {
+			previousState := currentState
+			currentState = currentState.GetState(zombies.mouseEvent)
+			if !currentState.IsStarted() {
+				currentState.SetCurrentLocation(previousState.GetCurrentLocation())
+				vbus.SendAudioEvent(previousState.GetStopAudioEvent())
+				previousState.Stop()
+				vbus.SendAudioEvent(currentState.GetPlayAudioEvent())
+				currentState.Start()
+			}
+			sprite := currentState.CreateImageLayer(zombies.mouseEvent)
+			drawEvt := bus.NewDrawEvent().AddImageLayer(zombies.background).AddImageLayer(*sprite)
+			vbus.SendDrawEvent(drawEvt)
 
+			time.Sleep(20 * time.Millisecond)
 			//Execute to send image and sound
 
-			zombies.zombie.RunSprite(bus.NewDrawEvent().AddImageLayer(zombies.background), zombies.mouseEvent)
-			zombies.zombie = zombies.zombie.GetState(zombies.mouseEvent)
-			time.Sleep(20 * time.Millisecond)
 		}
 
 	}
@@ -63,7 +72,8 @@ func (z *zombiecide) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 			os.Exit(0)
 		}
 		if evt.GetKey().EqualsIgnoreCase("r") {
-			zombies.zombie = NewZombie()
+			//TODO Stop and close old resources if necessary...
+			//zombies.zombie = NewZombie()
 		}
 
 	}

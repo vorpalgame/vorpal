@@ -23,6 +23,6 @@ func (currentZombie *attackZombie) GetState(mouseEvent bus.MouseEvent) ZombieSpr
 	if mouseEvent.LeftButton().IsDown() {
 		return currentZombie
 	} else {
-		return currentZombie.Transition(currentZombie.sprites.GetWalkingZombie())
+		return currentZombie.sprites.GetWalkingZombie()
 	}
 }
