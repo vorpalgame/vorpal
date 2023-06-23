@@ -22,25 +22,39 @@ type PartsZombie interface {
 func newPartsZommbie() PartsZombie {
 	zombie := &partsZombieData{lib.NewPoint(300, 300), make(map[string]bus.ImageMetadata), bus.NewImageLayer(), 0, 1}
 	base := "samples/resources/zombiecide/Zombie1/bodyparts/"
-	zombie.parts["head1"] = bus.NewImageMetadata(base+"head.png", 600, 450, 20)
-	zombie.parts["head2"] = bus.NewImageMetadata(base+"head2.png", 600, 450, 20)
-	zombie.parts["head3"] = bus.NewImageMetadata(base+"head3.png", 600, 450, 20)
-	zombie.parts["head4"] = bus.NewImageMetadata(base+"head4.png", 600, 450, 20)
-	zombie.parts["head5"] = bus.NewImageMetadata(base+"head5.png", 600, 450, 20)
-	zombie.parts["head6"] = bus.NewImageMetadata(base+"head6.png", 600, 450, 20)
+
+	createHeads(zombie, base)
+	zombie.parts["neck"] = bus.NewImageMetadata(base+"neck.png", 610, 510, 20)
+
 	zombie.parts["body"] = bus.NewImageMetadata(base+"body.png", 600, 525, 20)
-	zombie.parts["body2"] = bus.NewImageMetadata(base+"body_2.png", 600, 600, 20)
-	zombie.parts["leftarm"] = bus.NewImageMetadata(base+"left_arm.png", 500, 600, 20)
-	zombie.parts["rightarm"] = bus.NewImageMetadata(base+"right_arm.png", 700, 600, 20)
+	zombie.parts["body2"] = bus.NewImageMetadata(base+"body_2.png", 600, 580, 20)
+	zombie.parts["leftarm"] = bus.NewImageMetadata(base+"left_arm.png", 590, 570, 20)
+	zombie.parts["lefthand"] = bus.NewImageMetadata(base+"left_hand.png", 600, 585, 20)
+	zombie.parts["leftshoulder"] = bus.NewImageMetadata(base+"left_shoulder.png", 585, 540, 20)
+	zombie.parts["righthand"] = bus.NewImageMetadata(base+"right_hand.png", 655, 585, 20)
+	zombie.parts["rightarm"] = bus.NewImageMetadata(base+"right_arm.png", 655, 570, 20)
+	zombie.parts["rightshoulder"] = bus.NewImageMetadata(base+"right_shoulder.png", 640, 540, 20)
+	zombie.parts["rightleg"] = bus.NewImageMetadata(base+"right_leg.png", 635, 585, 20)
+	zombie.parts["right_leg_down"] = bus.NewImageMetadata(base+"right_leg_down.png", 635, 640, 20)
+	zombie.parts["right_foot"] = bus.NewImageMetadata(base+"right_foot.png", 635, 680, 20)
+	zombie.parts["leftleg"] = bus.NewImageMetadata(base+"left_leg.png", 600, 585, 20)
+	zombie.parts["left_leg_down"] = bus.NewImageMetadata(base+"left_leg_down.png", 600, 640, 20)
+	zombie.parts["left_foot"] = bus.NewImageMetadata(base+"left_foot.png", 600, 680, 20)
 	return zombie
+}
+
+func createHeads(zombieParts *partsZombieData, base string) {
+
+	for i := 1; i < 7; i++ {
+		name := fmt.Sprintf("head%d", i)
+		zombieParts.parts[name] = bus.NewImageMetadata(base+name+".png", 570, 430, 20)
+
+	}
 }
 
 func (zombie *partsZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) *bus.ImageLayer {
 	img := zombie.imageLayer
 	img.Reset()
-	//put in draw order with lower parts first.
-	img.AddLayerData(zombie.parts["body2"])
-	img.AddLayerData(zombie.parts["body"])
 	//zombie.currentHead++
 	zombie.currentCallCount++
 	if zombie.currentCallCount > 10 {
@@ -52,8 +66,26 @@ func (zombie *partsZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) *bus.
 	}
 
 	head := fmt.Sprintf("head%d", zombie.currentHead)
-	//log.Default().Println(head)
+	//put in draw order with lower parts first.
+
+	img.AddLayerData(zombie.parts["lefthand"])
+	img.AddLayerData(zombie.parts["leftarm"])
+	img.AddLayerData(zombie.parts["leftshoulder"])
+	img.AddLayerData(zombie.parts["left_foot"])
+	img.AddLayerData(zombie.parts["left_leg_down"])
+	img.AddLayerData(zombie.parts["leftleg"])
+	img.AddLayerData(zombie.parts["right_foot"])
+	img.AddLayerData(zombie.parts["right_leg_down"])
+	img.AddLayerData(zombie.parts["rightleg"])
+
+	img.AddLayerData(zombie.parts["rightarm"])
+	img.AddLayerData(zombie.parts["rightshoulder"])
+	img.AddLayerData(zombie.parts["righthand"])
+	img.AddLayerData(zombie.parts["body2"])
+	img.AddLayerData(zombie.parts["body"])
+	img.AddLayerData(zombie.parts["neck"])
 	img.AddLayerData(zombie.parts[head])
+	//log.Default().Println(head)
 
 	return &img
 }

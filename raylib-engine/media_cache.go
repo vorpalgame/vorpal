@@ -60,6 +60,9 @@ func (c *mediaCache) GetImage(img string) *rl.Image {
 	return c.imageCache[img]
 }
 
+// Need an update mechanism when scale changes. Perhaps map key needs to be
+// name+scale. This may also be where the image cache  event comes in.
+// In any case, it appears that scaling per image draw is a bit to expensive.
 func (c *mediaCache) CacheImages(evt bus.DrawEvent) {
 	for _, evt := range evt.GetImageLayers() {
 		for _, imgData := range evt.GetLayerData() {

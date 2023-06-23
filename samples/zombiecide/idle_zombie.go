@@ -23,9 +23,9 @@ func (currentZombie *idleZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprit
 	if mouseEvent.LeftButton().IsDown() {
 		return currentZombie.sprites.GetAttackZombie()
 	} else {
-		point := currentZombie.CalculateMove(mouseEvent)
+		point := currentZombie.GetCurrentLocation().CalculateMove(mouseEvent)
 		if currentZombie.GetFrameData().UpdateIdleFrames(point) < 250 {
-			currentZombie.GetCurrentLocation().Add(point)
+			currentZombie.GetCurrentLocation().Move(point)
 			return currentZombie
 		} else {
 			return currentZombie.sprites.GetDeadZombie()

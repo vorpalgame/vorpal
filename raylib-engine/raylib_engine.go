@@ -42,19 +42,20 @@ func (e *engine) Start() {
 		e.runAudio()
 		drawEvt := e.controller.GetDrawEvent()
 		textEvt := e.controller.GetTextEvent()
-		rl.BeginDrawing()
 		if drawEvt != nil {
 			e.cache.CacheImages(drawEvt)
 			e.renderImages(drawEvt)
+			//We draw text only if image is actually being rednered...
+			if textEvt != nil {
+				e.cache.CacheFonts(textEvt)
+				e.renderText(textEvt)
+			}
 		}
+		rl.BeginDrawing()
+		rl.ClearBackground(rl.RayWhite)
 
-		if textEvt != nil {
-			e.cache.CacheFonts(textEvt)
-			e.renderText(textEvt)
-		}
 		e.renderTexture()
 
-		rl.ClearBackground(rl.RayWhite)
 		rl.DrawTexture(e.currentTexture, 0, 0, rl.RayWhite)
 		rl.EndDrawing()
 
@@ -73,23 +74,24 @@ func (e *engine) renderImages(evt bus.DrawEvent) {
 
 	//Get each layer and render the 1...N entries of content on the layer
 	//Then render the next layer on top of it.
-	var isReady bool
+
+	//Verify everything is ready to render or return.
+	//This ensures images are loaded from file before we
+	//attempt to use them.
 	for _, layer := range evt.GetImageLayers() {
-		isReady = e.isReady(layer)
-		if !isReady {
-			break
+		if !e.isReady(layer) {
+			return
 		}
 	}
-	var baseImg *rl.Image
-	if isReady {
-		for _, layer := range evt.GetImageLayers() {
-			baseImg = e.renderLayer(baseImg, layer)
-		}
+	var renderImg *rl.Image
+
+	for _, layer := range evt.GetImageLayers() {
+		renderImg = e.renderLayer(renderImg, layer)
 	}
 
-	if baseImg != nil {
+	if renderImg != nil {
 		previousImg := e.renderedImg
-		e.renderedImg = baseImg
+		e.renderedImg = renderImg
 		if previousImg != nil {
 			rl.UnloadImage(previousImg)
 		}
@@ -115,6 +117,8 @@ func (e *engine) renderLayer(baseImg *rl.Image, layer bus.ImageLayer) *rl.Image 
 
 			if baseImg == nil {
 				baseImg = clonedImage
+				//For testing
+				//rl.ImageClearBackground(baseImg, rl.White)
 			} else {
 				if img.IsFlipHorizontal() {
 					rl.ImageFlipHorizontal(clonedImage)

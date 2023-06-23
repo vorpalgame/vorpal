@@ -36,7 +36,7 @@ func Init() {
 	zombies.background = bus.NewImageLayer().AddLayerData(bus.NewImageMetadata("samples/resources/zombiecide/background.png", 0, 0, 33))
 	zombies.mouseEvent = nil
 
-	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Henry follows mouse pointer. \nLeft Mouse Button to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.").SetX(1200).SetY(100)
+	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Henry follows mouse pointer. \nLeft Mouse Button to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n NOTE: George the parts zombie is still being worked on.").SetX(1200).SetY(100)
 	vbus.SendTextEvent(textEvent)
 	var currentState = NewZombie() //Convenience var until we refactor.
 	zombieParts := newPartsZommbie()
@@ -52,7 +52,8 @@ func Init() {
 				vbus.SendAudioEvent(currentState.GetPlayAudioEvent())
 				currentState.Start()
 			}
-			drawEvt := bus.NewDrawEvent().AddImageLayer(zombies.background)
+			drawEvt := bus.NewDrawEvent()
+			drawEvt.AddImageLayer(zombies.background)
 			drawEvt.AddImageLayer(*currentState.CreateImageLayer(zombies.mouseEvent))
 			drawEvt.AddImageLayer(*zombieParts.CreateImageLayer(zombies.mouseEvent))
 			vbus.SendDrawEvent(drawEvt)
