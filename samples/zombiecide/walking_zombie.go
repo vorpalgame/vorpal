@@ -13,7 +13,7 @@ type WalkingZombie interface {
 }
 
 func newWalkingZombie(sprites ZombieSprites) WalkingZombie {
-	zombie := &walkingZombie{newZombieData(10, 3, 200, 300, "walk", sprites)}
+	zombie := &walkingZombie{newZombieData(10, 5, "walk", sprites)}
 	zombie.GetFrameData().SetToLoop(true)
 	return zombie
 }

@@ -12,7 +12,7 @@ type DeadZombie interface {
 }
 
 func newDeadZombie(sprites ZombieSprites) DeadZombie {
-	zombie := &deadZombie{newZombieData(12, 3, 300, 300, "dead", sprites)}
+	zombie := &deadZombie{newZombieData(12, 3, "dead", sprites)}
 	zombie.GetFrameData().SetToLoop(false)
 	return zombie
 }

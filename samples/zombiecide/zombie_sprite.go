@@ -63,8 +63,9 @@ func (zs zombieSprites) GetIdleZombie() ZombieSprite {
 func (zs zombieSprites) GetWalkingZombie() ZombieSprite {
 	return zs.walking
 }
-func newZombieData(maxFrames, repeatPerFrame, width, height int32, name string, sprites ZombieSprites) zombieData {
-	return zombieData{lib.NewSpriteData(maxFrames, repeatPerFrame, width, height, getZombieImageTemplate(name), getZombieAudioTemplate(name)), sprites}
+func newZombieData(maxFrames, repeatPerFrame int32, name string, sprites ZombieSprites) zombieData {
+	scale := int32(25) //TODO Move to configuration data...
+	return zombieData{lib.NewSpriteData(maxFrames, repeatPerFrame, scale, getZombieImageTemplate(name), getZombieAudioTemplate(name)), sprites}
 }
 
 func getZombieImageTemplate(name string) string {

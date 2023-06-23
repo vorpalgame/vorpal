@@ -37,25 +37,23 @@ func (e *engine) Start() {
 	rl.InitAudioDevice()
 
 	for !rl.WindowShouldClose() {
-
 		e.sendMouseEvents()
 		e.sendKeyEvents()
 		e.runAudio()
-
-		//Perhaps clone the event for concurrency issues...
-		//Maybe get should nullify the event in the controller...
 		drawEvt := e.controller.GetDrawEvent()
+		textEvt := e.controller.GetTextEvent()
+		rl.BeginDrawing()
 		if drawEvt != nil {
 			e.cache.CacheImages(drawEvt)
 			e.renderImages(drawEvt)
 		}
-		textEvt := e.controller.GetTextEvent()
+
 		if textEvt != nil {
 			e.cache.CacheFonts(textEvt)
 			e.renderText(textEvt)
 		}
+		e.renderTexture()
 
-		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
 		rl.DrawTexture(e.currentTexture, 0, 0, rl.RayWhite)
 		rl.EndDrawing()
@@ -63,43 +61,80 @@ func (e *engine) Start() {
 	}
 }
 
-func (e *engine) renderImages(evt bus.DrawEvent) {
-
+func (e *engine) renderTexture() {
 	if e.renderedImg != nil {
-		rl.UnloadImage(e.renderedImg)
+		previousTexture := e.currentTexture
+		e.currentTexture = rl.LoadTextureFromImage(e.renderedImg)
+		rl.UnloadTexture(previousTexture)
 	}
+}
+
+func (e *engine) renderImages(evt bus.DrawEvent) {
 
 	//Get each layer and render the 1...N entries of content on the layer
 	//Then render the next layer on top of it.
-	var baseImg *rl.Image
+	var isReady bool
 	for _, layer := range evt.GetImageLayers() {
-		if layer != nil {
-			for _, img := range layer.GetLayerData() {
-				currentImg := rl.ImageCopy(e.cache.GetImage(img.GetImage()))
-				if baseImg == nil {
-					baseImg = currentImg
-				} else {
-					if img.IsFlipHorizontal() {
-						rl.ImageFlipHorizontal(currentImg)
-					}
-					rl.ImageDraw(baseImg, currentImg, rl.NewRectangle(0, 0, float32(currentImg.Width), float32(currentImg.Height)), rl.NewRectangle(float32(img.GetX()), float32(img.GetY()), float32(currentImg.Width), float32(currentImg.Height)), rl.RayWhite)
+		isReady = e.isReady(layer)
+		if !isReady {
+			break
+		}
+	}
+	var baseImg *rl.Image
+	if isReady {
+		for _, layer := range evt.GetImageLayers() {
+			baseImg = e.renderLayer(baseImg, layer)
+		}
+	}
 
+	if baseImg != nil {
+		previousImg := e.renderedImg
+		e.renderedImg = baseImg
+		if previousImg != nil {
+			rl.UnloadImage(previousImg)
+		}
+	}
+}
+func (e *engine) isReady(layer bus.ImageLayer) bool {
+
+	for _, imgData := range layer.GetLayerData() {
+		if e.cache.GetImage(imgData.GetImage()) == nil {
+			return false
+		}
+	}
+	return true
+}
+func (e *engine) renderLayer(baseImg *rl.Image, layer bus.ImageLayer) *rl.Image {
+	for _, img := range layer.GetLayerData() {
+		originalImg := e.cache.GetImage(img.GetImage())
+
+		//If at any point an image is not loaded and ready, we bail out for this frame.
+		if originalImg != nil {
+
+			clonedImage := rl.ImageCopy(originalImg)
+
+			if baseImg == nil {
+				baseImg = clonedImage
+			} else {
+				if img.IsFlipHorizontal() {
+					rl.ImageFlipHorizontal(clonedImage)
 				}
+				rl.ImageDraw(baseImg, clonedImage, rl.NewRectangle(0, 0, float32(clonedImage.Width), float32(clonedImage.Height)), rl.NewRectangle(float32(img.GetX()), float32(img.GetY()), float32(clonedImage.Width), float32(clonedImage.Height)), rl.RayWhite)
+				rl.UnloadImage(clonedImage)
 			}
 
+		} else {
+			return nil
 		}
 
 	}
-	e.renderedImg = baseImg
-	rl.UnloadTexture(e.currentTexture)
-	e.currentTexture = rl.LoadTextureFromImage(baseImg)
-
+	return baseImg
 }
 
 func (e *engine) renderText(txtEvt bus.TextEvent) {
 
 	if e.renderedImg != nil {
-		baseImg := rl.ImageCopy(e.renderedImg)
+
 		//TODO The lines will not be wrapped here so this is temporary
 		//The next step is to send each presplit line from the other side of the bus
 		//and then iterate over it here.
@@ -107,13 +142,11 @@ func (e *engine) renderText(txtEvt bus.TextEvent) {
 		x := float32(txtEvt.GetX())
 		var y = float32(txtEvt.GetY())
 		for _, txt := range txtEvt.GetText() {
-			rl.ImageDrawTextEx(baseImg, rl.Vector2{x, y}, *e.cache.GetFont(txt.GetFont()), txt.GetText(), float32(txt.GetFontSize()), 0, rl.Black)
+			rl.ImageDrawTextEx(e.renderedImg, rl.Vector2{x, y}, *e.cache.GetFont(txt.GetFont()), txt.GetText(), float32(txt.GetFontSize()), 0, rl.Black)
 			//How to do line spacing????
 			y += float32(txt.GetFontSize()) * float32(1.1) //Extra space..
 		}
 
-		rl.UnloadTexture(e.currentTexture)
-		e.currentTexture = rl.LoadTextureFromImage(baseImg)
 	}
 
 }

@@ -33,12 +33,13 @@ func Init() {
 	zombies.bus = vbus
 
 	//TODO We need config probably through JSON file when prototyping is complete.
-	zombies.background = bus.NewImageLayer().AddLayerData(bus.NewImageMetadata("samples/resources/zombiecide/background.png", 0, 0, 1920, 1080))
+	zombies.background = bus.NewImageLayer().AddLayerData(bus.NewImageMetadata("samples/resources/zombiecide/background.png", 0, 0, 33))
 	zombies.mouseEvent = nil
 
 	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Henry follows mouse pointer. \nLeft Mouse Button to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.").SetX(1200).SetY(100)
 	vbus.SendTextEvent(textEvent)
 	var currentState = NewZombie() //Convenience var until we refactor.
+	zombieParts := newPartsZommbie()
 	//
 	for {
 		if zombies.mouseEvent != nil {
@@ -51,8 +52,9 @@ func Init() {
 				vbus.SendAudioEvent(currentState.GetPlayAudioEvent())
 				currentState.Start()
 			}
-			sprite := currentState.CreateImageLayer(zombies.mouseEvent)
-			drawEvt := bus.NewDrawEvent().AddImageLayer(zombies.background).AddImageLayer(*sprite)
+			drawEvt := bus.NewDrawEvent().AddImageLayer(zombies.background)
+			drawEvt.AddImageLayer(*currentState.CreateImageLayer(zombies.mouseEvent))
+			drawEvt.AddImageLayer(*zombieParts.CreateImageLayer(zombies.mouseEvent))
 			vbus.SendDrawEvent(drawEvt)
 
 			time.Sleep(20 * time.Millisecond)

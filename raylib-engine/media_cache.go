@@ -59,14 +59,19 @@ func (c *mediaCache) doFontCache(fontName string) {
 func (c *mediaCache) GetImage(img string) *rl.Image {
 	return c.imageCache[img]
 }
+
 func (c *mediaCache) CacheImages(evt bus.DrawEvent) {
 	for _, evt := range evt.GetImageLayers() {
 		for _, imgData := range evt.GetLayerData() {
 			img := c.imageCache[imgData.GetImage()]
 			if img == nil {
-				c.imageCache[imgData.GetImage()] = rl.LoadImage(imgData.GetImage())
-				img = c.imageCache[imgData.GetImage()]
-				rl.ImageResize(img, imgData.GetWidth(), imgData.GetHeight())
+				newImg := rl.LoadImage(imgData.GetImage())
+
+				width := int32(float32(newImg.Width) * imgData.GetScalePercent())
+				height := int32(float32(newImg.Height) * imgData.GetScalePercent())
+
+				rl.ImageResize(newImg, width, height)
+				c.imageCache[imgData.GetImage()] = newImg
 			}
 		}
 

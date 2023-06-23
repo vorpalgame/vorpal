@@ -40,26 +40,9 @@ func NewImageLayer() ImageLayer {
 	return &imageLayer
 }
 
-func NewImageMetadata(img string, x, y, width, height int32) ImageMetadata {
-	return &imageMetadata{img, x, y, width, height, false}
+func (i *imageLayer) Reset() {
+	i.images = make([]ImageMetadata, 0)
 }
-
-type ImageMetadata interface {
-	GetImage() string
-	GetX() int32
-	GetY() int32
-	GetHeight() int32
-	GetWidth() int32
-	IsFlipHorizontal() bool
-	SetFlipHorizontal(bool)
-}
-
-//Use builder pattern methods
-type ImageLayer interface {
-	GetLayerData() []ImageMetadata
-	AddLayerData(imgMetadata ImageMetadata) ImageLayer
-}
-
 func (i *imageLayer) GetLayerData() []ImageMetadata {
 	return i.images
 }
@@ -69,10 +52,31 @@ func (i *imageLayer) AddLayerData(img ImageMetadata) ImageLayer {
 	return i
 }
 
+func NewImageMetadata(img string, x, y, scale int32) ImageMetadata {
+	return &imageMetadata{img, x, y, scale, false}
+}
+
+type ImageMetadata interface {
+	GetImage() string
+	GetX() int32
+	GetY() int32
+	GetScale() int32
+	GetScalePercent() float32
+	IsFlipHorizontal() bool
+	SetFlipHorizontal(bool)
+}
+
+//Use builder pattern methods
+type ImageLayer interface {
+	GetLayerData() []ImageMetadata
+	AddLayerData(imgMetadata ImageMetadata) ImageLayer
+	Reset()
+}
+
 type imageMetadata struct {
-	img                 string
-	x, y, width, height int32
-	horizontalFlip      bool
+	img            string
+	x, y, scale    int32
+	horizontalFlip bool
 }
 type imageLayer struct {
 	images []ImageMetadata
@@ -96,10 +100,10 @@ func (p *imageMetadata) GetY() int32 {
 	return p.y
 }
 
-func (p *imageMetadata) GetWidth() int32 {
-	return p.width
+func (p *imageMetadata) GetScale() int32 {
+	return p.scale
 }
 
-func (p *imageMetadata) GetHeight() int32 {
-	return p.height
+func (p *imageMetadata) GetScalePercent() float32 {
+	return float32(p.scale) / 100
 }

@@ -13,7 +13,7 @@ type IdleZombie interface {
 }
 
 func newIdleZombie(sprites ZombieSprites) IdleZombie {
-	zombie := &idleZombie{newZombieData(15, 3, 200, 300, "idle", sprites)}
+	zombie := &idleZombie{newZombieData(15, 3, "idle", sprites)}
 	zombie.GetFrameData().SetToLoop(false)
 	return zombie
 }

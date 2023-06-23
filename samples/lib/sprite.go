@@ -7,8 +7,9 @@ import (
 	"github.com/vorpalgame/vorpal/bus"
 )
 
-func NewSpriteData(maxFrames, repeatPerFrame, width, height int32, imageTemplate, audioFile string) SpriteData {
-	return SpriteData{width, height, imageTemplate, audioFile, &point{600, 600}, false, false, &frameData{1, maxFrames, repeatPerFrame, 0, 0, false}}
+// TODO Break into composable elements now that we are in lib...
+func NewSpriteData(maxFrames, repeatPerFrame, scale int32, imageTemplate, audioFile string) SpriteData {
+	return SpriteData{&point{600, 600}, scale, imageTemplate, audioFile, false, false, &frameData{1, maxFrames, repeatPerFrame, 0, 0, false}}
 }
 
 // Sprite interface/structure can be used for any type.
@@ -25,7 +26,7 @@ type Sprite interface {
 	GetStopAudioEvent() bus.AudioEvent
 	SetImageTemplate(fileTemplate string) Sprite
 	SetCurrentLocation(point Point) Sprite
-
+	GetScale() int32
 	GetCurrentLocation() Point
 	CalculateMove(evt bus.MouseEvent) Point
 	FlipHorizontal(evt bus.MouseEvent) bool
@@ -33,10 +34,10 @@ type Sprite interface {
 }
 
 type SpriteData struct {
-	width, height   int32
+	currentLocation Point
+	scale           int32
 	fileTemplate    string
 	audioFile       string
-	currentLocation Point
 	started         bool
 	audioRunning    bool
 	frameData       FrameData
@@ -106,6 +107,10 @@ func (fd *frameData) GetMaxFrame() int32 {
 	return fd.maxFrame
 }
 
+func NewPoint(x, y int32) Point {
+	return &point{x, y}
+}
+
 type Point interface {
 	GetX() int32
 	GetY() int32
@@ -152,7 +157,9 @@ func (s *SpriteData) SetCurrentLocation(point Point) Sprite {
 func (s *SpriteData) GetCurrentLocation() Point {
 	return s.currentLocation
 }
-
+func (s *SpriteData) GetScale() int32 {
+	return s.scale
+}
 func (s *SpriteData) GetPlayAudioEvent() bus.AudioEvent {
 	return bus.NewAudioEvent(s.GetAudioFile()).Play()
 }
@@ -178,7 +185,7 @@ func (s *SpriteData) Stop() Sprite {
 // TODO The flip horizontal may belong at higher abstraction level and then
 // this would not require the mouse event.
 func (s *SpriteData) CreateImageLayer(mouseEvent bus.MouseEvent) *bus.ImageLayer {
-	imgData := bus.NewImageMetadata(fmt.Sprintf(s.fileTemplate, s.frameData.GetCurrentFrame()), s.currentLocation.GetX(), s.currentLocation.GetY(), s.width, s.height)
+	imgData := bus.NewImageMetadata(fmt.Sprintf(s.fileTemplate, s.frameData.GetCurrentFrame()), s.currentLocation.GetX(), s.currentLocation.GetY(), s.GetScale())
 	imgData.SetFlipHorizontal(s.FlipHorizontal(mouseEvent))
 	layer := bus.NewImageLayer().AddLayerData(imgData)
 
