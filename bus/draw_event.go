@@ -18,12 +18,12 @@ type drawEvent struct {
 
 func NewDrawEvent() DrawEvent {
 	evt := drawEvent{}
-	evt.imageLayers = make([]ImageLayer, 0, 100)
+	evt.imageLayers = make([]ImageLayer, 0)
 	return &evt
 }
 
 func (evt *drawEvent) Reset() {
-	evt.imageLayers = make([]ImageLayer, 0, 100)
+	evt.imageLayers = make([]ImageLayer, 0)
 }
 
 func (evt *drawEvent) AddImageLayer(img ImageLayer) DrawEvent {
@@ -35,11 +35,16 @@ func (evt *drawEvent) GetImageLayers() []ImageLayer {
 	return evt.imageLayers
 }
 
-func NewImageLayer(img string, x, y, width, height int32) ImageLayer {
-	return &imageLayer{img, x, y, width, height, false}
+func NewImageLayer() ImageLayer {
+	imageLayer := imageLayer{make([]ImageMetadata, 0)}
+	return &imageLayer
 }
 
-type ImageLayer interface {
+func NewImageMetadata(img string, x, y, width, height int32) ImageMetadata {
+	return &imageMetadata{img, x, y, width, height, false}
+}
+
+type ImageMetadata interface {
 	GetImage() string
 	GetX() int32
 	GetY() int32
@@ -49,34 +54,52 @@ type ImageLayer interface {
 	SetFlipHorizontal(bool)
 }
 
-type imageLayer struct {
+//Use builder pattern methods
+type ImageLayer interface {
+	GetLayerData() []ImageMetadata
+	AddLayerData(imgMetadata ImageMetadata) ImageLayer
+}
+
+func (i *imageLayer) GetLayerData() []ImageMetadata {
+	return i.images
+}
+
+func (i *imageLayer) AddLayerData(img ImageMetadata) ImageLayer {
+	i.images = append(i.images, img)
+	return i
+}
+
+type imageMetadata struct {
 	img                 string
 	x, y, width, height int32
 	horizontalFlip      bool
 }
+type imageLayer struct {
+	images []ImageMetadata
+}
 
-func (e *imageLayer) SetFlipHorizontal(horizontalFlip bool) {
+func (e *imageMetadata) SetFlipHorizontal(horizontalFlip bool) {
 	e.horizontalFlip = horizontalFlip
 }
-func (e *imageLayer) IsFlipHorizontal() bool {
+func (e *imageMetadata) IsFlipHorizontal() bool {
 	return e.horizontalFlip
 }
-func (e *imageLayer) GetImage() string {
+func (e *imageMetadata) GetImage() string {
 	return e.img
 }
 
-func (p *imageLayer) GetX() int32 {
+func (p *imageMetadata) GetX() int32 {
 	return p.x
 }
 
-func (p *imageLayer) GetY() int32 {
+func (p *imageMetadata) GetY() int32 {
 	return p.y
 }
 
-func (p *imageLayer) GetWidth() int32 {
+func (p *imageMetadata) GetWidth() int32 {
 	return p.width
 }
 
-func (p *imageLayer) GetHeight() int32 {
+func (p *imageMetadata) GetHeight() int32 {
 	return p.height
 }

@@ -69,18 +69,22 @@ func (e *engine) renderImages(evt bus.DrawEvent) {
 		rl.UnloadImage(e.renderedImg)
 	}
 
+	//Get each layer and render the 1...N entries of content on the layer
+	//Then render the next layer on top of it.
 	var baseImg *rl.Image
-	for _, img := range evt.GetImageLayers() {
-		if img != nil {
-			currentImg := rl.ImageCopy(e.cache.GetImage(img.GetImage()))
-			if baseImg == nil {
-				baseImg = currentImg
-			} else {
-				if img.IsFlipHorizontal() {
-					rl.ImageFlipHorizontal(currentImg)
-				}
-				rl.ImageDraw(baseImg, currentImg, rl.NewRectangle(0, 0, float32(currentImg.Width), float32(currentImg.Height)), rl.NewRectangle(float32(img.GetX()), float32(img.GetY()), float32(currentImg.Width), float32(currentImg.Height)), rl.RayWhite)
+	for _, layer := range evt.GetImageLayers() {
+		if layer != nil {
+			for _, img := range layer.GetLayerData() {
+				currentImg := rl.ImageCopy(e.cache.GetImage(img.GetImage()))
+				if baseImg == nil {
+					baseImg = currentImg
+				} else {
+					if img.IsFlipHorizontal() {
+						rl.ImageFlipHorizontal(currentImg)
+					}
+					rl.ImageDraw(baseImg, currentImg, rl.NewRectangle(0, 0, float32(currentImg.Width), float32(currentImg.Height)), rl.NewRectangle(float32(img.GetX()), float32(img.GetY()), float32(currentImg.Width), float32(currentImg.Height)), rl.RayWhite)
 
+				}
 			}
 
 		}

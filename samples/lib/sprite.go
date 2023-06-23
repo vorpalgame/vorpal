@@ -178,8 +178,10 @@ func (s *SpriteData) Stop() Sprite {
 // TODO The flip horizontal may belong at higher abstraction level and then
 // this would not require the mouse event.
 func (s *SpriteData) CreateImageLayer(mouseEvent bus.MouseEvent) *bus.ImageLayer {
-	layer := bus.NewImageLayer(fmt.Sprintf(s.fileTemplate, s.frameData.GetCurrentFrame()), s.currentLocation.GetX(), s.currentLocation.GetY(), s.width, s.height)
-	layer.SetFlipHorizontal(s.FlipHorizontal(mouseEvent))
+	imgData := bus.NewImageMetadata(fmt.Sprintf(s.fileTemplate, s.frameData.GetCurrentFrame()), s.currentLocation.GetX(), s.currentLocation.GetY(), s.width, s.height)
+	imgData.SetFlipHorizontal(s.FlipHorizontal(mouseEvent))
+	layer := bus.NewImageLayer().AddLayerData(imgData)
+
 	s.GetFrameData().Increment()
 	return &layer
 }

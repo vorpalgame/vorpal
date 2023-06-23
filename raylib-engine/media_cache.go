@@ -61,11 +61,13 @@ func (c *mediaCache) GetImage(img string) *rl.Image {
 }
 func (c *mediaCache) CacheImages(evt bus.DrawEvent) {
 	for _, evt := range evt.GetImageLayers() {
-		img := c.imageCache[evt.GetImage()]
-		if img == nil {
-			c.imageCache[evt.GetImage()] = rl.LoadImage(evt.GetImage())
-			img = c.imageCache[evt.GetImage()]
-			rl.ImageResize(img, evt.GetWidth(), evt.GetHeight())
+		for _, imgData := range evt.GetLayerData() {
+			img := c.imageCache[imgData.GetImage()]
+			if img == nil {
+				c.imageCache[imgData.GetImage()] = rl.LoadImage(imgData.GetImage())
+				img = c.imageCache[imgData.GetImage()]
+				rl.ImageResize(img, imgData.GetWidth(), imgData.GetHeight())
+			}
 		}
 
 	}

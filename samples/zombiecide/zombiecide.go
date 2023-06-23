@@ -33,7 +33,7 @@ func Init() {
 	zombies.bus = vbus
 
 	//TODO We need config probably through JSON file when prototyping is complete.
-	zombies.background = bus.NewImageLayer("samples/resources/zombiecide/background.png", 0, 0, 1920, 1080)
+	zombies.background = bus.NewImageLayer().AddLayerData(bus.NewImageMetadata("samples/resources/zombiecide/background.png", 0, 0, 1920, 1080))
 	zombies.mouseEvent = nil
 
 	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Henry follows mouse pointer. \nLeft Mouse Button to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.").SetX(1200).SetY(100)
