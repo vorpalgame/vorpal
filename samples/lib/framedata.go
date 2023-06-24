@@ -1,5 +1,11 @@
 package lib
 
+//Most data is set once at start up so limited Setters.
+func NewFrameData(maxFrame, repeatPerFrame int32) FrameData {
+	return &frameData{1, maxFrame, repeatPerFrame, 0, 0, true}
+}
+
+// TODO Unit tests...
 type FrameData interface {
 	GetCurrentFrame() int32
 	GetMaxFrame() int32

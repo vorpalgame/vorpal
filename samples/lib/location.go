@@ -1,5 +1,6 @@
 package lib
 
+//TODO Unit tests...
 import (
 	"log"
 
@@ -7,7 +8,7 @@ import (
 )
 
 func NewCurrentLocation() CurrentLocation {
-	return &currentLocationData{&point{600, 600}, -4, -2, 5, 5}
+	return &currentLocationData{&point{600, 600}, -4, -2, 5, 5} //TODO Get rid of bad defaults...Convenient for now...
 }
 
 type CurrentLocation interface {
@@ -49,8 +50,7 @@ func (cl *currentLocationData) CalculateMove(evt bus.MouseEvent) Point {
 	if evt.GetY() > cl.GetY() {
 		point.y = point.y * -1
 	}
-	// log.Default().Println(point.x)
-	// log.Default().Println(point.y)
+
 	var xOffset = evt.GetX() - cl.GetX()
 	if xOffset < 0 {
 		xOffset *= -1

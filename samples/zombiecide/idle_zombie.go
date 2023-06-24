@@ -13,8 +13,8 @@ type IdleZombie interface {
 }
 
 func newIdleZombie(sprites ZombieSprites) IdleZombie {
-	zombie := &idleZombie{newZombieData(15, 3, "idle", sprites)}
-	zombie.GetFrameData().SetToLoop(false)
+	zombie := &idleZombie{NewZombieData(15, 3, "idle", sprites)}
+	zombie.SetToLoop(false)
 	return zombie
 }
 
@@ -23,9 +23,9 @@ func (currentZombie *idleZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprit
 	if mouseEvent.LeftButton().IsDown() {
 		return currentZombie.sprites.GetAttackZombie()
 	} else {
-		point := currentZombie.GetCurrentLocation().CalculateMove(mouseEvent)
-		if currentZombie.GetFrameData().UpdateIdleFrames(point) < 250 {
-			currentZombie.GetCurrentLocation().Move(point)
+		point := currentZombie.CalculateMove(mouseEvent)
+		if currentZombie.UpdateIdleFrames(point) < 250 {
+			currentZombie.Move(point)
 			return currentZombie
 		} else {
 			return currentZombie.sprites.GetDeadZombie()

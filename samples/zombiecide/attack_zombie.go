@@ -13,8 +13,8 @@ type AttackZombie interface {
 }
 
 func newAttackZombie(sprites ZombieSprites) AttackZombie {
-	zombie := &attackZombie{newZombieData(7, 3, "attack", sprites)}
-	zombie.GetFrameData().SetToLoop(true)
+	zombie := &attackZombie{NewZombieData(7, 3, "attack", sprites)}
+	zombie.SetToLoop(true)
 	return zombie
 }
 

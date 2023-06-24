@@ -7,6 +7,8 @@ import (
 	"github.com/vorpalgame/vorpal/samples/lib"
 )
 
+// TODO Create funcs for arm, leg, body, head/neck that can init elements relative to each other and
+// can change x,y coordinate locations.
 type partsZombieData struct {
 	currentLocation lib.Point
 	parts           map[string]bus.ImageMetadata
@@ -16,7 +18,7 @@ type partsZombieData struct {
 }
 
 type PartsZombie interface {
-	CreateImageLayer(event bus.MouseEvent) *bus.ImageLayer
+	CreateImageLayer(event bus.MouseEvent) bus.ImageLayer
 }
 
 func newPartsZommbie() PartsZombie {
@@ -52,7 +54,7 @@ func createHeads(zombieParts *partsZombieData, base string) {
 	}
 }
 
-func (zombie *partsZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) *bus.ImageLayer {
+func (zombie *partsZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) bus.ImageLayer {
 	img := zombie.imageLayer
 	img.Reset()
 	//zombie.currentHead++
@@ -87,5 +89,5 @@ func (zombie *partsZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) *bus.
 	img.AddLayerData(zombie.parts[head])
 	//log.Default().Println(head)
 
-	return &img
+	return img
 }

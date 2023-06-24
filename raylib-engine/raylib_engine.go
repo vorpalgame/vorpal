@@ -7,7 +7,12 @@ import (
 	"github.com/vorpalgame/vorpal/bus"
 )
 
-//T
+//TODO We now have a draw event with multiple layers and each layer can have multiple
+//renderable components. It may be desirable to render all the components in a layer onto
+//a single blank image layer that can be used. That would imply we can cache that rendered
+//layer image based on unique tag and not rerender it every time.
+//Currently we pre-scale all the images but we wil need to implement the cache flush
+//implementation or enable flushing specific elements. TBD
 
 type engine struct {
 	controller            bus.StandardMediaPeerController

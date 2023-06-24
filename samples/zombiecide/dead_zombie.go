@@ -12,16 +12,17 @@ type DeadZombie interface {
 }
 
 func newDeadZombie(sprites ZombieSprites) DeadZombie {
-	zombie := &deadZombie{newZombieData(12, 3, "dead", sprites)}
-	zombie.GetFrameData().SetToLoop(false)
+
+	zombie := &deadZombie{NewZombieData(12, 3, "dead", sprites)}
+	zombie.SetToLoop(false)
 	return zombie
 }
 
 func (currentZombie *deadZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
 
-	point := currentZombie.GetCurrentLocation().CalculateMove(mouseEvent)
-	if currentZombie.GetFrameData().UpdateIdleFrames(point) > 0 {
-		currentZombie.GetCurrentLocation().Move(point)
+	point := currentZombie.CalculateMove(mouseEvent)
+	if currentZombie.UpdateIdleFrames(point) > 0 {
+		currentZombie.Move(point)
 		return currentZombie
 	} else {
 		return currentZombie.sprites.GetWalkingZombie()

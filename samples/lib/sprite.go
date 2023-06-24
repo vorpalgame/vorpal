@@ -1,74 +1,95 @@
 package lib
 
-//TODO Put sprit in common library.
 import (
-	"fmt"
-
 	"github.com/vorpalgame/vorpal/bus"
 )
 
-// TODO Break into composable elements now that we are in lib...
-func NewSpriteData(maxFrames, repeatPerFrame, scale int32, imageTemplate, audioFile string) SpriteData {
-	return SpriteData{NewCurrentLocation(), scale, imageTemplate, audioFile, false, false, &frameData{1, maxFrames, repeatPerFrame, 0, 0, false}}
-}
+//Probably should put a no-arg constructor in to create the location, framedata objects to ensure not nil.
 
-// Sprite interface/structure can be used for any type.
+// Sprite is a helper/wrapper that uses more composable elements and exposes
+// delegate methods. It isn't necessary except as a convenience and other exmaples should show that.
 type Sprite interface {
 	Start() Sprite
 	Stop() Sprite
 	IsStarted() bool
 
-	GetFrameData() FrameData
 	GetCurrentLocation() CurrentLocation
-	SetCurrentLocation(currentLocation CurrentLocation)
+	SetCurrentLocation(currentLocation CurrentLocation) Sprite
+	SetFrameData(frameData FrameData) Sprite
 
+	//Delegate helpers...
+	CalculateMove(evt bus.MouseEvent) Point
+	Move(point Point) Sprite
+	SetToLoop(loopAnimation bool) Sprite
+	UpdateIdleFrames(point Point) int32
+	CreateImage(evt bus.MouseEvent) bus.ImageLayer
+
+	//TODO Abstract out the composable audio controller...
 	SetAudioFile(fileName string) Sprite
 	GetAudioFile() string
 	GetPlayAudioEvent() bus.AudioEvent
 	GetStopAudioEvent() bus.AudioEvent
-	SetImageTemplate(fileTemplate string) Sprite
-
-	GetScale() int32
-
-	FlipHorizontal(evt bus.MouseEvent) bool
-	CreateImageLayer(mouseEvent bus.MouseEvent) *bus.ImageLayer
 }
 
 type SpriteData struct {
+	imageController ImageRenderer
 	currentLocation CurrentLocation
-	scale           int32
-	fileTemplate    string
+	frameData       FrameData
 	audioFile       string
 	started         bool
 	audioRunning    bool
-	frameData       FrameData
 }
 
-func (s *SpriteData) GetFrameData() FrameData {
-	return s.frameData
+func (sprite *SpriteData) UpdateIdleFrames(point Point) int32 {
+	return sprite.frameData.UpdateIdleFrames(point)
 }
-func (s *SpriteData) IsStarted() bool {
-	return s.started
+
+func (sprite *SpriteData) Move(point Point) Sprite {
+	sprite.currentLocation.Move(point)
+	return sprite
 }
-func (s *SpriteData) SetImageTemplate(fileTemplate string) Sprite {
-	s.fileTemplate = fileTemplate
-	return s
+
+func (sprite *SpriteData) CalculateMove(evt bus.MouseEvent) Point {
+	return sprite.currentLocation.CalculateMove(evt)
 }
+func (sprite *SpriteData) CreateImage(evt bus.MouseEvent) bus.ImageLayer {
+	return sprite.imageController.CreateImageLayer(evt, sprite.frameData, sprite.currentLocation)
+}
+
+func (sprite *SpriteData) SetToLoop(toLoop bool) Sprite {
+	sprite.frameData.SetToLoop(toLoop)
+	return sprite
+}
+func (sprite *SpriteData) IsStarted() bool {
+	return sprite.started
+}
+
+func (sprite *SpriteData) SetImageController(imageController ImageRenderer) Sprite {
+	sprite.imageController = imageController
+	return sprite
+
+}
+func (sprite *SpriteData) GetCurrentLocation() CurrentLocation {
+	return sprite.currentLocation
+}
+func (sprite *SpriteData) SetCurrentLocation(currentLocation CurrentLocation) Sprite {
+	sprite.currentLocation = currentLocation
+	return sprite
+
+}
+
+func (sprite *SpriteData) SetFrameData(frameData FrameData) Sprite {
+	sprite.frameData = frameData
+	return sprite
+
+}
+
 func (s *SpriteData) GetAudioFile() string {
 	return s.audioFile
 }
 func (s *SpriteData) SetAudioFile(fileName string) Sprite {
 	s.audioFile = fileName
 	return s
-}
-func (s *SpriteData) SetCurrentLocation(location CurrentLocation) {
-	s.currentLocation = location
-}
-func (s *SpriteData) GetCurrentLocation() CurrentLocation {
-	return s.currentLocation
-}
-func (s *SpriteData) GetScale() int32 {
-	return s.scale
 }
 
 func (s *SpriteData) GetPlayAudioEvent() bus.AudioEvent {
@@ -91,19 +112,4 @@ func (s *SpriteData) Stop() Sprite {
 	s.frameData.Reset()
 	s.started = false
 	return s
-}
-
-// TODO The flip horizontal may belong at higher abstraction level and then
-// this would not require the mouse event.
-func (s *SpriteData) CreateImageLayer(mouseEvent bus.MouseEvent) *bus.ImageLayer {
-	imgData := bus.NewImageMetadata(fmt.Sprintf(s.fileTemplate, s.frameData.GetCurrentFrame()), s.currentLocation.GetX(), s.currentLocation.GetY(), s.GetScale())
-	imgData.SetFlipHorizontal(s.FlipHorizontal(mouseEvent))
-	layer := bus.NewImageLayer().AddLayerData(imgData)
-
-	s.GetFrameData().Increment()
-	return &layer
-}
-
-func (z *SpriteData) FlipHorizontal(mouseEvent bus.MouseEvent) bool {
-	return mouseEvent.GetX() < z.currentLocation.GetX()
 }

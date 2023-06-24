@@ -1,5 +1,6 @@
 package lib
 
+//TODO unit tests...
 func NewPoint(x, y int32) Point {
 	return &point{x, y}
 }

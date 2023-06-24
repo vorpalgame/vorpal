@@ -7,6 +7,16 @@ import (
 	"github.com/vorpalgame/vorpal/samples/lib"
 )
 
+func NewZombieData(maxFrames, repeatPerFrame int32, name string, sprites ZombieSprites) zombieData {
+	scale := int32(25) //TODO Move to configuration data...
+	zombie := zombieData{}
+	zombie.sprites = sprites
+	controller := lib.NewImageRenderer().SetImageName(getZombieImageTemplate(name)).SetScale(scale)
+	zombie.SetImageController(controller).SetCurrentLocation(lib.NewCurrentLocation()).SetFrameData(lib.NewFrameData(maxFrames, repeatPerFrame))
+	zombie.SetAudioFile(getZombieAudioTemplate(name))
+	return zombie
+}
+
 type zombieData struct {
 	lib.SpriteData
 	sprites ZombieSprites
@@ -62,10 +72,6 @@ func (zs zombieSprites) GetIdleZombie() ZombieSprite {
 }
 func (zs zombieSprites) GetWalkingZombie() ZombieSprite {
 	return zs.walking
-}
-func newZombieData(maxFrames, repeatPerFrame int32, name string, sprites ZombieSprites) zombieData {
-	scale := int32(25) //TODO Move to configuration data...
-	return zombieData{lib.NewSpriteData(maxFrames, repeatPerFrame, scale, getZombieImageTemplate(name), getZombieAudioTemplate(name)), sprites}
 }
 
 func getZombieImageTemplate(name string) string {
