@@ -14,7 +14,7 @@ type ImageRenderer interface {
 	CreateImageLayer(mouseEvent bus.MouseEvent, fd FrameData, cl CurrentLocation) bus.ImageLayer
 	SetImageName(imageName string) ImageRenderer
 	SetScale(percent int32) ImageRenderer //Could use floats instead of whole number percent....
-
+	IncrementScale(percent int32) ImageRenderer
 }
 
 type imageControllerData struct {
@@ -26,7 +26,10 @@ func (s *imageControllerData) SetImageName(imageName string) ImageRenderer {
 	s.imageName = imageName
 	return s
 }
-
+func (s *imageControllerData) IncrementScale(percent int32) ImageRenderer {
+	s.scale += percent
+	return s
+}
 func (s *imageControllerData) SetScale(percent int32) ImageRenderer {
 	s.scale = percent
 	return s

@@ -125,6 +125,7 @@ func (e *engine) renderLayer(baseImg *rl.Image, layer bus.ImageLayer) *rl.Image 
 				//For testing
 				//rl.ImageClearBackground(baseImg, rl.White)
 			} else {
+
 				if img.IsFlipHorizontal() {
 					rl.ImageFlipHorizontal(clonedImage)
 				}

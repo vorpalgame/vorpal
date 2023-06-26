@@ -28,7 +28,9 @@ func Init() {
 	//e for exit
 	//r for reset zombie to beginning
 	vbus := bus.GetVorpalBus()
-	vbus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("e", "E", "R", "r", "+", "-"))
+
+	//We have to register both upper/lower case possiblities as it isn't clear why we are getting some results otherwise.
+	vbus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("e", "E", "R", "r", "+", "=", "-", "_"))
 
 	vbus.AddMouseListener(&zombies)
 	vbus.AddKeyEventListener(&zombies)
@@ -39,10 +41,10 @@ func Init() {
 	zombies.background = bus.NewImageLayer().AddLayerData(bus.NewImageMetadata("samples/resources/zombiecide/background.png", 0, 0, 33))
 	zombies.mouseEvent = nil
 
-	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Henry follows mouse pointer. \nLeft Mouse Button to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n To increase or decrease scale press the + or - keys. NOTE: George the parts zombie is still being worked on.").SetX(1200).SetY(100)
+	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Henry follows mouse pointer. \nLeft Mouse Button to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n NOTE: George the parts zombie is still being worked on.").SetX(1200).SetY(100)
 	vbus.SendTextEvent(textEvent)
 	var currentState = NewZombie(50) //Convenience var until we refactor.
-	//zombieParts := newPartsZommbie()
+	zombieParts := newPartsZommbie()
 	//
 	for {
 		if zombies.mouseEvent != nil {
@@ -50,7 +52,7 @@ func Init() {
 			drawEvt.AddImageLayer(zombies.background)
 			currentState.Execute(drawEvt, zombies.keyEvent, zombies.mouseEvent)
 			zombies.keyEvent = nil
-			//drawEvt.AddImageLayer(zombieParts.CreateImageLayer(zombies.mouseEvent))
+			drawEvt.AddImageLayer(zombieParts.CreateImageLayer(zombies.mouseEvent))
 			vbus.SendDrawEvent(drawEvt)
 
 			time.Sleep(20 * time.Millisecond)

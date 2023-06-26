@@ -20,7 +20,10 @@ func (currentZombie *idleZombie) GetState(mouseEvent bus.MouseEvent) ZombieState
 		return currentZombie.GetAttackZombie()
 	} else {
 		point := currentZombie.CalculateMove(mouseEvent)
-		if currentZombie.UpdateIdleFrames(point) < 150 {
+		idleFrames := currentZombie.UpdateIdleFrames(point)
+		if idleFrames == 0 {
+			return currentZombie.GetWalkingZombie()
+		} else if idleFrames < 150 {
 			return currentZombie
 		} else {
 			return currentZombie.GetDeadZombie()

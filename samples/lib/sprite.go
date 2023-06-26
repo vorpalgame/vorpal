@@ -33,6 +33,7 @@ type Sprite interface {
 
 	SetImageFileName(imgName string) Sprite
 	SetImageScale(scalePercent int32) Sprite
+	IncrementImageScale(incrementPercent int32) Sprite
 	SetToLoop(loopAnimation bool) Sprite
 	SetMaxFrame(maxFrames int32) Sprite
 	SetRepeatFrame(repeatFrame int32) Sprite
@@ -96,6 +97,11 @@ func (sprite *SpriteData) SetFrameData(frameData FrameData) Sprite {
 
 func (sprite *SpriteData) SetImageFileName(fileName string) Sprite {
 	sprite.imageRenderer.SetImageName(fileName)
+	return sprite
+}
+
+func (sprite *SpriteData) IncrementImageScale(percent int32) Sprite {
+	sprite.imageRenderer.IncrementScale(percent)
 	return sprite
 }
 

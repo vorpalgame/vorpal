@@ -3,8 +3,6 @@ package zombiecide
 import (
 	//"log"
 
-	"log"
-
 	"github.com/vorpalgame/vorpal/bus"
 )
 
@@ -27,7 +25,19 @@ func (zs *zombieData) Execute(drawEvent bus.DrawEvent, keyEvent bus.KeyEvent, ev
 	previousState := zs.current
 	zs.current = zs.current.GetState(evt)
 	if keyEvent != nil {
-		log.Default().Println(keyEvent.GetKey().ToString())
+		//Current caching mechanism pre scales images so we'll need to modify that...
+		// var increment int32 = 0
+		// if keyEvent.GetKey().EqualsIgnoreCase("+") {
+		// 	increment = 10
+		// } else if keyEvent.GetKey().EqualsIgnoreCase("-") {
+		// 	increment = -10
+		// }
+		// if increment != 0 {
+		// 	for _, v := range zs.sprites.GetAll() {
+		// 		log.Default().Println(v.GetStateName())
+		// 		v.IncrementImageScale(increment)
+		// 	}
+		// }
 	}
 
 	if previousState != zs.current {

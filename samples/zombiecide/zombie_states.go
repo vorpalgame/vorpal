@@ -38,6 +38,7 @@ type ZombieStates interface {
 	GetDeadZombie() ZombieState
 	GetIdleZombie() ZombieState
 	GetWalkingZombie() ZombieState
+	GetAll() map[string]ZombieState
 }
 
 func (zs *zombieStatesData) GetAttackZombie() ZombieState {
@@ -51,6 +52,10 @@ func (zs *zombieStatesData) GetIdleZombie() ZombieState {
 }
 func (zs *zombieStatesData) GetWalkingZombie() ZombieState {
 	return zs.stateMap[Walk]
+}
+
+func (zs *zombieStatesData) GetAll() map[string]ZombieState {
+	return zs.stateMap
 }
 
 // TODO Consolidate this a bit better...too many duplicat
