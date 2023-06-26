@@ -20,7 +20,7 @@ func newAttackZombie() AttackZombie {
 	return zombie
 }
 
-func (currentZombie *attackZombie) GetState(mouseEvent bus.MouseEvent, sprites ZombieSprites) ZombieState {
+func (currentZombie *attackZombie) GetState(mouseEvent bus.MouseEvent, sprites ZombieStates) ZombieState {
 
 	if mouseEvent.LeftButton().IsDown() {
 		return currentZombie

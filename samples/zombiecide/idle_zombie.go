@@ -22,7 +22,7 @@ func newIdleZombie() IdleZombie {
 	return zombie
 }
 
-func (currentZombie *idleZombie) GetState(mouseEvent bus.MouseEvent, states ZombieSprites) ZombieState {
+func (currentZombie *idleZombie) GetState(mouseEvent bus.MouseEvent, states ZombieStates) ZombieState {
 
 	log.Default().Println("Idle")
 

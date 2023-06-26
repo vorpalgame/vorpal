@@ -20,7 +20,7 @@ func newDeadZombie() DeadZombie {
 	return zombie
 }
 
-func (currentZombie *deadZombie) GetState(mouseEvent bus.MouseEvent, states ZombieSprites) ZombieState {
+func (currentZombie *deadZombie) GetState(mouseEvent bus.MouseEvent, states ZombieStates) ZombieState {
 
 	point := currentZombie.CalculateMove(mouseEvent)
 	if currentZombie.UpdateIdleFrames(point) > 0 {

@@ -21,7 +21,7 @@ func newWalkingZombie() WalkingZombie {
 	zombie.SetAudioFile(getZombieAudioTemplate("walk")).SetImageFileName(getZombieImageTemplate("walk")).SetToLoop(true).SetMaxFrame(10).SetRepeatFrame(5).SetImageScale(25)
 	return zombie
 }
-func (currentZombie *walkingZombie) GetState(mouseEvent bus.MouseEvent, states ZombieSprites) ZombieState {
+func (currentZombie *walkingZombie) GetState(mouseEvent bus.MouseEvent, states ZombieStates) ZombieState {
 	log.Default().Println("Walking")
 
 	if mouseEvent.LeftButton().IsDown() {
