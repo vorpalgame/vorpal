@@ -3,17 +3,19 @@ package zombiecide
 import (
 	//"log"
 
+	"log"
+
 	"github.com/vorpalgame/vorpal/bus"
 )
 
 // Outter wrapper that keeps track of states and transtion logic.
-func NewZombie() ZombieSprite {
-	zs := NewZombieSprites()
+func NewZombie(percentScale int32) ZombieSprite {
+	zs := NewZmobieStates(percentScale)
 	return &zombieData{zs, zs.GetWalkingZombie()}
 }
 
 type ZombieSprite interface {
-	Execute(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent)
+	Execute(drawEvent bus.DrawEvent, keyEvent bus.KeyEvent, mouseEvent bus.MouseEvent)
 }
 
 type zombieData struct {
@@ -21,9 +23,12 @@ type zombieData struct {
 	current ZombieState
 }
 
-func (zs *zombieData) Execute(drawEvent bus.DrawEvent, evt bus.MouseEvent) {
+func (zs *zombieData) Execute(drawEvent bus.DrawEvent, keyEvent bus.KeyEvent, evt bus.MouseEvent) {
 	previousState := zs.current
-	zs.current = zs.current.GetState(evt, zs.sprites)
+	zs.current = zs.current.GetState(evt)
+	if keyEvent != nil {
+		log.Default().Println(keyEvent.GetKey().ToString())
+	}
 
 	if previousState != zs.current {
 		zs.current.SetCurrentLocation(previousState.GetCurrentLocation())

@@ -7,17 +7,31 @@ import (
 
 // TODO Would be better with a type keyed map but
 // that appears problematic in Golang...TBD...
+const (
+	Walk   string = "walk"
+	Idle          = "idle"
+	Dead          = "dead"
+	Attack        = "attack"
+)
 
+// TODO This can be simplified further via composition....
 type ZombieState interface {
 	lib.Sprite
-	GetState(mouseEvent bus.MouseEvent, states ZombieStates) ZombieState
+	GetState(mouseEvent bus.MouseEvent) ZombieState
+	GetStateName() string
+}
+type zombieStateData struct {
+	lib.SpriteData
+	zombieStatesData
+	stateName string
 }
 
-type zombieStateData struct {
-	walking WalkingZombie
-	dead    DeadZombie
-	idle    IdleZombie
-	attack  AttackZombie
+func (zs *zombieStateData) GetStateName() string {
+	return zs.stateName
+}
+
+type zombieStatesData struct {
+	stateMap map[string]ZombieState
 }
 type ZombieStates interface {
 	GetAttackZombie() ZombieState
@@ -26,27 +40,63 @@ type ZombieStates interface {
 	GetWalkingZombie() ZombieState
 }
 
-func NewZombieSprites() ZombieStates {
-	var sprites = zombieStateData{}
-
-	sprites.dead = newDeadZombie()
-	sprites.idle = newIdleZombie()
-	sprites.attack = newAttackZombie()
-	sprites.walking = newWalkingZombie()
-	return sprites
+func (zs *zombieStatesData) GetAttackZombie() ZombieState {
+	return zs.stateMap[Attack]
+}
+func (zs *zombieStatesData) GetDeadZombie() ZombieState {
+	return zs.stateMap[Dead]
+}
+func (zs *zombieStatesData) GetIdleZombie() ZombieState {
+	return zs.stateMap[Idle]
+}
+func (zs *zombieStatesData) GetWalkingZombie() ZombieState {
+	return zs.stateMap[Walk]
 }
 
-func (zs zombieStateData) GetAttackZombie() ZombieState {
-	return zs.attack
+// TODO Consolidate this a bit better...too many duplicat
+// bits of data being passed even if constants. This is
+// due to the fact that we are in the middle of a transition.
+func NewZmobieStates(percentScale int32) ZombieStates {
+	var states = zombieStatesData{}
+	states.stateMap = make(map[string]ZombieState, 4)
+	//TODO PercentScale should be handled differently...
+	newWalkingZombie(states, percentScale)
+	newDeadZombie(states, percentScale)
+	newIdleZombie(states, percentScale)
+	newAttackZombie(states, percentScale)
+	return &states
 }
-func (zs zombieStateData) GetDeadZombie() ZombieState {
-	return zs.dead
+
+func newAttackZombie(states zombieStatesData, percentScale int32) AttackZombie {
+	zombie := &attackZombie{zombieStateData{lib.NewSprite(), states, Attack}}
+	zombie.setZombieData(Attack, 7, 3, percentScale, true)
+	states.stateMap[Attack] = zombie
+	return zombie
 }
-func (zs zombieStateData) GetIdleZombie() ZombieState {
-	return zs.idle
+
+func newIdleZombie(states zombieStatesData, percentScale int32) IdleZombie {
+	zombie := &idleZombie{zombieStateData{lib.NewSprite(), states, Idle}}
+	zombie.setZombieData(Idle, 15, 5, percentScale, false)
+	states.stateMap[Idle] = zombie
+	return zombie
 }
-func (zs zombieStateData) GetWalkingZombie() ZombieState {
-	return zs.walking
+
+func newWalkingZombie(states zombieStatesData, percentScale int32) WalkingZombie {
+	zombie := &walkingZombie{zombieStateData{lib.NewSprite(), states, Walk}}
+	zombie.setZombieData(Walk, 8, 3, percentScale, true)
+	states.stateMap[Walk] = zombie
+	return zombie
+}
+
+func newDeadZombie(states zombieStatesData, percentScale int32) DeadZombie {
+	zombie := &deadZombie{zombieStateData{lib.NewSprite(), states, Dead}}
+	zombie.setZombieData(Dead, 10, 5, percentScale, false)
+	states.stateMap[Dead] = zombie
+	return zombie
+}
+
+func (zd *zombieStateData) setZombieData(stateName string, maxFrame, repeatFrame, scale int32, loop bool) {
+	zd.SetAudioFile(getZombieAudioTemplate(stateName)).SetImageFileName(getZombieImageTemplate(stateName)).SetToLoop(loop).SetMaxFrame(maxFrame).SetRepeatFrame(repeatFrame).SetImageScale(scale)
 }
 
 // Helper methods for the states...

@@ -32,10 +32,10 @@ type KeyEvent interface {
 	GetKey() Key
 }
 
-// Define Key struct/interface.
+// Define Key struct/int32erface.
 type Key interface {
 	ToString() string
-	ToAscii() int
+	ToAscii() int32
 	IsUpperCase() bool
 	IsLowerCase() bool
 	EqualsIgnoreCase(key string) bool
@@ -43,7 +43,7 @@ type Key interface {
 
 type key struct {
 	value string
-	ascii int
+	ascii int32
 }
 
 //	type keyEvents struct {
@@ -57,7 +57,7 @@ func (evt *key) ToString() string {
 	return evt.value
 }
 
-func (evt *key) ToAscii() int {
+func (evt *key) ToAscii() int32 {
 	return evt.ascii
 }
 
@@ -71,7 +71,7 @@ func (evt *key) IsLowerCase() bool {
 
 // Yuck. Rewrite to store uc/lc when relevant....
 func (evt *key) EqualsIgnoreCase(keyStr string) bool {
-	keyToCheckVal := int(keyStr[0])
+	keyToCheckVal := int32(keyStr[0])
 	return (keyToCheckVal == evt.ascii || keyToCheckVal == evt.ascii-32 || keyToCheckVal == evt.ascii+32)
 }
 
@@ -80,23 +80,33 @@ var m = keyMap{}
 
 func InitKeys() {
 	m.stringToKey = make(map[string]Key)
-	m.asciiToKey = make(map[int]Key)
+	m.asciiToKey = make(map[int32]Key)
+	for i := 0; i <= 64; i++ {
+		k := createKey(int32(i))
+		m.stringToKey[k.ToString()] = k
+		m.asciiToKey[k.ToAscii()] = k
+	}
 	for i := 65; i <= 90; i++ {
-		uc := createKey(i)
+		uc := createKey(int32(i))
 		m.stringToKey[uc.ToString()] = uc
 		m.asciiToKey[uc.ToAscii()] = uc
-		lc := createKey(i + 32)
+		lc := createKey(int32(i) + 32)
 		m.stringToKey[lc.ToString()] = uc
 		m.asciiToKey[lc.ToAscii()] = lc
+	}
+	for i := 91; i <= 127; i++ {
+		k := createKey(int32(i))
+		m.stringToKey[k.ToString()] = k
+		m.asciiToKey[k.ToAscii()] = k
 	}
 }
 
 type keyMap struct {
 	stringToKey map[string]Key
-	asciiToKey  map[int]Key
+	asciiToKey  map[int32]Key
 }
 
-func createKey(ascii int) Key {
+func createKey(ascii int32) Key {
 	return &key{string(rune(ascii)), ascii}
 }
 
@@ -104,7 +114,7 @@ func GetKeyByString(s string) Key {
 	return m.stringToKey[s]
 }
 
-func GetKeyByAscii(i int) Key {
+func GetKeyByAscii(i int32) Key {
 	return m.asciiToKey[i]
 }
 

@@ -6,7 +6,7 @@ import (
 )
 
 type attackZombie struct {
-	lib.SpriteData
+	zombieStateData
 }
 
 type AttackZombie interface {
@@ -14,17 +14,11 @@ type AttackZombie interface {
 	ZombieState
 }
 
-func newAttackZombie() AttackZombie {
-	zombie := &attackZombie{lib.NewSprite()}
-	zombie.SetAudioFile(getZombieAudioTemplate("attack")).SetImageFileName(getZombieImageTemplate("attack")).SetMaxFrame(7).SetRepeatFrame(3).SetToLoop(true).SetImageScale(25)
-	return zombie
-}
-
-func (currentZombie *attackZombie) GetState(mouseEvent bus.MouseEvent, sprites ZombieStates) ZombieState {
+func (currentZombie *attackZombie) GetState(mouseEvent bus.MouseEvent) ZombieState {
 
 	if mouseEvent.LeftButton().IsDown() {
 		return currentZombie
 	} else {
-		return sprites.GetWalkingZombie()
+		return currentZombie.GetWalkingZombie()
 	}
 }

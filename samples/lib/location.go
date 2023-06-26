@@ -2,7 +2,7 @@ package lib
 
 //TODO Unit tests...
 import (
-	"log"
+	//"log"
 
 	"github.com/vorpalgame/vorpal/bus"
 )
@@ -35,7 +35,7 @@ func (cl *currentLocationData) GetCurrentPoint() Point {
 
 func (cl *currentLocationData) Move(toPoint Point) {
 	cl.currentLocation.Add(toPoint)
-	log.Default().Println(cl.GetCurrentPoint())
+	//log.Default().Println(cl.GetCurrentPoint())
 }
 
 func (cl *currentLocationData) CalculateMove(evt bus.MouseEvent) Point {

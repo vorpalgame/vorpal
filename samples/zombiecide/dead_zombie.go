@@ -6,7 +6,7 @@ import (
 )
 
 type deadZombie struct {
-	lib.SpriteData
+	zombieStateData
 }
 
 type DeadZombie interface {
@@ -14,18 +14,12 @@ type DeadZombie interface {
 	ZombieState
 }
 
-func newDeadZombie() DeadZombie {
-	zombie := &deadZombie{lib.NewSprite()}
-	zombie.SetAudioFile(getZombieAudioTemplate("dead")).SetImageFileName(getZombieImageTemplate("dead")).SetToLoop(false).SetMaxFrame(10).SetRepeatFrame(5).SetImageScale(25)
-	return zombie
-}
-
-func (currentZombie *deadZombie) GetState(mouseEvent bus.MouseEvent, states ZombieStates) ZombieState {
+func (currentZombie *deadZombie) GetState(mouseEvent bus.MouseEvent) ZombieState {
 
 	point := currentZombie.CalculateMove(mouseEvent)
 	if currentZombie.UpdateIdleFrames(point) > 0 {
 		return currentZombie
 	} else {
-		return states.GetWalkingZombie()
+		return currentZombie.GetWalkingZombie()
 	}
 }
