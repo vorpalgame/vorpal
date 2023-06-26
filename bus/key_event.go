@@ -38,7 +38,9 @@ type Key interface {
 	ToAscii() int32
 	IsUpperCase() bool
 	IsLowerCase() bool
+	EqualsAscii(keyToCheckVal int32) bool
 	EqualsIgnoreCase(key string) bool
+	EqualsIgnoreCaseByAscii(keyToCheckVal int32) bool
 }
 
 type key struct {
@@ -72,7 +74,15 @@ func (evt *key) IsLowerCase() bool {
 // Yuck. Rewrite to store uc/lc when relevant....
 func (evt *key) EqualsIgnoreCase(keyStr string) bool {
 	keyToCheckVal := int32(keyStr[0])
+	return evt.EqualsIgnoreCaseByAscii(keyToCheckVal)
+}
+
+func (evt *key) EqualsIgnoreCaseByAscii(keyToCheckVal int32) bool {
 	return (keyToCheckVal == evt.ascii || keyToCheckVal == evt.ascii-32 || keyToCheckVal == evt.ascii+32)
+}
+
+func (evt *key) EqualsAscii(keyToCheckVal int32) bool {
+	return evt.ascii == keyToCheckVal
 }
 
 // TODO Autotmate...

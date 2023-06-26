@@ -28,7 +28,7 @@ func Init() {
 	//e for exit
 	//r for reset zombie to beginning
 	vbus := bus.GetVorpalBus()
-	vbus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("e", "r", "+", "-"))
+	vbus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("e", "E", "R", "r", "+", "-"))
 
 	vbus.AddMouseListener(&zombies)
 	vbus.AddKeyEventListener(&zombies)
