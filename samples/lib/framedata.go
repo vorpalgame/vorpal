@@ -1,12 +1,14 @@
 package lib
 
 //Most data is set once at start up so limited Setters.
-func NewFrameData(maxFrame, repeatPerFrame int32) FrameData {
-	return &frameData{1, maxFrame, repeatPerFrame, 0, 0, true}
+func NewFrameData() FrameData {
+	return &frameData{1, 0, 0, 0, 0, true}
 }
 
 // TODO Unit tests...
 type FrameData interface {
+	SetMaxFrame(maxFrame int32) FrameData
+	SetRepeatFrame(repeatPerFrame int32) FrameData
 	GetCurrentFrame() int32
 	GetMaxFrame() int32
 	SetToLoop(bool)
@@ -36,7 +38,14 @@ func (fd *frameData) Increment() {
 		}
 	}
 }
-
+func (fd *frameData) SetMaxFrame(maxFrame int32) FrameData {
+	fd.maxFrame = maxFrame
+	return fd
+}
+func (fd *frameData) SetRepeatFrame(repeatPerFrame int32) FrameData {
+	fd.repeatPerFrame = repeatPerFrame
+	return fd
+}
 func (fd *frameData) UpdateIdleFrames(point Point) int32 {
 	if point.GetY() == 0 && point.GetX() == 0 {
 		fd.idleFrames++

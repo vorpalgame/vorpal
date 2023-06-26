@@ -11,9 +11,9 @@ func NewZombieData(maxFrames, repeatPerFrame int32, name string, sprites ZombieS
 	scale := int32(25) //TODO Move to configuration data...
 	zombie := zombieData{}
 	zombie.sprites = sprites
-	controller := lib.NewImageRenderer().SetImageName(getZombieImageTemplate(name)).SetScale(scale)
-	zombie.SetImageController(controller).SetCurrentLocation(lib.NewCurrentLocation()).SetFrameData(lib.NewFrameData(maxFrames, repeatPerFrame))
-	zombie.SetAudioFile(getZombieAudioTemplate(name))
+	zombie.SpriteData = lib.NewSprite()
+	zombie.SetImageFileName(getZombieImageTemplate(name)).SetAudioFile(getZombieAudioTemplate(name)).SetMaxFrame(maxFrames).SetRepeatFrame(repeatPerFrame).SetImageScale(scale)
+
 	return zombie
 }
 
