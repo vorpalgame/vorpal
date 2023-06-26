@@ -1,30 +1,31 @@
 package zombiecide
 
-import "github.com/vorpalgame/vorpal/bus"
+import (
+	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/samples/lib"
+)
 
 type deadZombie struct {
-	zombieData
+	lib.SpriteData
 }
 
-//TODO Some of the methods for setting shoudl be private to the package.
 type DeadZombie interface {
-	ZombieSprite
+	lib.Sprite
+	ZombieState
 }
 
-func newDeadZombie(sprites ZombieSprites) DeadZombie {
-
-	zombie := &deadZombie{NewZombieData(12, 3, "dead", sprites)}
-	zombie.SetToLoop(false)
+func newDeadZombie() DeadZombie {
+	zombie := &deadZombie{lib.NewSprite()}
+	zombie.SetAudioFile(getZombieAudioTemplate("dead")).SetImageFileName(getZombieImageTemplate("dead")).SetToLoop(false).SetMaxFrame(10).SetRepeatFrame(5).SetImageScale(25)
 	return zombie
 }
 
-func (currentZombie *deadZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
+func (currentZombie *deadZombie) GetState(mouseEvent bus.MouseEvent, states ZombieSprites) ZombieState {
 
 	point := currentZombie.CalculateMove(mouseEvent)
 	if currentZombie.UpdateIdleFrames(point) > 0 {
-		currentZombie.Move(point)
 		return currentZombie
 	} else {
-		return currentZombie.sprites.GetWalkingZombie()
+		return states.GetWalkingZombie()
 	}
 }

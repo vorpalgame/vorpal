@@ -7,70 +7,80 @@ import (
 	"github.com/vorpalgame/vorpal/samples/lib"
 )
 
-func NewZombieData(maxFrames, repeatPerFrame int32, name string, sprites ZombieSprites) zombieData {
-	scale := int32(25) //TODO Move to configuration data...
-	zombie := zombieData{}
-	zombie.sprites = sprites
-	zombie.SpriteData = lib.NewSprite()
-	zombie.SetImageFileName(getZombieImageTemplate(name)).SetAudioFile(getZombieAudioTemplate(name)).SetMaxFrame(maxFrames).SetRepeatFrame(repeatPerFrame).SetImageScale(scale)
-
-	return zombie
-}
-
+// Still refactoring and sprit map will be broken out next...
 type zombieData struct {
-	lib.SpriteData
 	sprites ZombieSprites
+	current ZombieState
 }
 
+// TODO Create a separate states container...
 type ZombieSprite interface {
-	lib.Sprite
-	GetState(mouseEvent bus.MouseEvent) ZombieSprite
-	GetSprites() ZombieSprites
+	Execute(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent)
 }
-
-func (s *zombieData) GetSprites() ZombieSprites {
-	return s.sprites
+type ZombieState interface {
+	lib.Sprite
+	GetState(mouseEvent bus.MouseEvent, states ZombieSprites) ZombieState
 }
 
 // TODO Would be better with a type keyed map but
 // that appears problematic in Golang...TBD...
-type zombieSprites struct {
+type zombieSpritesData struct {
 	walking WalkingZombie
 	dead    DeadZombie
 	idle    IdleZombie
 	attack  AttackZombie
 }
 type ZombieSprites interface {
-	GetAttackZombie() ZombieSprite
-	GetDeadZombie() ZombieSprite
-	GetIdleZombie() ZombieSprite
-	GetWalkingZombie() ZombieSprite
+	GetAttackZombie() ZombieState
+	GetDeadZombie() ZombieState
+	GetIdleZombie() ZombieState
+	GetWalkingZombie() ZombieState
 }
 
 func NewZombieSprites() ZombieSprites {
-	var sprites = zombieSprites{}
-	sprites.walking = newWalkingZombie(&sprites)
-	sprites.dead = newDeadZombie(&sprites)
-	sprites.idle = newIdleZombie(&sprites)
-	sprites.attack = newAttackZombie(&sprites)
+	var sprites = zombieSpritesData{}
+
+	sprites.dead = newDeadZombie()
+	sprites.idle = newIdleZombie()
+	sprites.attack = newAttackZombie()
+	sprites.walking = newWalkingZombie()
 	return sprites
 }
 
 // Probably a better factory pattern for this in idiomatic Golang
 func NewZombie() ZombieSprite {
-	return NewZombieSprites().GetWalkingZombie()
+	zs := NewZombieSprites()
+	return &zombieData{zs, zs.GetWalkingZombie()}
 }
 
-func (zs zombieSprites) GetAttackZombie() ZombieSprite {
+func (zs *zombieData) Execute(drawEvent bus.DrawEvent, evt bus.MouseEvent) {
+	previousState := zs.current
+	zs.current = zs.current.GetState(evt, zs.sprites)
+
+	if previousState != zs.current {
+		zs.current.SetCurrentLocation(previousState.GetCurrentLocation())
+		bus.GetVorpalBus().SendAudioEvent(previousState.GetStopAudioEvent())
+		previousState.Stop()
+
+	}
+	if !zs.current.IsStarted() {
+		bus.GetVorpalBus().SendAudioEvent(zs.current.GetPlayAudioEvent())
+		zs.current.Start()
+	}
+	drawEvent.AddImageLayer(zs.current.CreateImage(evt))
+
+}
+
+func (zs zombieSpritesData) GetAttackZombie() ZombieState {
 	return zs.attack
 }
-func (zs zombieSprites) GetDeadZombie() ZombieSprite {
+func (zs zombieSpritesData) GetDeadZombie() ZombieState {
 	return zs.dead
 }
-func (zs zombieSprites) GetIdleZombie() ZombieSprite {
+func (zs zombieSpritesData) GetIdleZombie() ZombieState {
 	return zs.idle
 }
-func (zs zombieSprites) GetWalkingZombie() ZombieSprite {
+func (zs zombieSpritesData) GetWalkingZombie() ZombieState {
 	return zs.walking
 }
 

@@ -1,34 +1,39 @@
 package zombiecide
 
 import (
+	"log"
+
 	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/samples/lib"
 )
 
 type idleZombie struct {
-	zombieData
+	lib.SpriteData
 }
 
 type IdleZombie interface {
-	ZombieSprite
+	lib.Sprite
+	ZombieState
 }
 
-func newIdleZombie(sprites ZombieSprites) IdleZombie {
-	zombie := &idleZombie{NewZombieData(15, 3, "idle", sprites)}
-	zombie.SetToLoop(false)
+func newIdleZombie() IdleZombie {
+	zombie := &idleZombie{lib.NewSprite()}
+	zombie.SetAudioFile(getZombieAudioTemplate("idle")).SetImageFileName(getZombieImageTemplate("idle")).SetToLoop(false).SetMaxFrame(15).SetRepeatFrame(5).SetImageScale(25)
 	return zombie
 }
 
-func (currentZombie *idleZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
+func (currentZombie *idleZombie) GetState(mouseEvent bus.MouseEvent, states ZombieSprites) ZombieState {
+
+	log.Default().Println("Idle")
 
 	if mouseEvent.LeftButton().IsDown() {
-		return currentZombie.sprites.GetAttackZombie()
+		return states.GetAttackZombie()
 	} else {
 		point := currentZombie.CalculateMove(mouseEvent)
-		if currentZombie.UpdateIdleFrames(point) < 250 {
-			currentZombie.Move(point)
+		if currentZombie.UpdateIdleFrames(point) < 150 {
 			return currentZombie
 		} else {
-			return currentZombie.sprites.GetDeadZombie()
+			return states.GetDeadZombie()
 		}
 
 	}

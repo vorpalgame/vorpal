@@ -2,27 +2,29 @@ package zombiecide
 
 import (
 	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/samples/lib"
 )
 
 type attackZombie struct {
-	zombieData
+	lib.SpriteData
 }
 
 type AttackZombie interface {
-	ZombieSprite
+	lib.Sprite
+	ZombieState
 }
 
-func newAttackZombie(sprites ZombieSprites) AttackZombie {
-	zombie := &attackZombie{NewZombieData(7, 3, "attack", sprites)}
-	zombie.SetToLoop(true)
+func newAttackZombie() AttackZombie {
+	zombie := &attackZombie{lib.NewSprite()}
+	zombie.SetAudioFile(getZombieAudioTemplate("attack")).SetImageFileName(getZombieImageTemplate("attack")).SetMaxFrame(7).SetRepeatFrame(3).SetToLoop(true).SetImageScale(25)
 	return zombie
 }
 
-func (currentZombie *attackZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
+func (currentZombie *attackZombie) GetState(mouseEvent bus.MouseEvent, sprites ZombieSprites) ZombieState {
 
 	if mouseEvent.LeftButton().IsDown() {
 		return currentZombie
 	} else {
-		return currentZombie.sprites.GetWalkingZombie()
+		return sprites.GetWalkingZombie()
 	}
 }

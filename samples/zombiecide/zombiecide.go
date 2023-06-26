@@ -43,19 +43,10 @@ func Init() {
 	//
 	for {
 		if zombies.mouseEvent != nil {
-			previousState := currentState
-			currentState = currentState.GetState(zombies.mouseEvent)
-			//Would prefer this handled in the GetState method and added to Sprite class.
-			if !currentState.IsStarted() {
-				currentState.SetCurrentLocation(previousState.GetCurrentLocation())
-				vbus.SendAudioEvent(previousState.GetStopAudioEvent())
-				previousState.Stop()
-				vbus.SendAudioEvent(currentState.GetPlayAudioEvent())
-				currentState.Start()
-			}
 			drawEvt := bus.NewDrawEvent()
 			drawEvt.AddImageLayer(zombies.background)
-			drawEvt.AddImageLayer(currentState.CreateImage(zombies.mouseEvent))
+			currentState.Execute(drawEvt, zombies.mouseEvent)
+
 			drawEvt.AddImageLayer(zombieParts.CreateImageLayer(zombies.mouseEvent))
 			vbus.SendDrawEvent(drawEvt)
 

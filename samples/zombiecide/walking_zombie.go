@@ -4,32 +4,37 @@ import (
 	"log"
 
 	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/samples/lib"
 )
 
 type walkingZombie struct {
-	zombieData
+	lib.SpriteData
 }
 
 type WalkingZombie interface {
-	ZombieSprite
+	lib.Sprite
+	ZombieState
 }
 
-func newWalkingZombie(sprites ZombieSprites) WalkingZombie {
-	zombie := &walkingZombie{NewZombieData(10, 5, "walk", sprites)}
-	zombie.SetToLoop(true)
+func newWalkingZombie() WalkingZombie {
+	zombie := &walkingZombie{lib.NewSprite()}
+	zombie.SetAudioFile(getZombieAudioTemplate("walk")).SetImageFileName(getZombieImageTemplate("walk")).SetToLoop(true).SetMaxFrame(10).SetRepeatFrame(5).SetImageScale(25)
 	return zombie
 }
-func (currentZombie *walkingZombie) GetState(mouseEvent bus.MouseEvent) ZombieSprite {
-	point := currentZombie.CalculateMove(mouseEvent)
+func (currentZombie *walkingZombie) GetState(mouseEvent bus.MouseEvent, states ZombieSprites) ZombieState {
+	log.Default().Println("Walking")
+
 	if mouseEvent.LeftButton().IsDown() {
-		log.Default().Println(currentZombie.sprites)
-		return currentZombie.sprites.GetAttackZombie()
+		log.Default().Println("Returning attack")
+		return states.GetAttackZombie()
 	} else {
-		if currentZombie.UpdateIdleFrames(point) < 50 {
+		point := currentZombie.CalculateMove(mouseEvent)
+		if currentZombie.UpdateIdleFrames(point) < 10 {
 			currentZombie.Move(point)
 			return currentZombie
 		} else {
-			return currentZombie.sprites.GetIdleZombie()
+			log.Default().Println("Returning idle")
+			return states.GetIdleZombie()
 		}
 	}
 
