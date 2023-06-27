@@ -9,7 +9,7 @@ func NewSprite() SpriteData {
 	sprite.audioController = NewAudioController()
 	sprite.imageRenderer = NewImageRenderer()
 	sprite.frameData = NewFrameData()
-	sprite.currentLocation = NewCurrentLocation()
+	sprite.currentLocation = NewCurrentLocation(NewPoint(600, 600), -4, -2, 5, 5)
 	return sprite
 }
 

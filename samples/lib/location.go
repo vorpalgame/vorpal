@@ -7,8 +7,12 @@ import (
 	"github.com/vorpalgame/vorpal/bus"
 )
 
-func NewCurrentLocation() CurrentLocation {
-	return &currentLocationData{&point{600, 600}, -4, -2, 5, 5} //TODO Get rid of bad defaults...Convenient for now...
+func NewLocation() CurrentLocation {
+	return &currentLocationData{}
+}
+
+func NewCurrentLocation(point Point, xMove, yMove, maxXOffset, maxYOffset int32) CurrentLocation {
+	return &currentLocationData{point, xMove, yMove, maxXOffset, maxYOffset}
 }
 
 type CurrentLocation interface {
