@@ -2,7 +2,6 @@ package zombiecide
 
 import (
 	"github.com/vorpalgame/vorpal/bus"
-	"github.com/vorpalgame/vorpal/samples/lib"
 )
 
 type walkingZombie struct {
@@ -10,7 +9,6 @@ type walkingZombie struct {
 }
 
 type WalkingZombie interface {
-	lib.Sprite
 	ZombieState
 }
 
