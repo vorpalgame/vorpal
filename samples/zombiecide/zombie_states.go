@@ -31,14 +31,26 @@ func (zs *zombieStateData) GetStateName() string {
 }
 
 type zombieStatesData struct {
+	current  ZombieState
 	stateMap map[string]ZombieState
 }
 type ZombieStates interface {
+	GetCurrent() ZombieState
+	SetCurrent(currentState ZombieState) ZombieStates
 	GetAttackZombie() ZombieState
 	GetDeadZombie() ZombieState
 	GetIdleZombie() ZombieState
 	GetWalkingZombie() ZombieState
 	GetAll() map[string]ZombieState
+}
+
+func (zs *zombieStatesData) SetCurrent(zombie ZombieState) ZombieStates {
+	zs.current = zombie
+	return zs
+}
+
+func (zs *zombieStatesData) GetCurrent() ZombieState {
+	return zs.current
 }
 
 func (zs *zombieStatesData) GetAttackZombie() ZombieState {
@@ -61,11 +73,12 @@ func (zs *zombieStatesData) GetAll() map[string]ZombieState {
 // TODO Consolidate this a bit better...too many duplicat
 // bits of data being passed even if constants. This is
 // due to the fact that we are in the middle of a transition.
-func NewZmobieStates(percentScale int32) ZombieStates {
+// Create fluent builder with no arg constructor...
+func NewZombieStates(percentScale int32) ZombieStates {
 	var states = zombieStatesData{}
 	states.stateMap = make(map[string]ZombieState, 4)
 	//TODO PercentScale should be handled differently...
-	newWalkingZombie(states, percentScale)
+	states.SetCurrent(newWalkingZombie(states, percentScale))
 	newDeadZombie(states, percentScale)
 	newIdleZombie(states, percentScale)
 	newAttackZombie(states, percentScale)
@@ -90,6 +103,7 @@ func newWalkingZombie(states zombieStatesData, percentScale int32) WalkingZombie
 	zombie := &walkingZombie{zombieStateData{lib.NewSprite(), states, Walk}}
 	zombie.setZombieData(Walk, 8, 3, percentScale, true)
 	states.stateMap[Walk] = zombie
+
 	return zombie
 }
 
