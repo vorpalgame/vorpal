@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFrameData(t *testing.T) {
+func TestFD(t *testing.T) {
 	maxFrame := int32(4)
 	f := NewFrameData()
 	f.SetMaxFrame(maxFrame)

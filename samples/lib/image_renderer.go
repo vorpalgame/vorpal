@@ -1,14 +1,16 @@
 package lib
 
 import (
-	"fmt"
-
 	"github.com/vorpalgame/vorpal/bus"
 )
 
 // TODO We need to refactor to decompose into pipeline segments that are composable.
+// Flip horizontal is the first but more to come...
 func NewImageRenderer() ImageRenderer {
-	return &imageRendererData{}
+	ir := &imageRendererData{}
+	ir.pipeline = NewImageRendererPipeline()
+	ir.pipeline.AddDataRenderer(NewFlipHorizontalTransformer())
+	return ir
 }
 
 type ImageRenderer interface {
@@ -21,6 +23,7 @@ type ImageRenderer interface {
 type imageRendererData struct {
 	imageName string
 	scale     int32
+	pipeline  ImageRendererPipeline
 }
 
 func (s *imageRendererData) SetImageName(imageName string) ImageRenderer {
@@ -38,17 +41,15 @@ func (s *imageRendererData) SetScale(percent int32) ImageRenderer {
 
 // TODO This is coupled to the frame data flip book style animation and shouldn't be.
 func (s *imageRendererData) CreateImageLayer(mouseEvent bus.MouseEvent, fd FrameData, cl CurrentLocation) bus.ImageLayer {
-	imgData := bus.NewImageMetadata(fmt.Sprintf(s.imageName, fd.GetCurrentFrame()), cl.GetX(), cl.GetY(), s.scale)
-	imgData.SetFlipHorizontal(s.flipHorizontal(mouseEvent, cl))
+	//TODO The imgage creation should be in pipleine as well.
+	imgData := NewImageMetadataSequence(s.imageName, fd.GetCurrentFrame(), cl.GetX(), cl.GetY()).SetScale(s.scale)
+	s.pipeline.Render(imgData, mouseEvent, cl)
 	layer := bus.NewImageLayer().AddLayerData(imgData)
 
 	fd.Increment()
 	return layer
 }
 
-func (s *imageRendererData) flipHorizontal(mouseEvent bus.MouseEvent, cl CurrentLocation) bool {
-	return mouseEvent.GetX() < cl.GetX()
-}
 func (s *imageRendererData) getScale() int32 {
 	return s.scale
 }
