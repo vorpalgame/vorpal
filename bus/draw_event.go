@@ -60,6 +60,7 @@ type ImageMetadata interface {
 	GetImage() string
 	GetX() int32
 	GetY() int32
+	SetScale(scale int32) ImageMetadata
 	GetScale() int32
 	GetScalePercent() float32
 	IsFlipHorizontal() bool
@@ -99,7 +100,10 @@ func (p *imageMetadata) GetX() int32 {
 func (p *imageMetadata) GetY() int32 {
 	return p.y
 }
-
+func (p *imageMetadata) SetScale(scale int32) ImageMetadata {
+	p.scale = scale
+	return p
+}
 func (p *imageMetadata) GetScale() int32 {
 	return p.scale
 }

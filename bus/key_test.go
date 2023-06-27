@@ -15,7 +15,7 @@ func TestKey(t *testing.T) {
 
 	InitKeys()
 	for i := 65; i <= 90; i++ {
-		k := GetKeyByAscii(i)
+		k := GetKeyByAscii(int32(i))
 		log.Println(k)
 		log.Println(GetKeyByString(k.ToString()))
 		//assert equal to each other.
