@@ -15,7 +15,7 @@ type FrameData interface {
 	UpdateIdleFrames(point Point) int32
 	GetIdleFrames() int32
 	IsLoop() bool
-	Increment()
+	Increment() FrameData
 	Reset()
 }
 type frameData struct {
@@ -23,7 +23,7 @@ type frameData struct {
 	loop                                                                    bool
 }
 
-func (fd *frameData) Increment() {
+func (fd *frameData) Increment() FrameData {
 	fd.currentFrameRepeats++
 	if fd.currentFrameRepeats > fd.repeatPerFrame {
 		fd.currentFrameRepeats = 0
@@ -37,6 +37,7 @@ func (fd *frameData) Increment() {
 			}
 		}
 	}
+	return fd
 }
 func (fd *frameData) SetMaxFrame(maxFrame int32) FrameData {
 	fd.maxFrame = maxFrame

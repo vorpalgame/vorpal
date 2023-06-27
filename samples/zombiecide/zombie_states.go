@@ -101,7 +101,7 @@ func newIdleZombie(states zombieStatesData, percentScale int32) IdleZombie {
 
 func newWalkingZombie(states zombieStatesData, percentScale int32) WalkingZombie {
 	zombie := &walkingZombie{zombieStateData{lib.NewSprite(), states, Walk}}
-	zombie.setZombieData(Walk, 8, 3, percentScale, true)
+	zombie.setZombieData(Walk, 10, 3, percentScale, true)
 	states.stateMap[Walk] = zombie
 
 	return zombie
