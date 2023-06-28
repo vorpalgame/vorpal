@@ -11,7 +11,7 @@ type FrameData interface {
 	SetRepeatFrame(repeatPerFrame int32) FrameData
 	GetCurrentFrame() int32
 	GetMaxFrame() int32
-	SetToLoop(bool)
+	SetToLoop(bool) FrameData
 	UpdateIdleFrames(point Point) int32
 	GetIdleFrames() int32
 	IsLoop() bool
@@ -59,8 +59,9 @@ func (fd *frameData) UpdateIdleFrames(point Point) int32 {
 func (fd *frameData) GetIdleFrames() int32 {
 	return fd.idleFrames
 }
-func (fd *frameData) SetToLoop(repeat bool) {
+func (fd *frameData) SetToLoop(repeat bool) FrameData {
 	fd.loop = repeat
+	return fd
 }
 
 func (fd *frameData) IsLoop() bool {

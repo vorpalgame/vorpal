@@ -11,9 +11,10 @@ import (
 type zombiecide struct {
 	bus bus.VorpalBus
 	//textEvent  bus.TextEvent
-	mouseEvent bus.MouseEvent
-	background bus.ImageLayer
-	keyEvent   bus.KeyEvent
+	mouseEvent    bus.MouseEvent
+	background    bus.ImageLayer
+	keyEvent      bus.KeyEvent
+	currentZombie string
 }
 
 // TODO Need a configuration mechanism with YAML or JSON to eliminate the need for hard code.
@@ -30,11 +31,11 @@ func Init() {
 	vbus := bus.GetVorpalBus()
 
 	//We have to register both upper/lower case possiblities as it isn't clear why we are getting some results otherwise.
-	vbus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("e", "E", "R", "r", "+", "=", "-", "_"))
+	vbus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("e", "E", "R", "r", "g", "G", "h", "H"))
 
 	vbus.AddMouseListener(&zombies)
 	vbus.AddKeyEventListener(&zombies)
-
+	zombies.currentZombie = "g"
 	zombies.bus = vbus
 
 	//TODO We need config probably through JSON file when prototyping is complete.
@@ -44,17 +45,21 @@ func Init() {
 	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Henry follows mouse pointer. \nLeft Mouse Button to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n NOTE: George the parts zombie is still being worked on.").SetX(1200).SetY(100)
 	vbus.SendTextEvent(textEvent)
 	var currentState = NewZombie(50) //Convenience var until we refactor.
-	zombieParts := newPartsZommbie()
+	zombieParts := newSubsumptionZombie()
 	//
 	for {
 		if zombies.mouseEvent != nil {
 			drawEvt := bus.NewDrawEvent()
 			drawEvt.AddImageLayer(zombies.background)
-			currentState.Execute(drawEvt, zombies.keyEvent, zombies.mouseEvent)
-			zombies.keyEvent = nil
-			drawEvt.AddImageLayer(zombieParts.CreateImageLayer(zombies.mouseEvent))
-			vbus.SendDrawEvent(drawEvt)
 
+			if zombies.currentZombie == "h" {
+				currentState.Execute(drawEvt, zombies.keyEvent, zombies.mouseEvent)
+			} else {
+				currentState.Stop()
+				drawEvt.AddImageLayer(zombieParts.CreateImageLayer(zombies.mouseEvent))
+			}
+			vbus.SendDrawEvent(drawEvt)
+			zombies.keyEvent = nil
 			time.Sleep(20 * time.Millisecond)
 			//Execute to send image and sound
 
@@ -66,13 +71,17 @@ func Init() {
 
 func (z *zombiecide) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
-
+		//Using explicit letters due to misreported case from raylib...
 		log.Default().Println(evt.GetKey().ToString())
 		if evt.GetKey().EqualsIgnoreCase("e") {
 			os.Exit(0)
 		} else if evt.GetKey().EqualsIgnoreCase("r") {
 			//TODO Stop and close old resources if necessary...
 			//zombies.zombie = NewZombie()
+		} else if evt.GetKey().EqualsIgnoreCase("h") {
+			z.currentZombie = "h"
+		} else if evt.GetKey().EqualsIgnoreCase("g") {
+			z.currentZombie = "g"
 		} else {
 			z.keyEvent = evt
 		}

@@ -56,6 +56,7 @@ func NewImageMetadata(img string, x, y, scale int32) ImageMetadata {
 	return &imageMetadata{img, x, y, scale, false}
 }
 
+//TODO We should refactor lib to make it general use the Point
 type ImageMetadata interface {
 	GetImage() string
 	GetX() int32
@@ -65,6 +66,8 @@ type ImageMetadata interface {
 	GetScalePercent() float32
 	IsFlipHorizontal() bool
 	SetFlipHorizontal(bool)
+	SetX(x int32) ImageMetadata
+	SetY(y int32) ImageMetadata
 }
 
 //Use builder pattern methods
@@ -97,8 +100,17 @@ func (p *imageMetadata) GetX() int32 {
 	return p.x
 }
 
+//TODO Start using Point
+func (p *imageMetadata) SetX(x int32) ImageMetadata {
+	p.x = x
+	return p
+}
 func (p *imageMetadata) GetY() int32 {
 	return p.y
+}
+func (p *imageMetadata) SetY(y int32) ImageMetadata {
+	p.y = y
+	return p
 }
 func (p *imageMetadata) SetScale(scale int32) ImageMetadata {
 	p.scale = scale
