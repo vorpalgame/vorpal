@@ -190,7 +190,6 @@ func (e *engine) sendMouseEvents() {
 }
 
 func getMouseButton(button int32, buttonName string) bus.MouseButtonState {
-	//We have an error on occasion wher the mouse button is nil and it isn't clear why or how...May be start up race or bug.
 	return bus.NewMouseButtonState(buttonName, rl.IsMouseButtonDown(button))
 }
 
