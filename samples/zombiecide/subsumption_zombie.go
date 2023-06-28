@@ -2,7 +2,6 @@ package zombiecide
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/samples/lib"
@@ -13,7 +12,8 @@ import (
 // Iterate and add overrides as necessary to body parts. Start general.
 func newSubsumptionZombie() SubsumptionZombie {
 
-	zombie := &partsZombieData{make([]BodyPartGroup, 0), lib.NewCurrentLocation(lib.NewPoint(300, 300), -4, -2, 5, 5), bus.NewImageLayer(), 0, 1}
+	//TODO Fix confiuration logic and externalize...
+	zombie := &partsZombieData{make([]BodyPartGroup, 0), lib.NewCurrentLocation(lib.NewPoint(570, 430), -4, -2, 5, 5), bus.NewImageLayer()}
 
 	zombie.add(createRightArm())
 	zombie.add(createLeftArm())
@@ -29,8 +29,6 @@ type partsZombieData struct {
 	bodyPartGroups  []BodyPartGroup
 	currentLocation lib.CurrentLocation
 	imageLayer      bus.ImageLayer
-
-	currentCallCount, currentHead int32
 }
 
 // At some point these can have override methods for differentiating behavior.
@@ -50,7 +48,7 @@ type SubsumptionZombie interface {
 }
 type BodyEvents interface {
 	construct(img bus.ImageLayer)
-	move(evt bus.MouseEvent)
+	move(evt lib.Point)
 }
 
 type Body interface {
@@ -61,7 +59,7 @@ type Body interface {
 func (bp *partsZombieData) add(part BodyPartGroup) {
 
 	bp.bodyPartGroups = append(bp.bodyPartGroups, part)
-	log.Default().Println(len(bp.bodyPartGroups))
+
 }
 func (pd *partsZombieData) construct(img bus.ImageLayer) {
 
@@ -70,9 +68,12 @@ func (pd *partsZombieData) construct(img bus.ImageLayer) {
 	}
 }
 
-func (pd *partsZombieData) move(evt bus.MouseEvent) {
-	for _, part := range pd.bodyPartGroups {
-		part.move(evt)
+// Fix the logic...
+func (pd *partsZombieData) move(evt lib.Point) {
+	if evt.GetX() != 0 && evt.GetY() != 0 {
+		for _, part := range pd.bodyPartGroups {
+			part.move(evt)
+		}
 	}
 }
 
@@ -85,8 +86,12 @@ type bodyPartsData struct {
 func (bp *bodyPartData) construct(img bus.ImageLayer) {
 	img.AddLayerData(bp.img)
 }
-func (bp *bodyPartData) move(img bus.MouseEvent) {
-	//TODO....
+
+// TODO Need to refactor imgmetadta to use Point...
+// Override for individual parts as necessary...
+func (bp *bodyPartData) move(evt lib.Point) {
+	bp.img.SetX(bp.img.GetX() + evt.GetX())
+	bp.img.SetY(bp.img.GetY() + evt.GetY())
 }
 
 type BodyPartGroup interface {
@@ -99,7 +104,7 @@ func (pd *bodyPartsData) construct(img bus.ImageLayer) {
 	}
 }
 
-func (pd *bodyPartsData) move(evt bus.MouseEvent) {
+func (pd *bodyPartsData) move(evt lib.Point) {
 	for _, part := range pd.layer {
 		part.move(evt)
 	}
@@ -127,9 +132,10 @@ type torsoData struct {
 }
 
 type headData struct {
-	name        string
-	currentHead int
-	heads       map[int]bus.ImageMetadata
+	name            string
+	currentHead     int
+	currentLocation lib.Point
+	heads           map[int]bus.ImageMetadata
 }
 
 type BodyPart interface {
@@ -139,9 +145,8 @@ type BodyPart interface {
 func (head *headData) construct(img bus.ImageLayer) {
 	img.AddLayerData(head.getCurrentHead())
 }
-
-func (head *headData) move(evt bus.MouseEvent) {
-	//TODO
+func (head *headData) move(evt lib.Point) {
+	head.currentLocation.Add(evt)
 }
 
 func (head *headData) getCurrentHead() bus.ImageMetadata {
@@ -149,7 +154,11 @@ func (head *headData) getCurrentHead() bus.ImageMetadata {
 	if head.currentHead > 6 {
 		head.currentHead = 1
 	}
-	return head.heads[head.currentHead]
+	h := head.heads[head.currentHead]
+	//TODO Again, ImageMetadata needs to use Point
+	h.SetX(head.currentLocation.GetX())
+	h.SetY(head.currentLocation.GetY())
+	return h
 }
 
 // We keep separate major body structures as extensions in
@@ -210,7 +219,7 @@ func createTorso() BodyPartGroup {
 
 // Rewire zombie bobble head later.
 func createHead() BodyPartGroup {
-	bpg := headData{head, 1, make(map[int]bus.ImageMetadata)}
+	bpg := headData{head, 1, lib.NewPoint(570, 430), make(map[int]bus.ImageMetadata)}
 	//bpg.layer = append(bpg.layer, newBodyPart("neck.png", 610, 510, 20))
 	//Like Pascal numbering :)
 	for i := 1; i < 7; i++ {
@@ -223,15 +232,16 @@ func createHead() BodyPartGroup {
 func (zombie *partsZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) bus.ImageLayer {
 	img := zombie.imageLayer
 
-	//zombie.currentHead++
+	img.Reset()
 
 	p := zombie.currentLocation.CalculateMove(mouseEvent)
 	if p.GetX() != 0 && p.GetY() != 0 {
-		img.Reset()
+
 		zombie.currentLocation.Move(p)
 
 	}
 	//TODO we'll keep this cached and not reconstruct if nothing changes...
+	zombie.move(p)
 	zombie.construct(img)
 	return img
 }

@@ -44,7 +44,7 @@ func Init() {
 
 	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Henry follows mouse pointer. \nLeft Mouse Button to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n NOTE: George the parts zombie is still being worked on.").SetX(1200).SetY(100)
 	vbus.SendTextEvent(textEvent)
-	var currentState = NewZombie(50) //Convenience var until we refactor.
+	var currentState = NewZombie(30) //Convenience var until we refactor.
 	zombieParts := newSubsumptionZombie()
 	//
 	for {
