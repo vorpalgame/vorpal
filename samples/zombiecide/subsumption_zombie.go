@@ -13,7 +13,7 @@ import (
 func newSubsumptionZombie() SubsumptionZombie {
 
 	//TODO Fix confiuration logic and externalize...
-	zombie := &partsZombieData{make([]BodyPartGroup, 0), lib.NewCurrentLocation(lib.NewPoint(570, 430), -4, -2, 5, 5), bus.NewImageLayer()}
+	zombie := &subsumptionZombieData{make([]BodyPartGroup, 0), lib.NewCurrentLocation(lib.NewPoint(570, 430), -4, -2, 5, 5), bus.NewImageLayer()}
 
 	zombie.add(createRightArm())
 	zombie.add(createLeftArm())
@@ -25,7 +25,7 @@ func newSubsumptionZombie() SubsumptionZombie {
 }
 
 // TODO We can add subsumption method to propagate change in scale...
-type partsZombieData struct {
+type subsumptionZombieData struct {
 	bodyPartGroups  []BodyPartGroup
 	currentLocation lib.Navigator
 	imageLayer      bus.ImageLayer
@@ -46,6 +46,10 @@ const (
 type SubsumptionZombie interface {
 	CreateImageLayer(event bus.MouseEvent) bus.ImageLayer
 }
+
+// //////////////////////////////////////////////////
+// BODY
+// //////////////////////////////////////////////////
 type BodyEvents interface {
 	construct(img bus.ImageLayer)
 	move(evt lib.Point)
@@ -56,12 +60,10 @@ type Body interface {
 	add(part BodyPartGroup)
 }
 
-func (bp *partsZombieData) add(part BodyPartGroup) {
-
+func (bp *subsumptionZombieData) add(part BodyPartGroup) {
 	bp.bodyPartGroups = append(bp.bodyPartGroups, part)
-
 }
-func (pd *partsZombieData) construct(img bus.ImageLayer) {
+func (pd *subsumptionZombieData) construct(img bus.ImageLayer) {
 
 	for _, part := range pd.bodyPartGroups {
 		part.construct(img)
@@ -69,12 +71,20 @@ func (pd *partsZombieData) construct(img bus.ImageLayer) {
 }
 
 // Fix the logic...
-func (pd *partsZombieData) move(evt lib.Point) {
+func (pd *subsumptionZombieData) move(evt lib.Point) {
 	if evt.GetX() != 0 && evt.GetY() != 0 {
 		for _, part := range pd.bodyPartGroups {
 			part.move(evt)
 		}
 	}
+}
+
+// //////////////////////////////////////////////////
+// BODY PARTS GROUP
+// //////////////////////////////////////////////////
+type BodyPartGroup interface {
+	BodyEvents
+	add(BodyPart) BodyPartGroup
 }
 
 // We keep them in order so when we iterate the layers render as expected.
@@ -83,19 +93,9 @@ type bodyPartsData struct {
 	layer []BodyPart
 }
 
-func (bp *bodyPartData) construct(img bus.ImageLayer) {
-	img.AddLayerData(bp.img)
-}
-
-// TODO Need to refactor imgmetadta to use Point...
-// Override for individual parts as necessary...
-func (bp *bodyPartData) move(evt lib.Point) {
-	bp.img.SetX(bp.img.GetX() + evt.GetX())
-	bp.img.SetY(bp.img.GetY() + evt.GetY())
-}
-
-type BodyPartGroup interface {
-	BodyEvents
+func (bp *bodyPartsData) add(part BodyPart) BodyPartGroup {
+	bp.layer = append(bp.layer, part)
+	return bp
 }
 
 func (pd *bodyPartsData) construct(img bus.ImageLayer) {
@@ -110,27 +110,115 @@ func (pd *bodyPartsData) move(evt lib.Point) {
 	}
 }
 
-// TODO Look at override for head to see how the subsumption
-// works. Most just uses default behavior but it is different.
+// //////////////////////////////////////////////////
+// BODY PART
+// /////////////////////////////////////////////////
+type BodyPart interface {
+	BodyEvents
+}
+
+type bodyPartData struct {
+	name string
+	img  bus.ImageMetadata
+}
+
+// TODO Locate with bodyPartData
+func (bp *bodyPartData) construct(img bus.ImageLayer) {
+	img.AddLayerData(bp.img)
+}
+
+// TODO Need to refactor imgmetadta to use Point...
+// Override for individual parts as necessary...
+func (bp *bodyPartData) move(evt lib.Point) {
+	bp.img.SetX(bp.img.GetX() + evt.GetX())
+	bp.img.SetY(bp.img.GetY() + evt.GetY())
+}
+
+func newBodyPart(fileName string, x, y, scale int32) BodyPart {
+	return &bodyPartData{fileName, newImageData(fileName, x, y, scale)}
+}
+
+// //////////////////////////////////////////////////
+// LEFT LEG
+// /////////////////////////////////////////////////
 type leftLegData struct {
-	bodyPartsData
+	BodyPartGroup
 }
 
+func createLeftLeg() BodyPartGroup {
+	bpg := leftLegData{&bodyPartsData{leftLeg, make([]BodyPart, 0)}}
+	bpg.add(newBodyPart("left_leg.png", 600, 585, 20))
+	bpg.add(newBodyPart("left_leg_down.png", 600, 640, 20))
+	bpg.add(newBodyPart("left_foot.png", 600, 680, 20))
+	return &bpg
+
+}
+
+// //////////////////////////////////////////////////
+// RIGHT LEG
+// /////////////////////////////////////////////////
 type rightLegData struct {
-	bodyPartsData
+	BodyPartGroup
 }
+
+func createRightLeg() BodyPartGroup {
+	bpg := rightLegData{&bodyPartsData{rightLeg, make([]BodyPart, 0)}}
+	bpg.add(newBodyPart("right_leg.png", 635, 585, 20))
+	bpg.add(newBodyPart("right_leg_down.png", 635, 640, 20))
+	bpg.add(newBodyPart("right_foot.png", 635, 680, 20))
+	return &bpg
+}
+
+// //////////////////////////////////////////////////
+// LEFT ARM
+// /////////////////////////////////////////////////
 type leftArmData struct {
-	bodyPartsData
+	BodyPartGroup
 }
 
+func createLeftArm() BodyPartGroup {
+	bpg := leftArmData{&bodyPartsData{leftArm, make([]BodyPart, 0)}}
+	bpg.add(newBodyPart("left_arm.png", 590, 570, 20))
+	bpg.add(newBodyPart("left_hand.png", 600, 585, 20))
+	bpg.add(newBodyPart("left_shoulder.png", 585, 540, 20))
+	return &bpg
+
+}
+
+// //////////////////////////////////////////////////
+// RIGHT ARM
+// /////////////////////////////////////////////////
 type rightArmData struct {
-	bodyPartsData
+	BodyPartGroup
 }
 
+func createRightArm() BodyPartGroup {
+	bpg := rightArmData{&bodyPartsData{rightArm, make([]BodyPart, 0)}}
+	bpg.add(newBodyPart("right_hand.png", 655, 585, 20))
+	bpg.add(newBodyPart("right_arm.png", 655, 570, 20))
+	bpg.add(newBodyPart("right_shoulder.png", 640, 540, 20))
+	return &bpg
+
+}
+
+// //////////////////////////////////////////////////
+// TORSO
+// /////////////////////////////////////////////////
 type torsoData struct {
-	bodyPartsData
+	BodyPartGroup
 }
 
+func createTorso() BodyPartGroup {
+	bpg := torsoData{&bodyPartsData{torso, make([]BodyPart, 0)}}
+	bpg.add(newBodyPart("body.png", 600, 525, 20))
+	bpg.add(newBodyPart("body_2.png", 600, 580, 20))
+	return &bpg
+
+}
+
+// //////////////////////////////////////////////////
+// HEAD
+// /////////////////////////////////////////////////
 type headData struct {
 	name                      string
 	currentLocation           lib.Point
@@ -138,8 +226,9 @@ type headData struct {
 	heads                     map[int]bus.ImageMetadata
 }
 
-type BodyPart interface {
-	BodyEvents
+// TODO Rethink the signatures to eliminate this sort of no-op
+func (head *headData) add(bodyPart BodyPart) BodyPartGroup {
+	return head
 }
 
 func (head *headData) construct(img bus.ImageLayer) {
@@ -165,66 +254,15 @@ func (head *headData) getCurrentHead() bus.ImageMetadata {
 	return h
 }
 
-// We keep separate major body structures as extensions in
-// case we want to override methods later...
-type bodyPartData struct {
-	img bus.ImageMetadata
-}
-
-func newBodyPart(fileName string, x, y, scale int32) BodyPart {
-	return &bodyPartData{newImageData(fileName, x, y, scale)}
-}
-
 func newImageData(fileName string, x, y, scale int32) bus.ImageMetadata {
 	base := "samples/resources/zombiecide/Zombie1/bodyparts/"
 	return bus.NewImageMetadata(base+fileName, x, y, scale)
 }
 
-func createLeftLeg() BodyPartGroup {
-	bpg := leftLegData{bodyPartsData{leftLeg, make([]BodyPart, 0)}}
-	bpg.layer = append(bpg.layer, newBodyPart("left_leg.png", 600, 585, 20))
-	bpg.layer = append(bpg.layer, newBodyPart("left_leg_down.png", 600, 640, 20))
-	bpg.layer = append(bpg.layer, newBodyPart("left_foot.png", 600, 680, 20))
-	return &bpg
-
-}
-func createRightLeg() BodyPartGroup {
-	bpg := rightLegData{bodyPartsData{rightLeg, make([]BodyPart, 0)}}
-	bpg.layer = append(bpg.layer, newBodyPart("right_leg.png", 635, 585, 20))
-	bpg.layer = append(bpg.layer, newBodyPart("right_leg_down.png", 635, 640, 20))
-	bpg.layer = append(bpg.layer, newBodyPart("right_foot.png", 635, 680, 20))
-	return &bpg
-}
-
-func createLeftArm() BodyPartGroup {
-	bpg := leftArmData{bodyPartsData{leftArm, make([]BodyPart, 0)}}
-	bpg.layer = append(bpg.layer, newBodyPart("left_arm.png", 590, 570, 20))
-	bpg.layer = append(bpg.layer, newBodyPart("left_hand.png", 600, 585, 20))
-	bpg.layer = append(bpg.layer, newBodyPart("left_shoulder.png", 585, 540, 20))
-	return &bpg
-
-}
-
-func createRightArm() BodyPartGroup {
-	bpg := rightArmData{bodyPartsData{rightArm, make([]BodyPart, 0)}}
-	bpg.layer = append(bpg.layer, newBodyPart("right_hand.png", 655, 585, 20))
-	bpg.layer = append(bpg.layer, newBodyPart("right_arm.png", 655, 570, 20))
-	bpg.layer = append(bpg.layer, newBodyPart("right_shoulder.png", 640, 540, 20))
-	return &bpg
-
-}
-func createTorso() BodyPartGroup {
-	bpg := torsoData{bodyPartsData{torso, make([]BodyPart, 0)}}
-	bpg.layer = append(bpg.layer, newBodyPart("body.png", 600, 525, 20))
-	bpg.layer = append(bpg.layer, newBodyPart("body_2.png", 600, 580, 20))
-	return &bpg
-
-}
-
 // Rewire zombie bobble head later.
 func createHead() BodyPartGroup {
 	bpg := headData{head, lib.NewPoint(570, 430), 1, 1, make(map[int]bus.ImageMetadata)}
-	//bpg.layer = append(bpg.layer, newBodyPart("neck.png", 610, 510, 20))
+	//bpg.add(newBodyPart("neck.png", 610, 510, 20))
 	//Like Pascal numbering :)
 	for i := 1; i < 7; i++ {
 		bpg.heads[i] = newImageData(fmt.Sprintf("head%d.png", i), 570, 430, 20)
@@ -233,7 +271,7 @@ func createHead() BodyPartGroup {
 
 }
 
-func (zombie *partsZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) bus.ImageLayer {
+func (zombie *subsumptionZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) bus.ImageLayer {
 	img := zombie.imageLayer
 
 	img.Reset()
