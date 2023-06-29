@@ -60,7 +60,7 @@ func (t *tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 func (t *tarot) doStart() {
 	t.currentCard = 0
 	//The keys we are interested in.
-	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("s", "n"))
+	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("s", "n", "S", "N"))
 	t.drawEvent = bus.NewDrawEvent()
 
 	t.drawEvent.AddImageLayer(bus.NewImageLayer().AddLayerData(bus.NewImageMetadata("samples/resources/tarot/table.png", 0, 0, 100)))
@@ -78,38 +78,43 @@ func (t *tarot) doSendCard() {
 	t.formatCardText(card)
 	t.bus.SendTextEvent(t.textEvent)
 	displayCard := card.GetCardImg()
+	actualWidth := float64(1500)
+	actualHeight := float64(2550)
+	scale := float64(0.1)
 
-	mainY := int32(360)
-	mainX := int32(1000)
-	cardWidth := int32(200) //TODO position will usually be relative beased on scale factor...
-	cardHeight := int32(340)
-	rightY := int32(mainY + 350)
-	rightX := int32(mainX + 500)
+	centralY := int32(360)
+	centralX := int32(900)
+	cardWidth := int32(actualWidth * scale)
+	cardHeight := int32(actualHeight * scale)
+	rightY := int32(810)
+	rightX := int32(1300)
 
 	switch t.currentCard {
 
 	case 0:
-		t.drawEvent.AddImageLayer(createImageLayer(displayCard, mainX, mainY))
+		t.drawEvent.AddImageLayer(createImageLayer(displayCard, centralX, centralY))
 	case 1:
-		t.drawEvent.AddImageLayer(createImageLayer(displayCard, mainX+50, mainY)) //TODO rotate..
+		t.drawEvent.AddImageLayer(createImageLayer(displayCard, centralX+50, centralY)) //TODO rotate..
 	case 2:
-		t.drawEvent.AddImageLayer(createImageLayer(displayCard, mainX-cardWidth-50, mainY))
+		t.drawEvent.AddImageLayer(createImageLayer(displayCard, centralX-cardWidth-25, centralY))
 	case 3:
-		t.drawEvent.AddImageLayer(createImageLayer(displayCard, mainX+cardWidth+75, mainY))
+		t.drawEvent.AddImageLayer(createImageLayer(displayCard, centralX+cardWidth+75, centralY))
 	case 4:
-		t.drawEvent.AddImageLayer(createImageLayer(displayCard, mainX, mainY+cardHeight+10))
+		t.drawEvent.AddImageLayer(createImageLayer(displayCard, centralX, centralY+cardHeight+10))
 	case 5:
-		t.drawEvent.AddImageLayer(createImageLayer(displayCard, mainX, mainY-cardHeight-10))
+		t.drawEvent.AddImageLayer(createImageLayer(displayCard, centralX, centralY-cardHeight-10))
 	case 6:
 		t.drawEvent.AddImageLayer(createImageLayer(displayCard, rightX, rightY))
 	case 7:
 		t.drawEvent.AddImageLayer(createImageLayer(displayCard, rightX, rightY-cardHeight-10))
 	case 8:
 		t.drawEvent.AddImageLayer(createImageLayer(displayCard, rightX, rightY-(2*cardHeight)-20))
+	case 9:
+		t.drawEvent.AddImageLayer(createImageLayer(displayCard, rightX, rightY-(3*cardHeight)-30))
 	}
 	t.bus.SendDrawEvent(t.drawEvent)
 
-	if t.currentCard < 9 {
+	if t.currentCard < 10 {
 		t.currentCard++
 
 	} else {
@@ -119,7 +124,7 @@ func (t *tarot) doSendCard() {
 
 // TODO Current seetting this to 25% hard coded...
 func createImageLayer(displayCard string, mainX, mainY int32) bus.ImageLayer {
-	imgData := bus.NewImageMetadata(displayCard, mainX, mainY, 25)
+	imgData := bus.NewImageMetadata(displayCard, mainX, mainY, 10)
 	return bus.NewImageLayer().AddLayerData(imgData)
 }
 func (t *tarot) formatCardText(card TarotCard) {

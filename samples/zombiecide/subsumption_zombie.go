@@ -240,9 +240,7 @@ func (zombie *partsZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) bus.I
 
 	p := zombie.currentLocation.CalculateMove(mouseEvent)
 	if p.GetX() != 0 && p.GetY() != 0 {
-
 		zombie.currentLocation.Move(p)
-
 	}
 	//TODO we'll keep this cached and not reconstruct if nothing changes...
 	zombie.move(p)
