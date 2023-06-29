@@ -65,7 +65,7 @@ type ImageMetadata interface {
 	GetScale() int32
 	GetScalePercent() float32
 	IsFlipHorizontal() bool
-	SetFlipHorizontal(bool)
+	SetFlipHorizontal(bool) ImageMetadata
 	SetX(x int32) ImageMetadata
 	SetY(y int32) ImageMetadata
 }
@@ -86,8 +86,9 @@ type imageLayer struct {
 	images []ImageMetadata
 }
 
-func (e *imageMetadata) SetFlipHorizontal(horizontalFlip bool) {
+func (e *imageMetadata) SetFlipHorizontal(horizontalFlip bool) ImageMetadata {
 	e.horizontalFlip = horizontalFlip
+	return e
 }
 func (e *imageMetadata) IsFlipHorizontal() bool {
 	return e.horizontalFlip
