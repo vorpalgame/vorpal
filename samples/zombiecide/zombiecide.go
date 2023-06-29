@@ -45,15 +45,18 @@ func Init() {
 	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Press 'g' for George or 'h' for Henry. \n Zombies follow the mouse pointer. \nLeft Mouse Button causes Henry to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n NOTE: George the parts zombie is still being worked on.").SetX(1200).SetY(100)
 	vbus.SendTextEvent(textEvent)
 
-	//subsumptionZombie := newSubsumptionZombie()
-	zombie := NewZombieStateMachine()
+	subsumptionZombie := newSubsumptionZombie()
+	stateMachineZombie := NewZombieStateMachine()
 	//
 	for {
 		if zombies.mouseEvent != nil {
 			drawEvt := bus.NewDrawEvent()
 			drawEvt.AddImageLayer(zombies.background)
-
-			zombie.Execute(drawEvt, zombies.mouseEvent, zombies.keyEvent)
+			if zombies.currentZombie == "h" {
+				stateMachineZombie.Execute(drawEvt, zombies.mouseEvent, zombies.keyEvent)
+			} else {
+				drawEvt.AddImageLayer(subsumptionZombie.CreateImageLayer(zombies.mouseEvent)) //This shoulc change to look more like state zombie.
+			}
 			vbus.SendDrawEvent(drawEvt)
 			zombies.keyEvent = nil
 			time.Sleep(20 * time.Millisecond)
