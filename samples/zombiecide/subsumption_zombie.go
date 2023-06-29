@@ -26,9 +26,9 @@ func newSubsumptionZombie() SubsumptionZombie {
 
 // TODO We can add subsumption method to propagate change in scale...
 type partsZombieData struct {
-	bodyPartGroups []BodyPartGroup
-	navigator      lib.Navigator
-	imageLayer     bus.ImageLayer
+	bodyPartGroups  []BodyPartGroup
+	currentLocation lib.Navigator
+	imageLayer      bus.ImageLayer
 }
 
 // At some point these can have override methods for differentiating behavior.
@@ -132,10 +132,10 @@ type torsoData struct {
 }
 
 type headData struct {
-	name            string
-	currentHead     int
-	currentLocation lib.Point
-	heads           map[int]bus.ImageMetadata
+	name                      string
+	currentLocation           lib.Point
+	currentHead, currentFrame int
+	heads                     map[int]bus.ImageMetadata
 }
 
 type BodyPart interface {
@@ -150,9 +150,13 @@ func (head *headData) move(evt lib.Point) {
 }
 
 func (head *headData) getCurrentHead() bus.ImageMetadata {
-	head.currentHead++
-	if head.currentHead > 6 {
-		head.currentHead = 1
+	head.currentFrame++
+	if head.currentFrame > 10 {
+		head.currentFrame = 1
+		head.currentHead++
+		if head.currentHead > 6 {
+			head.currentHead = 1
+		}
 	}
 	h := head.heads[head.currentHead]
 	//TODO Again, ImageMetadata needs to use Point
@@ -219,7 +223,7 @@ func createTorso() BodyPartGroup {
 
 // Rewire zombie bobble head later.
 func createHead() BodyPartGroup {
-	bpg := headData{head, 1, lib.NewPoint(570, 430), make(map[int]bus.ImageMetadata)}
+	bpg := headData{head, lib.NewPoint(570, 430), 1, 1, make(map[int]bus.ImageMetadata)}
 	//bpg.layer = append(bpg.layer, newBodyPart("neck.png", 610, 510, 20))
 	//Like Pascal numbering :)
 	for i := 1; i < 7; i++ {
@@ -234,10 +238,10 @@ func (zombie *partsZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) bus.I
 
 	img.Reset()
 
-	p := zombie.navigator.CalculateMove(mouseEvent)
+	p := zombie.currentLocation.CalculateMove(mouseEvent)
 	if p.GetX() != 0 && p.GetY() != 0 {
 
-		zombie.navigator.Move(p)
+		zombie.currentLocation.Move(p)
 
 	}
 	//TODO we'll keep this cached and not reconstruct if nothing changes...
