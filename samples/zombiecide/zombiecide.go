@@ -35,7 +35,7 @@ func Init() {
 
 	vbus.AddMouseListener(&zombies)
 	vbus.AddKeyEventListener(&zombies)
-	zombies.currentZombie = "g"
+	zombies.currentZombie = "h"
 	zombies.bus = vbus
 
 	//TODO We need config probably through JSON file when prototyping is complete.
