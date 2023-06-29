@@ -255,7 +255,7 @@ func (head *headData) getCurrentHead() bus.ImageMetadata {
 }
 
 func newImageData(fileName string, x, y, scale int32) bus.ImageMetadata {
-	base := "samples/resources/zombiecide/Zombie1/bodyparts/"
+	base := "samples/resources/zombiecide/karen/bodyparts/"
 	return bus.NewImageMetadata(base+fileName, x, y, scale)
 }
 

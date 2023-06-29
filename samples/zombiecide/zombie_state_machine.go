@@ -277,7 +277,7 @@ func flipHorizontal(mouseEvent bus.MouseEvent, locator lib.Navigator) bool {
 
 // Helper methods for the states...
 func getZombieImage(name string, frameNumber int32) string {
-	return fmt.Sprintf("samples/resources/zombiecide/%s (%d).png", name, frameNumber)
+	return fmt.Sprintf("samples/resources/zombiecide/henry/%s (%d).png", name, frameNumber)
 }
 
 func getZombieAudio(name string) string {
