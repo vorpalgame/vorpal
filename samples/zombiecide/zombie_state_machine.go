@@ -9,12 +9,26 @@ import (
 	"github.com/vorpalgame/vorpal/samples/lib"
 )
 
+// Temporary until we get external configuration mecahnism.
 const (
-	Walk   = "walk"
-	Idle   = "idle"
-	Dead   = "dead"
-	Attack = "attack"
+	karen  = "samples/resources/zombiecide/karen/animation/%s%d.png"
+	george = "samples/resources/zombiecide/george/animation/%s%d.png"
+	albert = "samples/resources/zombiecide/albert/animation/%s%d.png"
+	henry  = "samples/resources/zombiecide/henry/animation/%s%d.png"
 )
+
+const (
+	Walk   = "Walk"
+	Idle   = "Idle"
+	Dead   = "Dead"
+	Attack = "Attack"
+)
+
+// TODO Karen, Henry and Albert have different number of frames and states.
+// Temporary mechanism...
+// TODO a configuration mechanism and struct for scale, directory, states, etc. is needed.
+var animationSpec = henry
+var currentScale = int32(30)
 
 func NewZombieStateMachine() ZombieStateMachine {
 	//Clean this up with private constructors...
@@ -69,12 +83,16 @@ func newZombieStates() ZombieStates {
 type ZombieStates interface {
 	getCurrent() ZombieState
 	setCurrent(currentState ZombieState) ZombieStates
+	getState(stateName string) ZombieState
+	addState(stateName string, state ZombieState) ZombieStates
+
+	getAll() map[string]ZombieState
+	//Convenience methods will probably go away in the future
+	//in favor of using the getState(string) to make it a bit more flexible.
 	getAttackZombie() ZombieState
 	getDeadZombie() ZombieState
 	getIdleZombie() ZombieState
 	getWalkingZombie() ZombieState
-	addState(stateName string, state ZombieState) ZombieStates
-	getAll() map[string]ZombieState
 }
 type zombieStatesData struct {
 	current  ZombieState
@@ -92,17 +110,20 @@ func (zs *zombieStatesData) setCurrent(zombie ZombieState) ZombieStates {
 func (zs *zombieStatesData) getCurrent() ZombieState {
 	return zs.current
 }
-func (zs *zombieStatesData) getAttackZombie() ZombieState {
-	return zs.stateMap[Attack]
+func (zs *zombieStatesData) getState(stateName string) ZombieState {
+	return zs.stateMap[stateName]
 }
 func (zs *zombieStatesData) getDeadZombie() ZombieState {
-	return zs.stateMap[Dead]
+	return zs.getState(Dead)
 }
 func (zs *zombieStatesData) getIdleZombie() ZombieState {
-	return zs.stateMap[Idle]
+	return zs.getState(Idle)
 }
 func (zs *zombieStatesData) getWalkingZombie() ZombieState {
-	return zs.stateMap[Walk]
+	return zs.getState(Walk)
+}
+func (zs *zombieStatesData) getAttackZombie() ZombieState {
+	return zs.getState(Attack)
 }
 func (zs *zombieStatesData) getAll() map[string]ZombieState {
 	return zs.stateMap
@@ -140,7 +161,7 @@ func (z *zStateData) stop() {
 
 // Current scale of 30%
 func newStateData(name string, locator lib.Navigator, zs ZombieStates) zStateData {
-	return zStateData{name, 30, false, locator, lib.NewFrameData(), zs}
+	return zStateData{name, currentScale, false, locator, lib.NewFrameData(), zs}
 }
 
 // ================================================================================
@@ -152,7 +173,7 @@ type zAttackData struct {
 
 func newAttackState(states ZombieStates, locator lib.Navigator) ZombieState {
 	zStateData := newStateData(Attack, locator, states)
-	zStateData.FrameTracker.SetMaxFrame(7).SetRepeatFrame(3)
+	zStateData.FrameTracker.SetMaxFrame(6).SetRepeatFrame(5)
 	state := zAttackData{zStateData}
 	states.addState(zStateData.name, &state)
 	return &state
@@ -161,7 +182,6 @@ func newAttackState(states ZombieStates, locator lib.Navigator) ZombieState {
 func (z *zAttackData) doState(mouseEvent bus.MouseEvent) ZombieState {
 
 	z.FrameTracker.Increment()
-
 	if mouseEvent.LeftButton().IsDown() {
 		return z
 	} else {
@@ -179,7 +199,7 @@ type zIdleData struct {
 
 func newIdleState(states ZombieStates, locator lib.Navigator) ZombieState {
 	zStateData := newStateData(Idle, locator, states)
-	zStateData.FrameTracker.SetMaxFrame(15).SetRepeatFrame(5).SetToLoop(false)
+	zStateData.FrameTracker.SetMaxFrame(6).SetRepeatFrame(15).SetToLoop(false)
 	state := zIdleData{zStateData}
 	states.addState(zStateData.name, &state)
 	return &state
@@ -277,7 +297,8 @@ func flipHorizontal(mouseEvent bus.MouseEvent, locator lib.Navigator) bool {
 
 // Helper methods for the states...
 func getZombieImage(name string, frameNumber int32) string {
-	return fmt.Sprintf("samples/resources/zombiecide/henry/%s (%d).png", name, frameNumber)
+
+	return fmt.Sprintf(animationSpec, name, frameNumber)
 }
 
 func getZombieAudio(name string) string {
