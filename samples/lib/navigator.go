@@ -7,42 +7,42 @@ import (
 	"github.com/vorpalgame/vorpal/bus"
 )
 
-func NewLocation() CurrentLocation {
-	return &currentLocationData{}
+func NewLocation() Navigator {
+	return &navigatorData{}
 }
 
-func NewCurrentLocation(point Point, xMove, yMove, maxXOffset, maxYOffset int32) CurrentLocation {
-	return &currentLocationData{point, xMove, yMove, maxXOffset, maxYOffset}
+func NewCurrentLocation(point Point, xMove, yMove, maxXOffset, maxYOffset int32) Navigator {
+	return &navigatorData{point, xMove, yMove, maxXOffset, maxYOffset}
 }
 
-type CurrentLocation interface {
+type Navigator interface {
 	GetCurrentPoint() Point
 	Move(toPoint Point)
 	CalculateMove(evt bus.MouseEvent) Point
 	GetX() int32
 	GetY() int32
 }
-type currentLocationData struct {
+type navigatorData struct {
 	currentLocation                      Point
 	xMove, yMove, maxXOffset, maxYOffset int32
 }
 
-func (cl *currentLocationData) GetX() int32 {
+func (cl *navigatorData) GetX() int32 {
 	return cl.currentLocation.GetX()
 }
-func (cl *currentLocationData) GetY() int32 {
+func (cl *navigatorData) GetY() int32 {
 	return cl.currentLocation.GetY()
 }
-func (cl *currentLocationData) GetCurrentPoint() Point {
+func (cl *navigatorData) GetCurrentPoint() Point {
 	return cl.currentLocation
 }
 
-func (cl *currentLocationData) Move(toPoint Point) {
+func (cl *navigatorData) Move(toPoint Point) {
 	cl.currentLocation.Add(toPoint)
 	//log.Default().Println(cl.GetCurrentPoint())
 }
 
-func (cl *currentLocationData) CalculateMove(evt bus.MouseEvent) Point {
+func (cl *navigatorData) CalculateMove(evt bus.MouseEvent) Point {
 
 	point := point{cl.xMove, cl.yMove}
 

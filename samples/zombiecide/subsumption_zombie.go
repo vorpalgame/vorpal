@@ -26,9 +26,9 @@ func newSubsumptionZombie() SubsumptionZombie {
 
 // TODO We can add subsumption method to propagate change in scale...
 type partsZombieData struct {
-	bodyPartGroups  []BodyPartGroup
-	currentLocation lib.CurrentLocation
-	imageLayer      bus.ImageLayer
+	bodyPartGroups []BodyPartGroup
+	navigator      lib.Navigator
+	imageLayer     bus.ImageLayer
 }
 
 // At some point these can have override methods for differentiating behavior.
@@ -234,10 +234,10 @@ func (zombie *partsZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) bus.I
 
 	img.Reset()
 
-	p := zombie.currentLocation.CalculateMove(mouseEvent)
+	p := zombie.navigator.CalculateMove(mouseEvent)
 	if p.GetX() != 0 && p.GetY() != 0 {
 
-		zombie.currentLocation.Move(p)
+		zombie.navigator.Move(p)
 
 	}
 	//TODO we'll keep this cached and not reconstruct if nothing changes...

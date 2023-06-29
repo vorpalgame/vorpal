@@ -3,109 +3,283 @@ package zombiecide
 import (
 	//"log"
 
-	"log"
+	"fmt"
 
 	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/samples/lib"
+)
+
+const (
+	Walk   = "walk"
+	Idle   = "idle"
+	Dead   = "dead"
+	Attack = "attack"
 )
 
 func NewZombieStateMachine() ZombieStateMachine {
 	//Clean this up with private constructors...
-	zs := zombieStateMachineData{}
-	attack := zAttackData{}
-	attack.name = Attack
-	walk := zWalkData{}
-	walk.name = Walk
-	dead := zDeadData{}
-	dead.name = Dead
-	idle := zIdleData{}
-	idle.name = Idle
+	zs := newZombieStates()
+	sm := &zombieStateMachineData{zs}
 
-	attack.walk = &walk
-	idle.dead = &dead
-	idle.walk = &walk
-	walk.attack = &attack
-	walk.idle = &idle
-	dead.walk = &walk
+	locator := lib.NewCurrentLocation(lib.NewPoint(600, 600), -4, -2, 5, 5)
+	newAttackState(zs, locator)
+	newDeadState(zs, locator)
+	newIdleState(zs, locator)
+	zs.setCurrent(newWalkState(zs, locator))
+	zs.getCurrent().start()
+	return sm
+}
 
-	zs.current = &walk
-	return &zs
+type ZombieState interface {
+	doState(mouseEvent bus.MouseEvent) ZombieState
+	doRender(layer bus.ImageLayer, mouseEvent bus.MouseEvent)
+	start()
+	stop()
 }
 
 type ZombieStateMachine interface {
-	DoState(mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent)
+	ZombieStates
+	Execute(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent)
 }
 
-type zState interface {
-	DoState(mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent) zState
-}
 type zombieStateMachineData struct {
-	// lib.AudioController
-	// lib.ImageCreator
-	// lib.Navigator
-
-	current zState
+	ZombieStates
 }
 
-func (z *zombieStateMachineData) DoState(mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent) {
-	z.current = z.current.DoState(mouseEvent, keyEvent)
+func (z *zombieStateMachineData) Execute(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent) {
+	layer := bus.NewImageLayer()
+	drawEvent.AddImageLayer(layer)
+	current := z.getCurrent()
+	state := current.doState(mouseEvent)
+	if current != state {
+		current.stop()
+		state.start()
+		z.setCurrent(state)
+	}
+	z.getCurrent().doRender(layer, mouseEvent)
 }
 
+// ================================================================================
+// STATE COLLECTION
+// ================================================================================
+func newZombieStates() ZombieStates {
+	return &zombieStatesData{nil, make(map[string]ZombieState)}
+}
+
+type ZombieStates interface {
+	getCurrent() ZombieState
+	setCurrent(currentState ZombieState) ZombieStates
+	getAttackZombie() ZombieState
+	getDeadZombie() ZombieState
+	getIdleZombie() ZombieState
+	getWalkingZombie() ZombieState
+	addState(stateName string, state ZombieState) ZombieStates
+	getAll() map[string]ZombieState
+}
+type zombieStatesData struct {
+	current  ZombieState
+	stateMap map[string]ZombieState
+}
+
+func (zs *zombieStatesData) addState(state string, zombie ZombieState) ZombieStates {
+	zs.stateMap[state] = zombie
+	return zs
+}
+func (zs *zombieStatesData) setCurrent(zombie ZombieState) ZombieStates {
+	zs.current = zombie
+	return zs
+}
+func (zs *zombieStatesData) getCurrent() ZombieState {
+	return zs.current
+}
+func (zs *zombieStatesData) getAttackZombie() ZombieState {
+	return zs.stateMap[Attack]
+}
+func (zs *zombieStatesData) getDeadZombie() ZombieState {
+	return zs.stateMap[Dead]
+}
+func (zs *zombieStatesData) getIdleZombie() ZombieState {
+	return zs.stateMap[Idle]
+}
+func (zs *zombieStatesData) getWalkingZombie() ZombieState {
+	return zs.stateMap[Walk]
+}
+func (zs *zombieStatesData) getAll() map[string]ZombieState {
+	return zs.stateMap
+}
+
+// ================================================================================
+// General State
+// ================================================================================
+type zStateData struct {
+	name    string
+	scale   int32
+	started bool
+	locator lib.Navigator
+	lib.FrameTracker
+	ZombieStates
+}
+
+func (z *zStateData) doRender(imageLayer bus.ImageLayer, mouseEvent bus.MouseEvent) {
+	imageLayer.AddLayerData(render(z.name, z.scale, z.locator, z.FrameTracker, mouseEvent))
+}
+
+func (z *zStateData) start() {
+	if !z.started {
+		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(getZombieAudio(z.name)).Play())
+		z.started = true
+	}
+}
+func (z *zStateData) stop() {
+	if z.started {
+		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(getZombieAudio(z.name)).Stop())
+		z.started = false
+		z.FrameTracker.Reset()
+	}
+}
+
+// Current scale of 30%
+func newStateData(name string, locator lib.Navigator, zs ZombieStates) zStateData {
+	return zStateData{name, 30, false, locator, lib.NewFrameData(), zs}
+}
+
+// ================================================================================
+// ATTACK
+// ================================================================================
 type zAttackData struct {
-	name string
-	walk zState
+	zStateData
 }
 
-func (z *zAttackData) DoState(mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent) zState {
-	log.Default().Println(z.name)
-	if keyEvent.GetKey().EqualsIgnoreCase("W") {
-		return z.walk
+func newAttackState(states ZombieStates, locator lib.Navigator) ZombieState {
+	zStateData := newStateData(Attack, locator, states)
+	zStateData.FrameTracker.SetMaxFrame(7).SetRepeatFrame(3)
+	state := zAttackData{zStateData}
+	states.addState(zStateData.name, &state)
+	return &state
+}
+
+func (z *zAttackData) doState(mouseEvent bus.MouseEvent) ZombieState {
+
+	z.FrameTracker.Increment()
+
+	if mouseEvent.LeftButton().IsDown() {
+		return z
+	} else {
+		return z.getWalkingZombie()
 	}
-	return z
 
 }
 
+// ================================================================================
+// IDLE
+// ================================================================================
 type zIdleData struct {
-	name       string
-	dead, walk zState
+	zStateData
 }
 
-func (z *zIdleData) DoState(mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent) zState {
-	log.Default().Println(z.name)
-	if keyEvent.GetKey().EqualsIgnoreCase("W") {
-		return z.walk
-	}
-	if keyEvent.GetKey().EqualsIgnoreCase("D") {
-		return z.dead
+func newIdleState(states ZombieStates, locator lib.Navigator) ZombieState {
+	zStateData := newStateData(Idle, locator, states)
+	zStateData.FrameTracker.SetMaxFrame(15).SetRepeatFrame(5).SetToLoop(false)
+	state := zIdleData{zStateData}
+	states.addState(zStateData.name, &state)
+	return &state
+}
+
+func (z *zIdleData) doState(mouseEvent bus.MouseEvent) ZombieState {
+
+	z.FrameTracker.Increment()
+	if mouseEvent.LeftButton().IsDown() {
+		return z.getAttackZombie()
+	} else {
+		point := z.locator.CalculateMove(mouseEvent)
+		idleFrames := z.UpdateIdleFrames(point)
+		if idleFrames == 0 {
+			return z.getWalkingZombie()
+		} else if idleFrames >= 150 {
+			return z.getDeadZombie()
+		}
 	}
 	return z
 }
 
+// ================================================================================
+// WALK
+// ================================================================================
 type zWalkData struct {
-	name         string
-	attack, idle zState
+	zStateData
 }
 
-func (z *zWalkData) DoState(mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent) zState {
-	log.Default().Println(z.name)
-	if keyEvent.GetKey().EqualsIgnoreCase("A") {
-		return z.attack
-	}
-	if keyEvent.GetKey().EqualsIgnoreCase("I") {
-		return z.idle
-	}
-	return z
-
+func newWalkState(states ZombieStates, locator lib.Navigator) ZombieState {
+	zStateData := newStateData(Walk, locator, states)
+	zStateData.FrameTracker.SetMaxFrame(10).SetRepeatFrame(3)
+	state := zWalkData{zStateData}
+	states.addState(zStateData.name, &state)
+	return &state
 }
 
+func (z *zWalkData) doState(mouseEvent bus.MouseEvent) ZombieState {
+
+	z.FrameTracker.Increment()
+	if mouseEvent.LeftButton().IsDown() {
+		return z.getAttackZombie()
+	} else {
+		point := z.locator.CalculateMove(mouseEvent)
+		if z.UpdateIdleFrames(point) >= 50 {
+			return z.getIdleZombie()
+		}
+
+		z.locator.Move(point)
+		return z
+	}
+}
+
+// ================================================================================
+// DEAD
+// ================================================================================
 type zDeadData struct {
-	name string
-	walk zState
+	zStateData
 }
 
-func (z *zDeadData) DoState(mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent) zState {
-	log.Default().Println(z.name)
-	if keyEvent.GetKey().EqualsIgnoreCase("W") {
-		return z.walk
+func newDeadState(states ZombieStates, locator lib.Navigator) ZombieState {
+	zStateData := newStateData(Dead, locator, states)
+	zStateData.FrameTracker.SetMaxFrame(10).SetRepeatFrame(5).SetToLoop(false)
+	state := zDeadData{zStateData}
+	states.addState(zStateData.name, &state)
+	return &state
+}
+
+func (z *zDeadData) doState(mouseEvent bus.MouseEvent) ZombieState {
+
+	z.FrameTracker.Increment()
+	point := z.locator.CalculateMove(mouseEvent)
+	if z.UpdateIdleFrames(point) <= 0 {
+		return z.getWalkingZombie()
 	}
+
 	return z
+
+}
+
+// ================================================================================
+// Helper functions...
+// ================================================================================
+func render(fileName string, scale int32, locator lib.Navigator, frameData lib.FrameTracker, mouseEvent bus.MouseEvent) bus.ImageMetadata {
+	return createImageData(fileName, locator.GetX(), locator.GetY(), frameData.GetCurrentFrame(), scale, flipHorizontal(mouseEvent, locator))
+}
+
+func createImageData(fileName string, x, y, frameNumber, scale int32, flipHorizontal bool) bus.ImageMetadata {
+	return bus.NewImageMetadata(getZombieImage(fileName, frameNumber), x, y, scale).SetFlipHorizontal(flipHorizontal)
+}
+
+func flipHorizontal(mouseEvent bus.MouseEvent, locator lib.Navigator) bool {
+	return mouseEvent.GetX() < locator.GetX()
+}
+
+// Helper methods for the states...
+func getZombieImage(name string, frameNumber int32) string {
+	return fmt.Sprintf("samples/resources/zombiecide/%s (%d).png", name, frameNumber)
+}
+
+func getZombieAudio(name string) string {
+	return "samples/resources/zombiecide/" + name + ".mp3"
 }

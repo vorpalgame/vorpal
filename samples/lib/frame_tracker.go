@@ -1,29 +1,28 @@
 package lib
 
 //Most data is set once at start up so limited Setters.
-func NewFrameData() FrameData {
-	return &frameData{1, 0, 0, 0, 0, true}
+func NewFrameData() FrameTracker {
+	return &frameTrackerData{1, 10, 3, 1, 0, true}
 }
 
-// TODO Unit tests...
-type FrameData interface {
-	SetMaxFrame(maxFrame int32) FrameData
-	SetRepeatFrame(repeatPerFrame int32) FrameData
+type FrameTracker interface {
+	SetMaxFrame(maxFrame int32) FrameTracker
+	SetRepeatFrame(repeatPerFrame int32) FrameTracker
 	GetCurrentFrame() int32
 	GetMaxFrame() int32
-	SetToLoop(bool) FrameData
+	SetToLoop(bool) FrameTracker
 	UpdateIdleFrames(point Point) int32
 	GetIdleFrames() int32
 	IsLoop() bool
-	Increment() FrameData
+	Increment() FrameTracker
 	Reset()
 }
-type frameData struct {
+type frameTrackerData struct {
 	currentFrame, maxFrame, repeatPerFrame, currentFrameRepeats, idleFrames int32
 	loop                                                                    bool
 }
 
-func (fd *frameData) Increment() FrameData {
+func (fd *frameTrackerData) Increment() FrameTracker {
 	fd.currentFrameRepeats++
 	if fd.currentFrameRepeats > fd.repeatPerFrame {
 		fd.currentFrameRepeats = 0
@@ -39,15 +38,15 @@ func (fd *frameData) Increment() FrameData {
 	}
 	return fd
 }
-func (fd *frameData) SetMaxFrame(maxFrame int32) FrameData {
+func (fd *frameTrackerData) SetMaxFrame(maxFrame int32) FrameTracker {
 	fd.maxFrame = maxFrame
 	return fd
 }
-func (fd *frameData) SetRepeatFrame(repeatPerFrame int32) FrameData {
+func (fd *frameTrackerData) SetRepeatFrame(repeatPerFrame int32) FrameTracker {
 	fd.repeatPerFrame = repeatPerFrame
 	return fd
 }
-func (fd *frameData) UpdateIdleFrames(point Point) int32 {
+func (fd *frameTrackerData) UpdateIdleFrames(point Point) int32 {
 	if point.GetY() == 0 && point.GetX() == 0 {
 		fd.idleFrames++
 	} else {
@@ -56,27 +55,27 @@ func (fd *frameData) UpdateIdleFrames(point Point) int32 {
 	return fd.idleFrames
 }
 
-func (fd *frameData) GetIdleFrames() int32 {
+func (fd *frameTrackerData) GetIdleFrames() int32 {
 	return fd.idleFrames
 }
-func (fd *frameData) SetToLoop(repeat bool) FrameData {
+func (fd *frameTrackerData) SetToLoop(repeat bool) FrameTracker {
 	fd.loop = repeat
 	return fd
 }
 
-func (fd *frameData) IsLoop() bool {
+func (fd *frameTrackerData) IsLoop() bool {
 	return fd.loop
 }
 
-func (fd *frameData) Reset() {
+func (fd *frameTrackerData) Reset() {
 	fd.currentFrame = 1
 	fd.idleFrames = 0
 }
 
-func (fd *frameData) GetCurrentFrame() int32 {
+func (fd *frameTrackerData) GetCurrentFrame() int32 {
 	return fd.currentFrame
 }
 
-func (fd *frameData) GetMaxFrame() int32 {
+func (fd *frameTrackerData) GetMaxFrame() int32 {
 	return fd.maxFrame
 }
