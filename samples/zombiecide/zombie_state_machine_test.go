@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vorpalgame/vorpal/bus"
-	"github.com/vorpalgame/vorpal/samples/lib"
+	"github.com/vorpalgame/vorpal/lib"
 )
 
 // Tests are about state trnasitions...

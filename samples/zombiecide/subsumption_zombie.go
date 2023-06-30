@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/vorpalgame/vorpal/bus"
-	"github.com/vorpalgame/vorpal/samples/lib"
+	"github.com/vorpalgame/vorpal/lib"
 )
 
 // We'll create a subsumption style architecture for the body parts.
