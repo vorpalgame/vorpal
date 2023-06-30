@@ -44,13 +44,6 @@ func NewZombieStateMachine() ZombieStateMachine {
 	return sm
 }
 
-type ZombieState interface {
-	doState(mouseEvent bus.MouseEvent) ZombieState
-	doRender(layer bus.ImageLayer, mouseEvent bus.MouseEvent)
-	start()
-	stop()
-}
-
 type ZombieStateMachine interface {
 	ZombieStates
 	Execute(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent)
@@ -132,6 +125,14 @@ func (zs *zombieStatesData) getAll() map[string]ZombieState {
 // ================================================================================
 // General State
 // ================================================================================
+
+type ZombieState interface {
+	doState(mouseEvent bus.MouseEvent) ZombieState
+	doRender(layer bus.ImageLayer, mouseEvent bus.MouseEvent)
+	start()
+	stop()
+}
+
 type zStateData struct {
 	name    string
 	scale   int32
