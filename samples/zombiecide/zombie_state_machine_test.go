@@ -43,7 +43,6 @@ func TestWalkingToIdleZombie(t *testing.T) {
 	z = doNoMouseMove(mouseEvent, 49, z)
 	assertWalkingState(t, z)
 
-	//assert.True(t, z.GetIdleFrames() == 49)
 	assert.NotNil(t, data.getIdleZombie(), "Mock not available for idle transition")
 	//Now tranasition
 	z = z.doState(mouseEvent)
@@ -51,47 +50,47 @@ func TestWalkingToIdleZombie(t *testing.T) {
 
 }
 
-// func TestToAttackZombie(t *testing.T) {
+func TestToAttackZombie(t *testing.T) {
 
-// 	data := mockZombieData()
+	data := mockZombieData()
 
-// 	verifyAttackTransition(data.zombieStates.GetWalkingZombie(), t)
-// 	verifyAttackTransition(data.zombieStates.GetIdleZombie(), t)
+	verifyAttackTransition(data.getWalkingZombie(), t)
+	verifyAttackTransition(data.getIdleZombie(), t)
 
-// }
+}
 
-// func TestIdleToDeadZombie(t *testing.T) {
-// 	data := mockZombieData()
-// 	z := data.zombieStates.GetIdleZombie()
-// 	assertIdleState(t, z)
-// 	mouseEvent := createMouseEvent(z.GetCurrentLocation().GetX(), z.GetCurrentLocation().GetY())
-// 	z = doNoMouseMove(mouseEvent, 149, z)
-// 	assertIdleState(t, z)
+func TestIdleToDeadZombie(t *testing.T) {
+	data := mockZombieData()
+	z := data.getIdleZombie()
+	assertIdleState(t, z)
+	mouseEvent := createMouseEvent(data.currentLocation.GetX(), data.currentLocation.GetY())
+	z = doNoMouseMove(mouseEvent, 149, z)
+	assertIdleState(t, z)
 
-// 	//Transition
-// 	z = z.GetState(mouseEvent)
-// 	assertDeadState(t, z)
+	//Transition
+	z = z.doState(mouseEvent)
+	assertDeadState(t, z)
 
-// }
+}
 
-// func TestDeadZombie(t *testing.T) {
-// 	data := mockZombieData()
-// 	z := data.zombieStates.GetDeadZombie()
-// 	assert.NotNil(t, z, "Dead zombie not constructed properly")
-// }
+func TestDeadZombie(t *testing.T) {
+	data := mockZombieData()
+	z := data.getDeadZombie()
+	assert.NotNil(t, z, "Dead zombie not constructed properly")
+}
 
-// func TestAttackZombie(t *testing.T) {
-// 	data := mockZombieData()
-// 	z := data.zombieStates.GetAttackZombie()
-// 	assert.NotNil(t, z, "Attack zombie not constructed properly")
-// }
+func TestAttackZombie(t *testing.T) {
+	data := mockZombieData()
+	z := data.getAttackZombie()
+	assert.NotNil(t, z, "Attack zombie not constructed properly")
+}
 
-// func verifyAttackTransition(currentState ZombieState, t *testing.T) {
-// 	mouseEvent := createLeftDownMouseEvent()
-// 	nextState := currentState.GetState(mouseEvent)
-// 	assertAttackState(t, nextState)
+func verifyAttackTransition(currentState ZombieState, t *testing.T) {
+	mouseEvent := createLeftDownMouseEvent()
+	nextState := currentState.doState(mouseEvent)
+	assertAttackState(t, nextState)
 
-// }
+}
 func doNoMouseMove(mouseEvent bus.MouseEvent, count int, currentState ZombieState) ZombieState {
 	for i := 0; i < count; i++ {
 		currentState = currentState.doState(mouseEvent)
