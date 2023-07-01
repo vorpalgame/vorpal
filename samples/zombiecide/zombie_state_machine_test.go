@@ -24,11 +24,11 @@ func mockZombieData() mockData {
 	return mockData
 }
 func createLeftDownMouseEvent() bus.MouseEvent {
-	return bus.NewMouseEvent(bus.NewMouseButtonState("left", true), bus.NewMouseButtonState("right", false), bus.NewMouseButtonState("middle", false), 0, 0)
+	return bus.NewMouseEvent(lib.NewMouseButtonState("left", true), lib.NewMouseButtonState("right", false), lib.NewMouseButtonState("middle", false), 0, 0)
 
 }
 func createMouseEvent(x, y int32) bus.MouseEvent {
-	return bus.NewMouseEvent(bus.NewMouseButtonState("left", false), bus.NewMouseButtonState("right", false), bus.NewMouseButtonState("middle", false), x, y)
+	return bus.NewMouseEvent(lib.NewMouseButtonState("left", false), lib.NewMouseButtonState("right", false), lib.NewMouseButtonState("middle", false), x, y)
 
 }
 

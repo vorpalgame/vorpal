@@ -7,16 +7,18 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Initial setup for configuration files with yaml.
-// Will be imporant for state/scene transions.
-func StartConfiguration(path string) {
-	viper.SetDefault("ContentDir", "resources")
-	viper.SetDefault("LayoutDir", "layouts")
-	viper.SetDefault("Taxonomies", map[string]string{"tag": "tags", "category": "categories"})
+// Note that we aren't differeniating the path/file combo so currently the
+// file name must be unique...
+func LoadConfiguration(path, fileName string) {
+	viper.AddConfigPath(path)
+	LoadConfigurationFile(fileName)
 
-	viper.SetConfigName("config.yaml") // name of config file (without extension)
-	viper.SetConfigType("yaml")        // REQUIRED if the config file does not have the extension in the name
-	viper.AddConfigPath(path)          // path to look for the config file in
+}
+
+func LoadConfigurationFile(fileName string) {
+	viper.SetConfigName(fileName) // name of config file (without extension)
+	viper.SetConfigType("yaml")   // REQUIRED if the config file does not have the extension in the name
+	// path to look for the config file in
 	//viper.AddConfigPath("$HOME/.appname") // call multiple times to add many search paths
 	//viper.AddConfigPath(".")              // optionally look for config in the working directory
 	err := viper.ReadInConfig() // Find and read the config file

@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/lib"
 )
 
 func TestBasicSubsumption(t *testing.T) {
@@ -22,5 +23,5 @@ func TestBasicSubsumption(t *testing.T) {
 }
 
 func newMouseEvent(x, y int32) bus.MouseEvent {
-	return bus.NewMouseEvent(bus.NewMouseButtonState("left", false), bus.NewMouseButtonState("right", false), bus.NewMouseButtonState("middle", false), x, y)
+	return bus.NewMouseEvent(lib.NewMouseButtonState("left", false), lib.NewMouseButtonState("right", false), lib.NewMouseButtonState("middle", false), x, y)
 }

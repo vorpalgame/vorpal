@@ -5,6 +5,7 @@ import (
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/lib"
 )
 
 //TODO We now have a draw event with multiple layers and each layer can have multiple
@@ -189,12 +190,11 @@ func (e *engine) sendMouseEvents() {
 
 }
 
-func getMouseButton(button int32, buttonName string) bus.MouseButtonState {
-	return bus.NewMouseButtonState(buttonName, rl.IsMouseButtonDown(button))
+func getMouseButton(button int32, buttonName string) lib.MouseButtonState {
+	return lib.NewMouseButtonState(buttonName, rl.IsMouseButtonDown(button))
 }
 
 func (e *engine) sendKeyEvents() {
-
 	for _, key := range e.controller.GetKeysRegistrationEvent().GetKeys() {
 		if rl.IsKeyPressed(key.ToAscii()) {
 			e.bus.SendKeyEvent(bus.NewKeyEvent(key))

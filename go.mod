@@ -7,6 +7,7 @@ require (
 	github.com/gen2brain/raylib-go/raylib v0.0.0-20230606094659-048c1b598cb2
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
+	gopkg.in/yaml.v3 v3.0.1
 
 )
 
@@ -25,5 +26,4 @@ require (
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

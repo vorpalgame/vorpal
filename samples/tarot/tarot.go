@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/lib"
 )
 
 type TarotGame interface {
@@ -60,7 +61,8 @@ func (t *tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 func (t *tarot) doStart() {
 	t.currentCard = 0
 	//The keys we are interested in.
-	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("s", "n", "S", "N"))
+	//These shoudl be registered from the yaml configuration TODO
+	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent(lib.NewKeys([]string{"s", "n", "S", "N"})))
 	t.drawEvent = bus.NewDrawEvent()
 
 	t.drawEvent.AddImageLayer(bus.NewImageLayer().AddLayerData(bus.NewImageMetadata("samples/resources/tarot/table.png", 0, 0, 100)))

@@ -1,0 +1,11 @@
+name: Henry
+imageTemplate: samples/resources/zombiecide/henry/animation/%s%d.png
+imageScale: 30
+currentLocation:
+  point:
+    x: 600
+    y: 600
+	xMove: -4
+  yMove: -2
+  maxXOffset: 5
+  maxYOffset: 5

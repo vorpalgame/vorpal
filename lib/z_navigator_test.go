@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vorpalgame/vorpal/bus"
 )
 
 func TestNavigator(t *testing.T) {
@@ -14,15 +13,15 @@ func TestNavigator(t *testing.T) {
 	zeroIncrement := int32(0)
 	p := NewPoint(startX, startY) //Make X,Y asymmetric to avoid any confusion.
 	//Current mouse is at 800,800 so we should move maximum.
-	largeEvt := bus.NewMouseEvent(nil, nil, nil, 800, 800)
-	largeNegativeEvt := bus.NewMouseEvent(nil, nil, nil, -800, -800)
+	largeEvt := NewPoint(800, 800)
+	largeNegativeEvt := NewPoint(-800, -800)
 	//X,Y are only 3 off so no change to point to move is expected.
-	smallEvt := bus.NewMouseEvent(nil, nil, nil, 503, 603)
+	smallEvt := NewPoint(503, 603)
 
 	//2 and -2 are the maximum mouse moves and 5 is the window that determines
 	//when something is "dead". In other words, if the mouse hasn't move more than 5 in X or Y then
 	//don't change the position.
-	l := NewCurrentLocation(p, -maxIncrement, -maxIncrement, 5, 5)
+	l := NewNavigatorOffset(p, -maxIncrement, -maxIncrement, 5, 5)
 
 	assert.Equal(t, l.GetCurrentPoint(), p)
 

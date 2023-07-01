@@ -1,0 +1,11 @@
+title: Vorpal Game Samples
+url: https://github.com/vorpalgame/vorpal
+configs:
+  zombiecide: 
+    path: ./etc/zombiecide
+    file: zombie_bootstrap.yaml
+  tarot: 
+    path: ./etc/tarot
+    file: tarot_bootstrap.yaml
+start:
+  zombiecide

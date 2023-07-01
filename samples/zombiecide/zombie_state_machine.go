@@ -17,12 +17,22 @@ const (
 	henry  = "samples/resources/zombiecide/henry/animation/%s%d.png"
 )
 
+// TODO States should come from yaml as some have more states than others....
+// Would be great to have mapping of state transitions there as well.
 const (
 	Walk   = "Walk"
 	Idle   = "Idle"
 	Dead   = "Dead"
 	Attack = "Attack"
 )
+
+// TODO use this to load yaml data...
+type ZombieConfigurationData struct {
+	Name            string
+	ImageTemplate   string
+	ImageScale      int32
+	CurrentLocation lib.Navigator
+}
 
 // TODO Karen, Henry and Albert have different number of frames and states.
 // Temporary mechanism...
@@ -35,7 +45,7 @@ func NewZombieStateMachine() ZombieStateMachine {
 	zs := newZombieStates()
 	sm := &zombieStateMachineData{zs}
 
-	locator := lib.NewCurrentLocation(lib.NewPoint(600, 600), -4, -2, 5, 5)
+	locator := lib.NewNavigatorOffset(lib.NewPoint(600, 600), -4, -2, 5, 5)
 	newAttackState(zs, locator)
 	newDeadState(zs, locator)
 	newIdleState(zs, locator)
@@ -212,7 +222,7 @@ func (z *zIdleData) doState(mouseEvent bus.MouseEvent) ZombieState {
 	if mouseEvent.LeftButton().IsDown() {
 		return z.getAttackZombie()
 	} else {
-		point := z.locator.CalculateMove(mouseEvent)
+		point := z.locator.CalculateMove(mouseEvent.GetCursorPoint())
 		idleFrames := z.UpdateIdleFrames(point)
 		if idleFrames == 0 {
 			return z.getWalkingZombie()
@@ -244,7 +254,7 @@ func (z *zWalkData) doState(mouseEvent bus.MouseEvent) ZombieState {
 	if mouseEvent.LeftButton().IsDown() {
 		return z.getAttackZombie()
 	} else {
-		point := z.locator.CalculateMove(mouseEvent)
+		point := z.locator.CalculateMove(mouseEvent.GetCursorPoint())
 		if z.UpdateIdleFrames(point) >= 50 {
 			return z.getIdleZombie()
 		}
@@ -272,7 +282,7 @@ func newDeadState(states ZombieStates, locator lib.Navigator) ZombieState {
 func (z *zDeadData) doState(mouseEvent bus.MouseEvent) ZombieState {
 
 	z.FrameTracker.Increment()
-	point := z.locator.CalculateMove(mouseEvent)
+	point := z.locator.CalculateMove(mouseEvent.GetCursorPoint())
 	if z.UpdateIdleFrames(point) <= 0 {
 		return z.getWalkingZombie()
 	}

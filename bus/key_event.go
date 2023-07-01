@@ -1,27 +1,22 @@
 package bus
 
+import "github.com/vorpalgame/vorpal/lib"
+
 type KeysRegistrationEventListener interface {
 	OnKeyRegistrationEvent(keyRegistrationChannel <-chan KeysRegistrationEvent)
 }
 
 type KeysRegistrationEvent interface {
-	GetKeys() []Key
+	lib.Keys
 }
 
-type keyRegistration struct {
-	keys []Key
+type keyRegistrationEventData struct {
+	lib.Keys
 }
 
-func NewKeysRegistrationEvent(keys ...string) KeysRegistrationEvent {
-	var evt = keyRegistration{}
-	for _, key := range keys {
-		evt.keys = append(evt.keys, GetKeyByString(key))
-	}
-	return &evt
-}
+func NewKeysRegistrationEvent(keys lib.Keys) KeysRegistrationEvent {
+	return &keyRegistrationEventData{keys}
 
-func (l *keyRegistration) GetKeys() []Key {
-	return l.keys
 }
 
 type KeyEventListener interface {
@@ -29,115 +24,26 @@ type KeyEventListener interface {
 }
 
 type KeyEvent interface {
-	GetKey() Key
-}
-
-// Define Key struct/int32erface.
-type Key interface {
-	ToString() string
-	ToAscii() int32
-	IsUpperCase() bool
-	IsLowerCase() bool
-	EqualsAscii(keyToCheckVal int32) bool
-	EqualsIgnoreCase(key string) bool
-	EqualsIgnoreCaseByAscii(keyToCheckVal int32) bool
-}
-
-type key struct {
-	value string
-	ascii int32
+	GetKey() lib.Key
 }
 
 //	type keyEvents struct {
 //		keys []Key
 //	}
 type keyEvent struct {
-	key Key
-}
-
-func (evt *key) ToString() string {
-	return evt.value
-}
-
-func (evt *key) ToAscii() int32 {
-	return evt.ascii
-}
-
-// Need unit tests...
-func (evt *key) IsUpperCase() bool {
-	return evt.ascii >= 65 || evt.ascii <= 90
-}
-func (evt *key) IsLowerCase() bool {
-	return evt.ascii >= 97 || evt.ascii <= 112
-}
-
-// Yuck. Rewrite to store uc/lc when relevant....
-func (evt *key) EqualsIgnoreCase(keyStr string) bool {
-	keyToCheckVal := int32(keyStr[0])
-	return evt.EqualsIgnoreCaseByAscii(keyToCheckVal)
-}
-
-func (evt *key) EqualsIgnoreCaseByAscii(keyToCheckVal int32) bool {
-	return (keyToCheckVal == evt.ascii || keyToCheckVal == evt.ascii-32 || keyToCheckVal == evt.ascii+32)
-}
-
-func (evt *key) EqualsAscii(keyToCheckVal int32) bool {
-	return evt.ascii == keyToCheckVal
-}
-
-// TODO Autotmate...
-var m = keyMap{}
-
-func InitKeys() {
-	m.stringToKey = make(map[string]Key)
-	m.asciiToKey = make(map[int32]Key)
-	for i := 0; i <= 64; i++ {
-		k := createKey(int32(i))
-		m.stringToKey[k.ToString()] = k
-		m.asciiToKey[k.ToAscii()] = k
-	}
-	for i := 65; i <= 90; i++ {
-		uc := createKey(int32(i))
-		m.stringToKey[uc.ToString()] = uc
-		m.asciiToKey[uc.ToAscii()] = uc
-		lc := createKey(int32(i) + 32)
-		m.stringToKey[lc.ToString()] = uc
-		m.asciiToKey[lc.ToAscii()] = lc
-	}
-	for i := 91; i <= 127; i++ {
-		k := createKey(int32(i))
-		m.stringToKey[k.ToString()] = k
-		m.asciiToKey[k.ToAscii()] = k
-	}
-}
-
-type keyMap struct {
-	stringToKey map[string]Key
-	asciiToKey  map[int32]Key
-}
-
-func createKey(ascii int32) Key {
-	return &key{string(rune(ascii)), ascii}
-}
-
-func GetKeyByString(s string) Key {
-	return m.stringToKey[s]
-}
-
-func GetKeyByAscii(i int32) Key {
-	return m.asciiToKey[i]
+	key lib.Key
 }
 
 // //////////// Notify Key event
-func NewKeyEvent(key Key) NotifyKeyEvent {
+func NewKeyEvent(key lib.Key) NotifyKeyEvent {
 	return &keyEvent{key}
 }
 
 // Key events...
 type NotifyKeyEvent interface {
-	GetKey() Key
+	GetKey() lib.Key
 }
 
-func (evt *keyEvent) GetKey() Key {
+func (evt *keyEvent) GetKey() lib.Key {
 	return evt.key
 }

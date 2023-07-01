@@ -5,7 +5,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/spf13/viper"
 	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/lib"
 )
 
 type zombiecide struct {
@@ -26,12 +28,14 @@ var fontName = "samples/resources/fonts/Roboto-Regular.ttf"
 // TODO Refactor this start up to make it more idiomatic.
 func Init() {
 	log.Println("New zombie game")
-	//e for exit
-	//r for reset zombie to beginning
-	vbus := bus.GetVorpalBus()
 
-	//We have to register both upper/lower case possiblities as it isn't clear why we are getting some results otherwise.
-	vbus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent("e", "E", "R", "r", "g", "G", "h", "H"))
+	vbus := bus.GetVorpalBus()
+	configKeys := lib.NewKeys(viper.GetStringSlice("RegisterKeys"))
+
+	log.Default().Println(configKeys)
+	evt := bus.NewKeysRegistrationEvent(configKeys)
+	log.Default().Println(evt.GetKeys())
+	vbus.SendKeysRegistrationEvent(evt)
 
 	vbus.AddMouseListener(&zombies)
 	vbus.AddKeyEventListener(&zombies)

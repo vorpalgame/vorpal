@@ -1,7 +1,7 @@
 package lib
 
-import "github.com/vorpalgame/vorpal/bus"
-
+//TODO Add tracking states like play, pause, stopped, loop, etc.
+//Currently an issue with cyclic dependency with bus.
 func NewAudioController() AudioController {
 	return &audioControllerData{}
 }
@@ -9,8 +9,6 @@ func NewAudioController() AudioController {
 type AudioController interface {
 	SetAudioFile(fileName string) AudioController
 	GetAudioFile() string
-	GetPlayAudioEvent() bus.AudioEvent
-	GetStopAudioEvent() bus.AudioEvent
 }
 
 type audioControllerData struct {
@@ -23,12 +21,4 @@ func (s *audioControllerData) GetAudioFile() string {
 func (s *audioControllerData) SetAudioFile(fileName string) AudioController {
 	s.audioFile = fileName
 	return s
-}
-
-func (s *audioControllerData) GetPlayAudioEvent() bus.AudioEvent {
-	return bus.NewAudioEvent(s.GetAudioFile()).Play()
-}
-
-func (s *audioControllerData) GetStopAudioEvent() bus.AudioEvent {
-	return bus.NewAudioEvent(s.GetAudioFile()).Stop()
 }
