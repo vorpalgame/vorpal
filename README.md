@@ -109,3 +109,8 @@ type Key interface {
 	EqualsIgnoreCase(key string) bool
 }
 ```
+# Setup
+When using Raylib it is important to follow the Go binding instructions to set up a compiler and bindings. It's fairly straightforward and worth the effort.
+
+The one piece that may not be obvious is that GO's C interoperability is not enabled by default. You'll need to set that to on. Other than that, just follow the instructions for setting up the Go Raylib bindings and Raylib.
+![image](https://github.com/vorpalgame/vorpal/assets/3209869/b0e87e10-1399-4d98-86c2-d3de76b7f766)
