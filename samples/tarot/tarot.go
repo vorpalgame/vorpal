@@ -67,6 +67,7 @@ func (t *Tarot) doStartupScreen() {
 	//The keys we are interested in.
 	//These shoudl be registered from the yaml configuration
 	//TODO Get key bindings from yaml file...
+	t.bus.SendControlEvent(bus.NewWindowTitleEvent(t.Title))
 	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent(lib.NewKeys([]string{"s", "n", "S", "N"})))
 	t.drawEvent = bus.NewDrawEvent()
 

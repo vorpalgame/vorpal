@@ -1,15 +1,8 @@
 package bus
 
-// TODO We need to look at race condition handling. While in many cases, lke the DrawEvent, we
-// usually won't care because they should be processed much faster than we are sending and if not,
-// we don't want to fill a queue up with draw events hoping they get caught up.
-// But even limiting the queue to a single event, while likely correct, means that it is possible that
-// they are read off the queue, set to the event in here and then overwritten before processed. Highly
-// unlikely given the relative speed of the two sides but still...TODO
-
 type StandardMediaPeerController interface {
 	ControllerListener
-
+	GetControlEvent() ControlEvent
 	GetDrawEvent() DrawEvent
 	GetAudioEvent() AudioEvent //One event at at time...
 	GetTextEvent() TextEvent
@@ -17,14 +10,19 @@ type StandardMediaPeerController interface {
 	GetKeysRegistrationEvent() KeysRegistrationEvent
 }
 
+// TODO It will make sense for to keep events in a slice of events.
+// In many cases we only want or need the last event. However, keeping a slice of events
+// that come in between calls would permit the engine to determine if it only wants the
+// last. Some, like KeysRegistrationEvent ever only need 1 because all listened for keys are sent
+// ControlEvents will need multiple and be cleared so they don't repeat processing.
 type controller struct {
 	bus                   VorpalBus
 	drawEvent             DrawEvent
 	audioEvent            []AudioEvent          //Different audio events for stop, start, etc. so they need to be kept in slice for processing.
-	mouseEvent            MouseEvent            //Keep the last state of mouse and keys.
 	textEvent             TextEvent             //TODO put multiple keys in one event...
 	imageCacheEvent       ImageCacheEvent       //Could have multiples so should be slice...
 	keysRegistrationEvent KeysRegistrationEvent //Only one set of keys to listen for at a time.
+	controlEvent          ControlEvent          //May need slice..
 }
 
 var c = controller{}
@@ -36,8 +34,12 @@ func NewGameController() StandardMediaPeerController {
 	c.audioEvent = make([]AudioEvent, 0, 50)
 	return &c
 }
+func (c *controller) OnControlEvent(controlChannel <-chan ControlEvent) {
+	for evt := range controlChannel {
+		c.controlEvent = evt
+	}
+}
 
-//We don't want to consume from the channel if we still have an event waiting for processing.
 func (c *controller) OnDrawEvent(drawChannel <-chan DrawEvent) {
 	for evt := range drawChannel {
 		c.drawEvent = evt
@@ -83,9 +85,16 @@ func (c *controller) GetAudioEvent() AudioEvent {
 	return evt
 }
 
+// Don't repeat process.
+func (c *controller) GetControlEvent() ControlEvent {
+	temp := c.controlEvent
+	c.controlEvent = nil
+	return temp
+}
 func (c *controller) GetTextEvent() TextEvent {
 	return c.textEvent
 }
+
 func (c *controller) GetKeysRegistrationEvent() KeysRegistrationEvent {
 	return c.keysRegistrationEvent
 }

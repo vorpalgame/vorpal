@@ -46,8 +46,11 @@ func (e *engine) Start() {
 		e.sendMouseEvents()
 		e.sendKeyEvents()
 		e.runAudio()
+		e.processControlEvent()
+
 		drawEvt := e.controller.GetDrawEvent()
 		textEvt := e.controller.GetTextEvent()
+
 		if drawEvt != nil {
 			e.cache.CacheImages(drawEvt)
 			e.renderImages(drawEvt)
@@ -68,6 +71,16 @@ func (e *engine) Start() {
 	}
 }
 
+func (e *engine) processControlEvent() {
+	controlEvt := e.controller.GetControlEvent()
+	if controlEvt != nil {
+		switch controlEvt.(type) {
+		case bus.WindowTitleEvent:
+			rl.SetWindowTitle(controlEvt.(bus.WindowTitleEvent).GetTitle())
+		}
+
+	}
+}
 func (e *engine) renderTexture() {
 	if e.renderedImg != nil {
 		previousTexture := e.currentTexture

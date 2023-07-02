@@ -8,6 +8,7 @@ type vorpalEventBus struct {
 	textEventListenerChannels            []chan TextEvent
 	imageCacheEventListenerChannels      []chan ImageCacheEvent
 	keysRegistrationEventListenerChannel []chan KeysRegistrationEvent
+	controlEventListenerChannel          []chan ControlEvent
 }
 
 type VorpalBus interface {
@@ -21,6 +22,7 @@ type VorpalBus interface {
 	AddTextEventListener(eventListener TextEventListener)
 	AddImageCacheEventListener(eventListener ImageCacheEventListener)
 	AddKeysRegistrationEventListener(eventLiustener KeysRegistrationEventListener)
+	AddControlEventListener(eventLiustener ControlEventListener)
 
 	SendMouseEvent(event MouseEvent)
 	SendKeysRegistrationEvent(event KeysRegistrationEvent)
@@ -29,6 +31,7 @@ type VorpalBus interface {
 	SendAudioEvent(event AudioEvent)
 	SendTextEvent(event TextEvent)
 	SendImageCacheEvent(event ImageCacheEvent)
+	SendControlEvent(event ControlEvent)
 }
 
 var eb = vorpalEventBus{}
@@ -42,6 +45,7 @@ func (eb *vorpalEventBus) AddControllerListener(eventListener ControllerListener
 	eb.AddAudioEventListener(eventListener)
 	eb.AddTextEventListener(eventListener)
 	eb.AddKeysRegistrationEventListener(eventListener)
+	eb.AddControlEventListener(eventListener)
 }
 
 // Channels that can buffer multiple events or where we don't care for only the latest
@@ -51,9 +55,19 @@ func (eb *vorpalEventBus) AddControllerListener(eventListener ControllerListener
 // These also give the consumer the choice whether to igonre or process all the events. If there are
 // multiple DrawEvents we may wish to process them al in one context while ignore all but the latest
 // and consider the earlier  ones to be frame misses.
-//The controller determines correct behavior
-//Practical limit of 10 though as more indicates a lot of processing misses.
+// The controller determines correct behavior
+// Practical limit of 10 though as more indicates a lot of processing misses.
+func (bus *vorpalEventBus) AddControlEventListener(eventListener ControlEventListener) {
+	listenerChannel := make(chan ControlEvent, 10)
+	bus.controlEventListenerChannel = append(bus.controlEventListenerChannel, listenerChannel)
+	go eventListener.OnControlEvent(listenerChannel)
+}
 
+func (bus *vorpalEventBus) SendControlEvent(event ControlEvent) {
+	for _, channel := range bus.controlEventListenerChannel {
+		channel <- event
+	}
+}
 func (bus *vorpalEventBus) AddKeysRegistrationEventListener(eventListener KeysRegistrationEventListener) {
 	listenerChannel := make(chan KeysRegistrationEvent, 10)
 	bus.keysRegistrationEventListenerChannel = append(bus.keysRegistrationEventListenerChannel, listenerChannel)
