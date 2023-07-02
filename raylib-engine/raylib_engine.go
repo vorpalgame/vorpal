@@ -74,9 +74,9 @@ func (e *engine) Start() {
 func (e *engine) processControlEvent() {
 	controlEvt := e.controller.GetControlEvent()
 	if controlEvt != nil {
-		switch controlEvt.(type) {
+		switch controlEvt := controlEvt.(type) {
 		case bus.WindowTitleEvent:
-			rl.SetWindowTitle(controlEvt.(bus.WindowTitleEvent).GetTitle())
+			rl.SetWindowTitle(controlEvt.GetTitle())
 		}
 
 	}
