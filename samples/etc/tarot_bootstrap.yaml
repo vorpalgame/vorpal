@@ -1,6 +1,7 @@
 Title: Tarot Reading
 RegisterKeys: ["s", "S", "N", "n"]
 
-# configs:
-#   henry: ./etc/zombiecide/henry.yaml
-#   karen: ./etc/zombiecide/karen.yaml
+configs:
+   tarot_deck: tarot_deck.yaml
+
+deck: 

@@ -2,8 +2,10 @@ package tarot
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
+	"github.com/spf13/viper"
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
 )
@@ -21,7 +23,7 @@ type tarot struct {
 
 // TODO The cards should have locations or the game/board should dictate those...
 // TODO The fonts and text layers need to be added to the text event.
-
+// TODO Fonts belong in yaml file...
 var fontName = "samples/resources/fonts/Roboto-Regular.ttf"
 var headerFontName = "samples/resources/fonts/Roboto-Black.ttf"
 
@@ -31,7 +33,11 @@ func NewGame() TarotGame {
 	t.bus = bus.GetVorpalBus()
 	t.bus.AddMouseListener(&t)
 	t.bus.AddKeyEventListener(&t)
-	t.tarotDeck = NewDeck()
+	tarotDeck := &TarotDeckData{}
+	lib.LoadConfiguration(viper.GetString("configs.tarot_deck"))
+	viper.Unmarshal(tarotDeck)
+	t.tarotDeck = tarotDeck
+	log.Default().Println(t.tarotDeck.GetTopCard().GetCardImg())
 	t.doStart()
 	return t
 
@@ -42,11 +48,11 @@ func (t *tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 
 		if evt.GetKey().EqualsIgnoreCase("S") {
 			t.tarotDeck.Shuffle()
-
+			//TODO These items should go in yaml file..
 			t.bus.SendAudioEvent(bus.NewAudioEvent("samples/resources/audio/shuffle.mp3").Play())
 			t.drawEvent = bus.NewDrawEvent()
 			t.drawEvent.AddImageLayer(bus.NewImageLayer().AddLayerData(bus.NewImageMetadata("samples/resources/tarot/table.png", 0, 0, 100)))
-
+			//A cheapo clear event for now...
 			t.bus.SendTextEvent(t.textEvent.Reinitialize().AddText(""))
 			t.doSendCard()
 		} else if evt.GetKey().EqualsIgnoreCase("N") {
@@ -61,7 +67,8 @@ func (t *tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 func (t *tarot) doStart() {
 	t.currentCard = 0
 	//The keys we are interested in.
-	//These shoudl be registered from the yaml configuration TODO
+	//These shoudl be registered from the yaml configuration
+	//TODO These belong in yml files...
 	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent(lib.NewKeys([]string{"s", "n", "S", "N"})))
 	t.drawEvent = bus.NewDrawEvent()
 
@@ -129,28 +136,27 @@ func createImageLayer(displayCard string, mainX, mainY int32) bus.ImageLayer {
 	imgData := bus.NewImageMetadata(displayCard, mainX, mainY, 10)
 	return bus.NewImageLayer().AddLayerData(imgData)
 }
+
+// TODO Put formatting and font in Yaml
+// TODO Text and Lines shyould be in the lib and not
+// bus package.
 func (t *tarot) formatCardText(card TarotCard) {
 	lineLength := 70
-
+	t.textEvent.AddTextLine(bus.NewTextLine(card.GetCardTitle(), headerFontName, 24))
 	sentences := strings.Split(card.GetCardText(), "\n")
 
-	for lineNo, sentence := range sentences {
-		sentence = strings.Trim(sentence, " ")
-		if lineNo == 0 {
-			t.textEvent.AddTextLine(bus.NewTextLine(sentence, headerFontName, 24))
-		} else {
-			words := strings.Split(sentence, " ")
-			var line string
-			for _, word := range words {
-				line += word + " "
-				if len(line) > int(lineLength) {
-					t.textEvent.AddText(strings.Trim(line, " "))
-					line = ""
-				}
-
+	for _, sentence := range sentences {
+		words := strings.Split(sentence, " ")
+		var line string
+		for _, word := range words {
+			line += word + " "
+			if len(line) > int(lineLength) {
+				t.textEvent.AddText(strings.Trim(line, " "))
+				line = ""
 			}
-			t.textEvent.AddText(strings.Trim(line, " "))
+
 		}
+		t.textEvent.AddText(strings.Trim(line, " "))
 
 	}
 }

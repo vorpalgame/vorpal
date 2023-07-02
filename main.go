@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+
 	//"time"
 
 	"github.com/spf13/viper"
@@ -18,21 +20,20 @@ import (
 // and eliminate the need for a lot of if/else hand rolled code.
 func main() {
 
-	//TODO The init and load of configurations at start up should
-	//be consolidated in a lib configurator/initializer.
+	lib.LoadConfiguration("key_mapping.yaml")
 	lib.InitKeyMap()
-	//Configurator and yaml files will hold the paths and file names.
-	//For now they are hard coded here while we move them out.
-	lib.LoadConfiguration("./etc", "bootstrap.yaml")
+	lib.LoadConfiguration("bootstrap.yaml")
+
 	fmt.Println("New game engine")
 
 	c := raylibengine.NewEngine()
 	start := viper.GetString("start")
-	lib.LoadConfiguration("./samples/etc", "zombie_bootstrap.yaml")
-
+	log.Default().Println(start)
 	if start == "tarot" {
+		lib.LoadConfiguration("tarot_bootstrap.yaml")
 		go tarot.NewGame()
 	} else if start == "zombiecide" {
+		lib.LoadConfiguration("zombie_bootstrap.yaml")
 		go zombiecide.Init()
 	}
 	c.Start()

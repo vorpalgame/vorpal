@@ -14,14 +14,8 @@ var keyConfig KeyConfig = newKeyConfig()
 // make yaml file locations come out of bootstrap.yaml
 // All the configurations need to be relative to a knwon location.
 func InitKeyMap() {
-	x := viper.New()
-	x.AddConfigPath("./etc")
-	x.AddConfigPath("../etc") //For testing...
-	x.SetConfigType("yaml")
-	x.SetConfigFile("./etc/key_mapping.yaml") //Theoretically shouldn't need full path.
-	x.ReadInConfig()                          //Should check error
 
-	x.Unmarshal(&keyConfig)
+	viper.Unmarshal(&keyConfig)
 
 }
 

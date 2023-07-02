@@ -195,9 +195,11 @@ func getMouseButton(button int32, buttonName string) lib.MouseButtonState {
 }
 
 func (e *engine) sendKeyEvents() {
-	for _, key := range e.controller.GetKeysRegistrationEvent().GetKeys() {
-		if rl.IsKeyPressed(key.ToAscii()) {
-			e.bus.SendKeyEvent(bus.NewKeyEvent(key))
+	if e.controller.GetKeysRegistrationEvent() != nil {
+		for _, key := range e.controller.GetKeysRegistrationEvent().GetKeys() {
+			if rl.IsKeyPressed(key.ToAscii()) {
+				e.bus.SendKeyEvent(bus.NewKeyEvent(key))
+			}
 		}
 	}
 }

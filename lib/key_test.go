@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )
 
@@ -14,16 +15,12 @@ func TestKey(t *testing.T) {
 
 	//fileName := "./etc/key_map.yaml"
 	log.Default().Println("TestKeys")
-
-	x := viper.New()
-	x.AddConfigPath("../etc")
-	x.SetConfigType("yaml")
-	x.SetConfigFile("../etc/key_mapping.yaml") //Theoretically shouldn't need full path.
-	x.ReadInConfig()                           //Should check error
+	LoadConfiguration("key_mapping.yaml") //Theoretically shouldn't need full path.
+	//Should check error
 	newKeys := newKeyConfig()
 
-	x.Unmarshal(&newKeys)
-
+	viper.Unmarshal(&newKeys)
+	assert.True(t, len(newKeys.AsciiToKey) > 0)
 	// var bytes []byte
 	// bytes, _ = os.ReadFile("../etc/key_mapping.yaml")
 	// newKeys := newKeyConfig()

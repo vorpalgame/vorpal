@@ -2,5 +2,5 @@ Title: Zombiecide
 RegisterKeys: ["e", "E", "R", "r", "g", "G", "h", "H"]
 
 configs:
-  henry: ./etc/zombiecide/henry.yaml
-  karen: ./etc/zombiecide/karen.yaml
+  henry: henry.yaml
+  karen: karen.yaml
