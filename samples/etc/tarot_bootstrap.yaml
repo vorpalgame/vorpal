@@ -1,7 +1,7 @@
 Title: Tarot Reading
 RegisterKeys: ["s", "S", "N", "n"]
-
-configs:
-   tarot_deck: tarot_deck.yaml
-
-deck: 
+HeaderFont:  "samples/resources/fonts/Roboto-Black.ttf"
+TextFont: "samples/resources/fonts/Roboto-Regular.ttf"
+ShuffleAudio: "samples/resources/audio/shuffle.mp3"
+BackgroundImage: "samples/resources/tarot/table.png"
+TarotDeck: tarot_deck.yaml
