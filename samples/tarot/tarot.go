@@ -13,59 +13,55 @@ type TarotGame interface {
 
 // TODO This should match with the tarot_bootstrap.yaml so
 // that it can be unmarshaled
-type tarot struct {
-	bus                                                 bus.VorpalBus
-	tarotDeck                                           TarotDeck
-	drawEvent                                           bus.DrawEvent
-	textEvent                                           bus.TextEvent
-	headerFont, textFont, shuffleAudio, backgroundImage string //These will need to be UC with marker text for viper...
-	currentCard                                         int32
-	shuffled                                            bool
+type Tarot struct {
+	Title           string        `yaml:"Title"`
+	HeaderFont      string        `yaml:"HeaderFont"`
+	TextFont        string        `yaml:"TextFont"`
+	ShuffleAudio    string        `yaml:"ShuffleAudio"`
+	BackgroundImage string        `yaml:"BackgroundImage"`
+	TarotDeck       TarotDeckData `yaml:"TarotDeck"`
+	currentCard     int32
+	shuffled        bool
+	bus             bus.VorpalBus
+	drawEvent       bus.DrawEvent
+	textEvent       bus.TextEvent
 }
 
 func NewGame() TarotGame {
 
-	var t = tarot{}
-	t.bus = bus.GetVorpalBus()
-	t.bus.AddMouseListener(&t)
-	t.bus.AddKeyEventListener(&t)
-	tarotDeck := &TarotDeckData{}
-	t.headerFont = viper.GetString("HeaderFont")
-	t.textFont = viper.GetString("TextFont")
-	t.shuffleAudio = viper.GetString("ShuffleAudio")
-	t.backgroundImage = viper.GetString("BackgroundImage")
-	lib.LoadConfiguration(viper.GetString("TarotDeck"))
-	viper.Unmarshal(tarotDeck)
-	t.tarotDeck = tarotDeck
-	t.shuffled = false
-	t.doStart()
-	return t
+	currentGame := Tarot{}
+	viper.Unmarshal(&currentGame)
+	currentGame.bus = bus.GetVorpalBus()
+
+	currentGame.bus.AddMouseListener(&currentGame)
+	currentGame.bus.AddKeyEventListener(&currentGame)
+
+	currentGame.shuffled = false
+	currentGame.doStartupScreen()
+	return currentGame
 
 }
 
-func (t *tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
+func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 
 		if evt.GetKey().EqualsIgnoreCase("S") {
-			t.tarotDeck.Shuffle()
+			t.bus.SendAudioEvent(bus.NewAudioEvent(t.ShuffleAudio).Stop())
+			t.drawEvent.AddImageLayer(bus.NewImageLayer().AddLayerData(bus.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
+			t.TarotDeck.Shuffle()
 			t.shuffled = true
-			//TODO These items should go in yaml file..
-			t.bus.SendAudioEvent(bus.NewAudioEvent(t.shuffleAudio).Play())
-			t.drawEvent = bus.NewDrawEvent()
-			t.drawEvent.AddImageLayer(bus.NewImageLayer().AddLayerData(bus.NewImageMetadata(t.backgroundImage, 0, 0, 100)))
-			//A cheapo clear event for now...
-			t.bus.SendTextEvent(t.textEvent.Reinitialize().AddText(""))
+			t.bus.SendAudioEvent(bus.NewAudioEvent(t.ShuffleAudio).Play())
+			t.currentCard = 0
 			t.doSendCard()
 		} else if evt.GetKey().EqualsIgnoreCase("N") && t.shuffled {
 			t.doSendCard()
-			//TODO Check for max cards and end game...
 		}
 
 	}
 
 }
 
-func (t *tarot) doStart() {
+func (t *Tarot) doStartupScreen() {
 	t.currentCard = 0
 	t.shuffled = false
 	//The keys we are interested in.
@@ -74,17 +70,17 @@ func (t *tarot) doStart() {
 	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent(lib.NewKeys([]string{"s", "n", "S", "N"})))
 	t.drawEvent = bus.NewDrawEvent()
 
-	t.drawEvent.AddImageLayer(bus.NewImageLayer().AddLayerData(bus.NewImageMetadata(t.backgroundImage, 0, 0, 100)))
+	t.drawEvent.AddImageLayer(bus.NewImageLayer().AddLayerData(bus.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
 
 	t.bus.SendDrawEvent(t.drawEvent)
 	//Get intro text from Yaml file.
-	t.textEvent = bus.NewTextEvent(t.textFont, 18, 0, 0).AddText("Press S to shuffle and N to deal next card.").SetX(120).SetY(100)
+	t.textEvent = bus.NewTextEvent(t.TextFont, 18, 0, 0).AddText("Press S to shuffle and N to deal next card.").SetX(120).SetY(100)
 	t.bus.SendTextEvent(t.textEvent)
 
 }
 
-func (t *tarot) doSendCard() {
-	card := t.tarotDeck.GetTopCard()
+func (t *Tarot) doSendCard() {
+	card := t.TarotDeck.GetTopCard()
 	//TODO iterate over it and split into lines.
 	t.textEvent.Reinitialize().SetX(120).SetY(100)
 	t.formatCardText(card)
@@ -129,7 +125,7 @@ func (t *tarot) doSendCard() {
 	if t.currentCard < 10 {
 		t.currentCard++
 	} else {
-		t.doStart()
+		t.doStartupScreen()
 	}
 }
 
@@ -142,9 +138,9 @@ func createImageLayer(displayCard string, mainX, mainY int32) bus.ImageLayer {
 // TODO Put formatting and font in Yaml
 // TODO Text and Lines shyould be in the lib and not
 // bus package.
-func (t *tarot) formatCardText(card TarotCard) {
+func (t *Tarot) formatCardText(card TarotCard) {
 	lineLength := 70
-	t.textEvent.AddTextLine(bus.NewTextLine(card.GetCardTitle(), t.headerFont, 24))
+	t.textEvent.AddTextLine(bus.NewTextLine(card.GetCardTitle(), t.HeaderFont, 24))
 	sentences := strings.Split(card.GetCardText(), "\n")
 
 	for _, sentence := range sentences {
@@ -162,7 +158,7 @@ func (t *tarot) formatCardText(card TarotCard) {
 
 	}
 }
-func (t *tarot) OnMouseEvent(mouseChannel <-chan bus.MouseEvent) {
+func (t *Tarot) OnMouseEvent(mouseChannel <-chan bus.MouseEvent) {
 	for evt := range mouseChannel {
 		if evt.LeftButton().IsDown() {
 			//fmt.Println(evt)
