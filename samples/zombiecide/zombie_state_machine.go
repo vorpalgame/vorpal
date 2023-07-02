@@ -56,14 +56,14 @@ func NewZombieStateMachine() ZombieStateMachine {
 
 type ZombieStateMachine interface {
 	ZombieStates
-	Execute(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent)
+	Execute(drawEvent bus.DrawLayersEvent, mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent)
 }
 
 type zombieStateMachineData struct {
 	ZombieStates
 }
 
-func (z *zombieStateMachineData) Execute(drawEvent bus.DrawEvent, mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent) {
+func (z *zombieStateMachineData) Execute(drawEvent bus.DrawLayersEvent, mouseEvent bus.MouseEvent, keyEvent bus.KeyEvent) {
 	layer := bus.NewImageLayer()
 	drawEvent.AddImageLayer(layer)
 	current := z.getCurrent()

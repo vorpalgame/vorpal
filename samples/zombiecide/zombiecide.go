@@ -54,7 +54,7 @@ func Init() {
 	//
 	for {
 		if zombies.mouseEvent != nil {
-			drawEvt := bus.NewDrawEvent()
+			drawEvt := bus.NewDrawLayersEvent()
 			drawEvt.AddImageLayer(zombies.background)
 			if zombies.currentZombie == "h" {
 				stateMachineZombie.Execute(drawEvt, zombies.mouseEvent, zombies.keyEvent)

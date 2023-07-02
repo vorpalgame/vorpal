@@ -1,25 +1,30 @@
 package bus
 
 //Add coordinates, layers, etc. as necessary..
+///// Constructors //////////////////
+func NewDrawLayersEvent() DrawLayersEvent {
+	evt := drawEvent{}
+	evt.imageLayers = make([]ImageLayer, 0)
+	return &evt
+}
 
+/////////////////////////////////////
 type DrawEventListener interface {
 	OnDrawEvent(drawChannel <-chan DrawEvent)
 }
 
 type DrawEvent interface {
+	Reset()
+}
+
+type DrawLayersEvent interface {
+	DrawEvent
 	GetImageLayers() []ImageLayer
 	AddImageLayer(imgLayer ImageLayer) DrawEvent
-	Reset()
 }
 
 type drawEvent struct {
 	imageLayers []ImageLayer
-}
-
-func NewDrawEvent() DrawEvent {
-	evt := drawEvent{}
-	evt.imageLayers = make([]ImageLayer, 0)
-	return &evt
 }
 
 func (evt *drawEvent) Reset() {

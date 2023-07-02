@@ -23,7 +23,7 @@ type Tarot struct {
 	currentCard     int32
 	shuffled        bool
 	bus             bus.VorpalBus
-	drawEvent       bus.DrawEvent
+	drawEvent       bus.DrawLayersEvent
 	textEvent       bus.TextEvent
 }
 
@@ -69,7 +69,7 @@ func (t *Tarot) doStartupScreen() {
 	//TODO Get key bindings from yaml file...
 	t.bus.SendControlEvent(bus.NewWindowTitleEvent(t.Title))
 	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent(lib.NewKeys([]string{"s", "n", "S", "N"})))
-	t.drawEvent = bus.NewDrawEvent()
+	t.drawEvent = bus.NewDrawLayersEvent()
 
 	t.drawEvent.AddImageLayer(bus.NewImageLayer().AddLayerData(bus.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
 

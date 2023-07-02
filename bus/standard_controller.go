@@ -91,8 +91,15 @@ func (c *controller) GetControlEvent() ControlEvent {
 	c.controlEvent = nil
 	return temp
 }
+
+// Need better coordination mechanismm for rendering
+// of draw and text events. Probably should compose
+// them together and then eliminate the need for the
+// use of temp
 func (c *controller) GetTextEvent() TextEvent {
-	return c.textEvent
+	temp := c.textEvent
+	c.textEvent = nil
+	return temp
 }
 
 func (c *controller) GetKeysRegistrationEvent() KeysRegistrationEvent {

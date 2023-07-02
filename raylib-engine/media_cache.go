@@ -5,21 +5,22 @@ import (
 	"github.com/vorpalgame/vorpal/bus"
 )
 
-// TODO Determine the right level of store/cache. Images might be kept in memory of system
-// even out of scope but textures wouldn't be.
 type MediaCache interface {
-	CacheImages(event bus.DrawEvent)
-	CacheFonts(event bus.TextEvent)
+	CacheImages(event bus.DrawLayersEvent) MediaCache
+	CacheFonts(event bus.TextEvent) MediaCache
+	SetCurrentRenderImage(img *rl.Image) MediaCache
+	DoCacheControl(event bus.ImageCacheEvent) MediaCache
 	GetImage(img string) *rl.Image
-	DoCacheControl(event bus.ImageCacheEvent)
 	GetFont(fontName string) *rl.Font
 	GetAudio(fileName string) *rl.Sound
+	GetCurrentRenderImage() *rl.Image
 }
 
 type mediaCache struct {
-	imageCache map[string]*rl.Image
-	fontCache  map[string]*rl.Font
-	audioCache map[string]*rl.Sound
+	imageCache         map[string]*rl.Image
+	fontCache          map[string]*rl.Font
+	audioCache         map[string]*rl.Sound
+	currentRenderImage *rl.Image
 }
 
 func NewMediaCache() MediaCache {
@@ -29,7 +30,13 @@ func NewMediaCache() MediaCache {
 	cache.audioCache = make(map[string]*rl.Sound)
 	return &cache
 }
-
+func (c *mediaCache) GetCurrentRenderImage() *rl.Image {
+	return c.currentRenderImage
+}
+func (c *mediaCache) SetCurrentRenderImage(img *rl.Image) MediaCache {
+	c.currentRenderImage = img
+	return c
+}
 func (c *mediaCache) GetFont(fontName string) *rl.Font {
 	return c.fontCache[fontName]
 
@@ -43,17 +50,19 @@ func (c *mediaCache) GetAudio(fileName string) *rl.Sound {
 
 }
 
-func (c *mediaCache) CacheFonts(evt bus.TextEvent) {
+func (c *mediaCache) CacheFonts(evt bus.TextEvent) MediaCache {
 	c.doFontCache(evt.GetFont())
 	for _, line := range evt.GetText() {
 		c.doFontCache(line.GetFont())
 	}
+	return c
 }
-func (c *mediaCache) doFontCache(fontName string) {
+func (c *mediaCache) doFontCache(fontName string) MediaCache {
 	if c.fontCache[fontName] == nil {
 		font := rl.LoadFont(fontName)
 		c.fontCache[fontName] = &font
 	}
+	return c
 }
 
 func (c *mediaCache) GetImage(img string) *rl.Image {
@@ -63,7 +72,7 @@ func (c *mediaCache) GetImage(img string) *rl.Image {
 // Need an update mechanism when scale changes. Perhaps map key needs to be
 // name+scale. This may also be where the image cache  event comes in.
 // In any case, it appears that scaling per image draw is a bit to expensive.
-func (c *mediaCache) CacheImages(evt bus.DrawEvent) {
+func (c *mediaCache) CacheImages(evt bus.DrawLayersEvent) MediaCache {
 	for _, evt := range evt.GetImageLayers() {
 		for _, imgData := range evt.GetLayerData() {
 			img := c.imageCache[imgData.GetImage()]
@@ -79,9 +88,10 @@ func (c *mediaCache) CacheImages(evt bus.DrawEvent) {
 		}
 
 	}
+	return c
 }
 
-func (c *mediaCache) DoCacheControl(evt bus.ImageCacheEvent) {
+func (c *mediaCache) DoCacheControl(evt bus.ImageCacheEvent) MediaCache {
 	if evt != nil {
 		for _, op := range evt.GetImageCacheOperations() {
 			if op.GetOperation() == "add" {
@@ -91,4 +101,5 @@ func (c *mediaCache) DoCacheControl(evt bus.ImageCacheEvent) {
 			}
 		}
 	}
+	return c
 }
