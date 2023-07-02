@@ -27,19 +27,14 @@ type KeyEvent interface {
 	GetKey() lib.Key
 }
 
-//	type keyEvents struct {
-//		keys []Key
-//	}
 type keyEvent struct {
 	key lib.Key
 }
 
-// //////////// Notify Key event
 func NewKeyEvent(key lib.Key) NotifyKeyEvent {
 	return &keyEvent{key}
 }
 
-// Key events...
 type NotifyKeyEvent interface {
 	GetKey() lib.Key
 }

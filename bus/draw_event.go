@@ -1,7 +1,7 @@
 package bus
 
-//Add coordinates, layers, etc. as necessary..
 ///// Constructors //////////////////
+
 func NewDrawLayersEvent() DrawLayersEvent {
 	evt := drawEvent{}
 	evt.imageLayers = make([]ImageLayer, 0)
@@ -9,6 +9,7 @@ func NewDrawLayersEvent() DrawLayersEvent {
 }
 
 /////////////////////////////////////
+
 type DrawEventListener interface {
 	OnDrawEvent(drawChannel <-chan DrawEvent)
 }
@@ -62,6 +63,7 @@ func NewImageMetadata(img string, x, y, scale int32) ImageMetadata {
 }
 
 //TODO We should refactor lib to make it general use the Point
+
 type ImageMetadata interface {
 	GetImage() string
 	GetX() int32
@@ -76,6 +78,7 @@ type ImageMetadata interface {
 }
 
 //Use builder pattern methods
+
 type ImageLayer interface {
 	GetLayerData() []ImageMetadata
 	AddLayerData(imgMetadata ImageMetadata) ImageLayer
@@ -106,7 +109,8 @@ func (p *imageMetadata) GetX() int32 {
 	return p.x
 }
 
-//TODO Start using Point
+//TODO Refactor to use Point
+
 func (p *imageMetadata) SetX(x int32) ImageMetadata {
 	p.x = x
 	return p

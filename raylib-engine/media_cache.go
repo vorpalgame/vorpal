@@ -3,11 +3,12 @@ package raylibengine
 import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/lib"
 )
 
 type MediaCache interface {
 	CacheImages(event bus.DrawLayersEvent) MediaCache
-	CacheFonts(event bus.Font) MediaCache
+	CacheFonts(event lib.Font) MediaCache
 	SetCurrentRenderImage(img *rl.Image) MediaCache
 	DoCacheControl(event bus.ImageCacheEvent) MediaCache
 	GetImage(img string) *rl.Image
@@ -50,7 +51,7 @@ func (c *mediaCache) GetAudio(fileName string) *rl.Sound {
 
 }
 
-func (c *mediaCache) CacheFonts(evt bus.Font) MediaCache {
+func (c *mediaCache) CacheFonts(evt lib.Font) MediaCache {
 	c.doFontCache(evt.GetFont())
 	//TODO Refactor as necessary.
 	// for _, line := range evt.GetText() {
@@ -70,9 +71,10 @@ func (c *mediaCache) GetImage(img string) *rl.Image {
 	return c.imageCache[img]
 }
 
-// Need an update mechanism when scale changes. Perhaps map key needs to be
+// TODO Need an update mechanism when scale changes. Perhaps map key needs to be
 // name+scale. This may also be where the image cache  event comes in.
 // In any case, it appears that scaling per image draw is a bit to expensive.
+
 func (c *mediaCache) CacheImages(evt bus.DrawLayersEvent) MediaCache {
 	for _, evt := range evt.GetImageLayers() {
 		for _, imgData := range evt.GetLayerData() {

@@ -13,6 +13,7 @@ type TarotGame interface {
 
 // TODO This should match with the tarot_bootstrap.yaml so
 // that it can be unmarshaled
+
 type Tarot struct {
 	Title           string        `yaml:"Title"`
 	HeaderFont      string        `yaml:"HeaderFont"`
@@ -142,7 +143,7 @@ func createImageLayer(displayCard string, mainX, mainY int32) bus.ImageLayer {
 // bus package.
 func (t *Tarot) formatCardText(card TarotCard) {
 	lineLength := 70
-	t.textEvent.AddTextLine(bus.NewTextLine(card.GetCardTitle(), bus.NewFont(t.HeaderFont, 24)))
+	t.textEvent.AddTextLine(lib.NewTextLine(card.GetCardTitle(), lib.NewFont(t.HeaderFont, 24)))
 	sentences := strings.Split(card.GetCardText(), "\n")
 
 	for _, sentence := range sentences {
