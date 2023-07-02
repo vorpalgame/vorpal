@@ -24,7 +24,7 @@ type Tarot struct {
 	shuffled        bool
 	bus             bus.VorpalBus
 	drawEvent       bus.DrawLayersEvent
-	textEvent       bus.TextEvent
+	textEvent       bus.MultilineTextEvent
 }
 
 func NewGame() TarotGame {
@@ -75,7 +75,8 @@ func (t *Tarot) doStartupScreen() {
 
 	t.bus.SendDrawEvent(t.drawEvent)
 	//Get intro text from Yaml file.
-	t.textEvent = bus.NewTextEvent(t.TextFont, 18, 0, 0).AddText("Press S to shuffle and N to deal next card.").SetX(120).SetY(100)
+	t.textEvent = bus.NewMultilineTextEvent(t.TextFont, 18, 0, 0).AddText("Press S to shuffle and N to deal next card.")
+	t.textEvent.SetLocation(120, 100)
 	t.bus.SendTextEvent(t.textEvent)
 
 }
@@ -83,7 +84,7 @@ func (t *Tarot) doStartupScreen() {
 func (t *Tarot) doSendCard() {
 	card := t.TarotDeck.GetTopCard()
 	//TODO iterate over it and split into lines.
-	t.textEvent.Reinitialize().SetX(120).SetY(100)
+	t.textEvent.Reinitialize().SetLocation(120, 100)
 	t.formatCardText(card)
 	t.bus.SendTextEvent(t.textEvent)
 	displayCard := card.GetCardImg()
@@ -141,7 +142,7 @@ func createImageLayer(displayCard string, mainX, mainY int32) bus.ImageLayer {
 // bus package.
 func (t *Tarot) formatCardText(card TarotCard) {
 	lineLength := 70
-	t.textEvent.AddTextLine(bus.NewTextLine(card.GetCardTitle(), t.HeaderFont, 24))
+	t.textEvent.AddTextLine(bus.NewTextLine(card.GetCardTitle(), bus.NewFont(t.HeaderFont, 24)))
 	sentences := strings.Split(card.GetCardText(), "\n")
 
 	for _, sentence := range sentences {

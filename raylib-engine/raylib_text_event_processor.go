@@ -30,25 +30,25 @@ func (tep *textData) processTextEvent(evt bus.TextEvent) {
 	//subtypes of TextEvent but it will.
 	if evt != nil {
 		switch evt := evt.(type) {
-		case bus.TextEvent:
-			tep.CacheFonts(evt)
+		case bus.MultilineTextEvent:
 			tep.renderText(evt)
 		}
 	}
 }
-func (tep *textData) renderText(txtEvt bus.TextEvent) {
+func (tep *textData) renderText(evt bus.MultilineTextEvent) {
 	//Make sure we don't get a race on nil check.
 	renderImg := tep.GetCurrentRenderImage()
 
 	if renderImg != nil {
-
+		tep.CacheFonts(evt)
 		//TODO The lines will not be wrapped here so this is temporary
 		//The next step is to send each presplit line from the other side of the bus
 		//and then iterate over it here.
 		//
-		x := float32(txtEvt.GetX())
-		var y = float32(txtEvt.GetY())
-		for _, txt := range txtEvt.GetText() {
+		x := float32(evt.GetLocation().GetX())
+		var y = float32(evt.GetLocation().GetY())
+		for _, txt := range evt.GetText() {
+			tep.CacheFonts(txt)
 			rl.ImageDrawTextEx(renderImg, rl.Vector2{x, y}, *tep.GetFont(txt.GetFont()), txt.GetText(), float32(txt.GetFontSize()), 0, rl.Black)
 			//How to do line spacing????
 			y += float32(txt.GetFontSize()) * float32(1.1) //Extra space..

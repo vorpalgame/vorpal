@@ -8,4 +8,4 @@ configs:
     path: ./etc/tarot
     file: tarot_bootstrap.yaml
 start:
-  tarot
+  zombiecide

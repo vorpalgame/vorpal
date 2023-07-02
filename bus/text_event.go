@@ -1,110 +1,156 @@
 package bus
 
+import "github.com/vorpalgame/vorpal/lib"
+
 type TextEventListener interface {
 	OnTextEvent(textChannel <-chan TextEvent)
 }
 
-// This is currently being refactored from previous verious that had a single line of
-// text and font/size to one that is slices of text lines which may override font/size
-// TODO other elements like location and type size.
-// All text in the event are assumed to be of the same font and size unless
-// they are overridden for specific lines.
+//TODO Builder pattern isn't quite right for this yet. Refactor to correct.
+//TODO Set/Get Location and Reinitialize should be implemented
+//in a generic way to return the actual event. For example,
+//MultilineTextEvent is a TextEvent but it should return that
+//interface and not TextEvent only. Otherwis the builder pattern
+//is broken.
+//////////////////////////////////////////////////
+//// TextEvent
+//////////////////////////////////////////////////
 type TextEvent interface {
-	GetFont() string
-	GetFontSize() int32
-	GetText() []TextLine
-	AddTextLine(TextLine) TextEvent
-	AddText(string) TextEvent
-	GetId() int32
-	GetX() int32
-	GetY() int32
-	SetX(int32) TextEvent
-	SetY(int32) TextEvent
 	Reinitialize() TextEvent
+	GetLocation() lib.Point
+	SetLocation(x, y int32) TextEvent
+}
+type textEventData struct {
+	lib.Point
 }
 
-type TextLine interface {
-	GetText() string
+func (ted *textEventData) GetLocation() lib.Point {
+	return ted.Point
+}
+func (ted *textEventData) SetLocation(x, y int32) TextEvent {
+	ted.Point = lib.NewPoint(x, y)
+	return ted
+}
+
+func (ted *textEventData) Reinitialize() TextEvent {
+	//More specific events can override in whatever way
+	//make sense. At this level there isn't much to do
+	//nil'ing the location is potentially dangerous.
+	return ted
+}
+
+/////////////////////////////////////////////////////
+//// Font
+/////////////////////////////////////////////////////
+func NewFont(font string, size int32) Font {
+	return &fontData{font, size}
+}
+
+//Font probably belongs in lib
+type Font interface {
 	GetFont() string
 	GetFontSize() int32
+	SetFont(font string) Font
+	SetFontSize(int32) Font
 }
 
-// Text event can have a font specified for defaults.
-type textEvent struct {
-	text               []TextLine
-	font               string
-	fontSize, x, y, id int32
-}
-
-var nextTextEventId = int32(0)
-
-func NewTextEvent(font string, fontSize, x, y int32) TextEvent {
-	nextTextEventId++
-	return &textEvent{make([]TextLine, 0), font, fontSize, x, y, nextTextEventId}
-
-}
-
-func NewTextLine(text, font string, fontSize int32) TextLine {
-	return &textLine{text, font, fontSize}
-}
-
-// Reuse the text event with font/size information but clear the slice and update the id
-func (e *textEvent) Reinitialize() TextEvent {
-	e.text = make([]TextLine, 0)
-	e.id = e.id + 1
-	return e
-}
-func (p *textEvent) GetFontSize() int32 {
-	return p.fontSize
-}
-func (p *textEvent) GetFont() string {
-	return p.font
-}
-
-// Use default font and font size.
-func (e *textEvent) AddText(text string) TextEvent {
-	e.text = append(e.text, &textLine{text, e.font, e.fontSize})
-	return e
-}
-
-// If one wishes to specify diferent font or font size.
-func (e *textEvent) AddTextLine(text TextLine) TextEvent {
-	e.text = append(e.text, text)
-	return e
-}
-func (e *textEvent) GetText() []TextLine {
-	return e.text
-}
-func (p *textEvent) GetX() int32 {
-	return p.x
-}
-func (p *textEvent) GetY() int32 {
-	return p.y
-}
-func (p *textEvent) SetX(x int32) TextEvent {
-	p.x = x
-	return p
-}
-func (p *textEvent) SetY(y int32) TextEvent {
-	p.y = y
-	return p
-}
-func (p *textEvent) GetId() int32 {
-	return p.id
-}
-
-type textLine struct {
-	text     string
+///// Font
+//TODO Font probably belongs in lib...
+type fontData struct {
 	font     string
 	fontSize int32
 }
 
+func (f *fontData) SetFont(font string) Font {
+	f.font = font
+	return f
+}
+
+func (f *fontData) SetFontSize(size int32) Font {
+	f.fontSize = size
+	return f
+}
+
+func (f *fontData) GetFont() string {
+	return f.font
+}
+
+func (f *fontData) GetFontSize() int32 {
+	return f.fontSize
+}
+
+//////////////////////////////////////////////////
+//// MultilineTextEvent
+//////////////////////////////////////////////////
+type MultilineTextEvent interface {
+	TextEvent
+	Font
+	GetText() []TextLine
+	AddTextLine(TextLine) MultilineTextEvent
+	AddText(string) MultilineTextEvent
+	GetId() int32
+}
+
+type TextLine interface {
+	Font
+	GetText() string
+}
+
+//////
+// Text event can have a font specified for defaults.
+//TODO switch to using Point for location.
+type multilineTextEventData struct {
+	textEventData
+	Font
+	text []TextLine
+	id   int32
+}
+
+var nextTextEventId = int32(0)
+
+func NewMultilineTextEvent(font string, fontSize, x, y int32) MultilineTextEvent {
+	nextTextEventId++ //Oddly can't do this in the struct
+	return &multilineTextEventData{textEventData{lib.NewPoint(x, y)}, &fontData{font, fontSize}, make([]TextLine, 0), nextTextEventId}
+
+}
+
+// Reuse the text event with font/size information but clear the slice and update the id
+//This is problematic for the builder pattern.
+func (e *multilineTextEventData) Reinitialize() TextEvent {
+	e.text = make([]TextLine, 0)
+	e.id = e.id + 1
+	return e
+}
+
+// Use default font and font size.
+func (e *multilineTextEventData) AddText(text string) MultilineTextEvent {
+	e.text = append(e.text, &textLine{text, e.Font})
+	return e
+}
+
+// If one wishes to specify diferent font or font size.
+func (e *multilineTextEventData) AddTextLine(text TextLine) MultilineTextEvent {
+	e.text = append(e.text, text)
+	return e
+}
+func (e *multilineTextEventData) GetText() []TextLine {
+	return e.text
+}
+
+func (p *multilineTextEventData) GetId() int32 {
+	return p.id
+}
+
+////// TextLine
+func NewTextLine(text string, font Font) TextLine {
+	return &textLine{text, font}
+}
+
+type textLine struct {
+	text string
+	Font
+}
+
 func (p *textLine) GetText() string {
 	return p.text
-}
-func (p *textLine) GetFontSize() int32 {
-	return p.fontSize
-}
-func (p *textLine) GetFont() string {
-	return p.font
 }

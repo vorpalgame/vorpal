@@ -1,6 +1,7 @@
 package lib
 
-//TODO unit tests...
+//TODO we need to return different types for X,y
+//for example, raylib uses float32 for some cases (not sure why)
 func NewPoint(x, y int32) Point {
 	return &point{x, y}
 }

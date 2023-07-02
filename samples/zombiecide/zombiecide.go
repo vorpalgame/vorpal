@@ -42,11 +42,10 @@ func Init() {
 	zombies.currentZombie = "h"
 	zombies.bus = vbus
 
-	//TODO We need config probably through JSON file when prototyping is complete.
+	//TODO The data elements here should come from the yaml.
 	zombies.background = bus.NewImageLayer().AddLayerData(bus.NewImageMetadata("samples/resources/zombiecide/background.png", 0, 0, 33))
 	zombies.mouseEvent = nil
-
-	textEvent := bus.NewTextEvent(fontName, 18, 0, 0).AddText("Press 'g' for George or 'h' for Henry. \n Zombies follow the mouse pointer. \nLeft Mouse Button causes Henry to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n NOTE: George the parts zombie is still being worked on.").SetX(1200).SetY(100)
+	textEvent := bus.NewMultilineTextEvent(fontName, 18, 0, 0).AddText("Press 'g' for George or 'h' for Henry. \n Zombies follow the mouse pointer. \nLeft Mouse Button causes Henry to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n NOTE: George the parts zombie is still being worked on.").SetLocation(1200, 100)
 	vbus.SendTextEvent(textEvent)
 
 	subsumptionZombie := newSubsumptionZombie()

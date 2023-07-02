@@ -7,7 +7,7 @@ import (
 
 type MediaCache interface {
 	CacheImages(event bus.DrawLayersEvent) MediaCache
-	CacheFonts(event bus.TextEvent) MediaCache
+	CacheFonts(event bus.Font) MediaCache
 	SetCurrentRenderImage(img *rl.Image) MediaCache
 	DoCacheControl(event bus.ImageCacheEvent) MediaCache
 	GetImage(img string) *rl.Image
@@ -50,11 +50,12 @@ func (c *mediaCache) GetAudio(fileName string) *rl.Sound {
 
 }
 
-func (c *mediaCache) CacheFonts(evt bus.TextEvent) MediaCache {
+func (c *mediaCache) CacheFonts(evt bus.Font) MediaCache {
 	c.doFontCache(evt.GetFont())
-	for _, line := range evt.GetText() {
-		c.doFontCache(line.GetFont())
-	}
+	//TODO Refactor as necessary.
+	// for _, line := range evt.GetText() {
+	// 	c.doFontCache(line.GetFont())
+	// }
 	return c
 }
 func (c *mediaCache) doFontCache(fontName string) MediaCache {
