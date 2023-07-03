@@ -1,71 +1,55 @@
 package bus
 
-//First cut of audio..
+import "github.com/vorpalgame/vorpal/lib"
+
+/// Constructors
+
+func NewPlayAudioEvent(state lib.AudioState) PlayAudioEvent {
+	state.ResetCount() //Make sure it indicates it is ready to play.
+	return &playAudioEventData{state}
+}
+
+func NewStopAudioEvent(state lib.AudioState) StopAudioEvent {
+	return &stopAudioEventData{state}
+}
 
 type AudioEventListener interface {
 	OnAudioEvent(audioChannel <-chan AudioEvent)
 }
+type AudioEventProcessor interface {
+	ProcessAudioEvent(event AudioEvent)
+}
+
+//////Basic AudioEvent //////
 
 type AudioEvent interface {
-	GetAudio() string
-	SetAudio(string) AudioEvent
-	IsStop() bool
-	IsPlay() bool
-	IsLoop() bool
-	Play() AudioEvent
-	Stop() AudioEvent
-	Loop(bool) AudioEvent
-	IncrementCount() int32
-	ResetCount()
+	lib.AudioState
+}
+type audioEventData struct {
+	lib.AudioState
 }
 
-type audioEvent struct {
-	audio      string
-	play, loop bool
-	count      int32
+func (e *audioEventData) IncrementCount() int32 {
+	return e.IncrementCount()
+}
+func (e *audioEventData) ResetCount() {
+	e.ResetCount()
 }
 
-func NewAudioEvent(audio string) AudioEvent {
-	return &audioEvent{audio, false, false, 0}
+/////PlayAudioEvent
 
+type PlayAudioEvent interface {
+	AudioEvent
 }
-
-func (e *audioEvent) SetAudio(fileName string) AudioEvent {
-	e.audio = fileName
-	return e
-}
-
-func (e *audioEvent) GetAudio() string {
-	return e.audio
+type playAudioEventData struct {
+	AudioEvent
 }
 
-func (e *audioEvent) IsPlay() bool {
-	return e.play
-}
+/////StopAudioEvent
 
-func (e *audioEvent) IsStop() bool {
-	return !e.play
+type StopAudioEvent interface {
+	AudioEvent
 }
-
-func (e *audioEvent) IsLoop() bool {
-	return e.loop
-}
-func (e *audioEvent) Loop(loop bool) AudioEvent {
-	e.loop = loop
-	return e
-}
-func (e *audioEvent) Play() AudioEvent {
-	e.play = true
-	return e
-}
-func (e *audioEvent) Stop() AudioEvent {
-	e.play = false
-	return e
-}
-func (e *audioEvent) IncrementCount() int32 {
-	e.count++
-	return e.count
-}
-func (e *audioEvent) ResetCount() {
-	e.count = 0
+type stopAudioEventData struct {
+	AudioEvent
 }

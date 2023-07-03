@@ -8,18 +8,16 @@ import (
 // /////////////////////////////////////////////////////////////////
 // /// Draw Event Processor
 // /////////////////////////////////////////////////////////////////
-type DrawEventProcessor interface {
-	processDrawEvent(evt bus.DrawEvent)
-}
+
 type drawData struct {
 	MediaCache
 }
 
-func NewDrawEventProcessor(mediaCache MediaCache) DrawEventProcessor {
+func NewDrawEventProcessor(mediaCache MediaCache) bus.DrawEventProcessor {
 	return &drawData{mediaCache}
 }
 
-func (dep *drawData) processDrawEvent(evt bus.DrawEvent) {
+func (dep *drawData) ProcessDrawEvent(evt bus.DrawEvent) {
 
 	if evt != nil {
 		switch evt := evt.(type) {

@@ -92,10 +92,11 @@ func (c *controller) GetControlEvent() ControlEvent {
 	return temp
 }
 
-// Need better coordination mechanismm for rendering
+// Need better coordination mechanism for rendering
 // of draw and text events. Probably should compose
 // them together and then eliminate the need for the
 // use of temp
+
 func (c *controller) GetTextEvent() TextEvent {
 	temp := c.textEvent
 	c.textEvent = nil

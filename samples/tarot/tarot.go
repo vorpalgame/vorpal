@@ -11,16 +11,16 @@ import (
 type TarotGame interface {
 }
 
-// TODO This should match with the tarot_bootstrap.yaml so
-// that it can be unmarshaled
+//We use the struct embededded when we need to marshal/unmarshal or
+//Yaml/Viper get confused. Not a serialization technology.
 
 type Tarot struct {
-	Title           string        `yaml:"Title"`
-	HeaderFont      string        `yaml:"HeaderFont"`
-	TextFont        string        `yaml:"TextFont"`
-	ShuffleAudio    string        `yaml:"ShuffleAudio"`
-	BackgroundImage string        `yaml:"BackgroundImage"`
-	TarotDeck       TarotDeckData `yaml:"TarotDeck"`
+	Title           string             `yaml:"Title"`
+	HeaderFont      string             `yaml:"HeaderFont"`
+	TextFont        string             `yaml:"TextFont"`
+	ShuffleAudio    lib.AudioStateData `yaml:"ShuffleAudio"`
+	BackgroundImage string             `yaml:"BackgroundImage"`
+	TarotDeck       TarotDeckData      `yaml:"TarotDeck"`
 	currentCard     int32
 	shuffled        bool
 	bus             bus.VorpalBus
@@ -31,7 +31,11 @@ type Tarot struct {
 func NewGame() TarotGame {
 
 	currentGame := Tarot{}
-	viper.Unmarshal(&currentGame)
+	//TODO Check marshaling and bail out when bad
+	e := viper.Unmarshal(&currentGame)
+	if e != nil {
+		panic(e)
+	}
 	currentGame.bus = bus.GetVorpalBus()
 
 	currentGame.bus.AddMouseListener(&currentGame)
@@ -47,11 +51,12 @@ func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 
 		if evt.GetKey().EqualsIgnoreCase("S") {
-			t.bus.SendAudioEvent(bus.NewAudioEvent(t.ShuffleAudio).Stop())
+			//t.ShuffleAudio).Stop()
+			t.bus.SendAudioEvent(bus.NewStopAudioEvent(&t.ShuffleAudio))
 			t.drawEvent.AddImageLayer(bus.NewImageLayer().AddLayerData(bus.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
 			t.TarotDeck.Shuffle()
 			t.shuffled = true
-			t.bus.SendAudioEvent(bus.NewAudioEvent(t.ShuffleAudio).Play())
+			t.bus.SendAudioEvent(bus.NewPlayAudioEvent(&t.ShuffleAudio))
 			t.currentCard = 0
 			t.doSendCard()
 		} else if evt.GetKey().EqualsIgnoreCase("N") && t.shuffled {
@@ -66,7 +71,7 @@ func (t *Tarot) doStartupScreen() {
 	t.currentCard = 0
 	t.shuffled = false
 	//The keys we are interested in.
-	//These shoudl be registered from the yaml configuration
+	//These should be registered from the yaml configuration
 	//TODO Get key bindings from yaml file...
 	t.bus.SendControlEvent(bus.NewWindowTitleEvent(t.Title))
 	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent(lib.NewKeys([]string{"s", "n", "S", "N"})))

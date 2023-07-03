@@ -18,6 +18,7 @@ func NewEngine() bus.Engine {
 	e.DrawEventProcessor = NewDrawEventProcessor(e.MediaCache)
 	e.ControlEventProcessor = NewControlEventProcessor()
 	e.TextEventProcessor = NewTextEventProcessor(e.MediaCache)
+	e.AudioEventProcessor = NewAudioEventProcessor(e.MediaCache)
 	return &e
 }
 
@@ -25,9 +26,10 @@ type engine struct {
 	bus.VorpalBus
 	MediaCache
 	bus.StandardMediaPeerController
-	DrawEventProcessor
-	ControlEventProcessor
-	TextEventProcessor
+	bus.DrawEventProcessor
+	bus.ControlEventProcessor
+	bus.TextEventProcessor
+	bus.AudioEventProcessor
 	currentTexture        rl.Texture2D
 	currentlyPlayingAudio map[string]*rl.Sound
 }
@@ -42,10 +44,10 @@ func (e *engine) Start() {
 	for !rl.WindowShouldClose() {
 		e.sendMouseEvents()
 		e.sendKeyEvents()
-		e.runAudio(e.GetAudioEvent())
-		e.processControlEvent(e.GetControlEvent())
-		e.processDrawEvent(e.GetDrawEvent())
-		e.processTextEvent(e.GetTextEvent())
+		e.ProcessControlEvent(e.GetControlEvent())
+		e.ProcessDrawEvent(e.GetDrawEvent())
+		e.ProcessTextEvent(e.GetTextEvent())
+		e.ProcessAudioEvent(e.GetAudioEvent())
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
 
@@ -64,30 +66,6 @@ func (e *engine) renderTexture() {
 		e.currentTexture = rl.LoadTextureFromImage(renderImg)
 		rl.UnloadTexture(previousTexture)
 	}
-}
-
-// TODO Refactor the AudioEvent and AudioEventProcessor...
-// /////////////////////////////////////////////////////////////////
-// /// Audio Event Processor
-// /////////////////////////////////////////////////////////////////
-func (e *engine) runAudio(evt bus.AudioEvent) {
-
-	if evt != nil {
-		currentAudio := e.GetAudio(evt.GetAudio())
-		if evt.IsStop() {
-			rl.StopSound(*currentAudio)
-			//rl.UnloadSound(*currentAudio)
-		}
-		if evt.IsPlay() && !rl.IsSoundPlaying(*currentAudio) {
-			for !rl.IsSoundReady(*currentAudio) {
-			}
-			if evt.IncrementCount() == 1 || evt.IsLoop() {
-				rl.PlaySound(*currentAudio)
-			}
-		}
-
-	}
-
 }
 
 func (e *engine) sendMouseEvents() {

@@ -1,7 +1,9 @@
 Title: Tarot Reading...
 HeaderFont: samples/resources/fonts/Roboto-Black.ttf
 TextFont: samples/resources/fonts/Roboto-Regular.ttf
-ShuffleAudio: samples/resources/audio/shuffle.mp3
+ShuffleAudio:
+  AudioFile: samples/resources/audio/shuffle.mp3
+  LoopAudio: false
 BackgroundImage: samples/resources/tarot/table.png
 TarotDeck:
     TarotDeck:

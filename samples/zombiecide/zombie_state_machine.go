@@ -9,7 +9,7 @@ import (
 	"github.com/vorpalgame/vorpal/lib"
 )
 
-// Temporary until we get external configuration mecahnism.
+// Temporary until we get external configuration mechanism complete....
 const (
 	karen  = "samples/resources/zombiecide/karen/animation/%s%d.png"
 	george = "samples/resources/zombiecide/george/animation/%s%d.png"
@@ -26,7 +26,8 @@ const (
 	Attack = "Attack"
 )
 
-// TODO use this to load yaml data...
+// TODO use this to load yaml data...Ongoing work...
+
 type ZombieConfigurationData struct {
 	Name            string
 	ImageTemplate   string
@@ -149,6 +150,7 @@ type zStateData struct {
 	started bool
 	locator lib.Navigator
 	lib.FrameTracker
+	lib.AudioState
 	ZombieStates
 }
 
@@ -158,13 +160,13 @@ func (z *zStateData) doRender(imageLayer bus.ImageLayer, mouseEvent bus.MouseEve
 
 func (z *zStateData) start() {
 	if !z.started {
-		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(getZombieAudio(z.name)).Play())
+		bus.GetVorpalBus().SendAudioEvent(bus.NewPlayAudioEvent(z.AudioState))
 		z.started = true
 	}
 }
 func (z *zStateData) stop() {
 	if z.started {
-		bus.GetVorpalBus().SendAudioEvent(bus.NewAudioEvent(getZombieAudio(z.name)).Stop())
+		bus.GetVorpalBus().SendAudioEvent(bus.NewStopAudioEvent(z.AudioState))
 		z.started = false
 		z.FrameTracker.Reset()
 	}
@@ -172,7 +174,7 @@ func (z *zStateData) stop() {
 
 // Current scale of 30%
 func newStateData(name string, locator lib.Navigator, zs ZombieStates) zStateData {
-	return zStateData{name, currentScale, false, locator, lib.NewFrameData(), zs}
+	return zStateData{name, currentScale, false, locator, lib.NewFrameData(), lib.NewAudioState(getZombieAudio(name), false), zs}
 }
 
 // ================================================================================

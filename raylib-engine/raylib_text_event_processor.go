@@ -9,13 +9,10 @@ import (
 // /// Text Event Processor
 // /////////////////////////////////////////////////////////////////
 
-func NewTextEventProcessor(mediaCache MediaCache) TextEventProcessor {
+func NewTextEventProcessor(mediaCache MediaCache) bus.TextEventProcessor {
 	return &textData{mediaCache}
 }
 
-type TextEventProcessor interface {
-	processTextEvent(evt bus.TextEvent)
-}
 type textData struct {
 	MediaCache
 }
@@ -24,7 +21,7 @@ type textData struct {
 // a missing font will crash. As we get new text event types they may not use fonts. Etc.
 // We are rewriting the TextEvent interface and types to be able to switch and differentiate
 // behavior.
-func (tep *textData) processTextEvent(evt bus.TextEvent) {
+func (tep *textData) ProcessTextEvent(evt bus.TextEvent) {
 
 	//Currently the switch isn't differentiating on different
 	//subtypes of TextEvent but it will.

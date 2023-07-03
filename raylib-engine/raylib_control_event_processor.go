@@ -6,19 +6,17 @@ import (
 )
 
 // /////////////////////////////////////////////////////////////////
-// /// Control Event Processor
+// /// Raylib Control Event Processor
 // /////////////////////////////////////////////////////////////////
-type ControlEventProcessor interface {
-	processControlEvent(evt bus.ControlEvent)
-}
+
 type controlData struct {
 }
 
-func NewControlEventProcessor() ControlEventProcessor {
+func NewControlEventProcessor() bus.ControlEventProcessor {
 	return &controlData{}
 }
 
-func (dep *controlData) processControlEvent(evt bus.ControlEvent) {
+func (dep *controlData) ProcessControlEvent(evt bus.ControlEvent) {
 
 	if evt != nil {
 		switch evt := evt.(type) {

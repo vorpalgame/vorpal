@@ -1,10 +1,13 @@
 package bus
 
-//Initial cut at this...may need different data types
-//and that may require generics...
-//TODO Test using a tagging inteface with different extensions...
+// Initial cut at this...may need different data types
+// and that may require generics...
+// TODO Test using a tagging inteface with different extensions...
 type ControlEventListener interface {
 	OnControlEvent(controlChannel <-chan ControlEvent)
+}
+type ControlEventProcessor interface {
+	ProcessControlEvent(evt ControlEvent)
 }
 
 func NewWindowTitleEvent(data string) ControlEvent {
