@@ -13,7 +13,6 @@ func NewEngine() bus.Engine {
 	e := engine{}
 	e.MediaCache = NewMediaCache()
 	e.StandardMediaPeerController = bus.NewGameController()
-	e.currentlyPlayingAudio = make(map[string]*rl.Sound)
 	e.VorpalBus = bus.GetVorpalBus()
 	e.DrawEventProcessor = NewDrawEventProcessor(e.MediaCache)
 	e.ControlEventProcessor = NewControlEventProcessor()

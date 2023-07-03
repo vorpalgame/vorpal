@@ -35,7 +35,7 @@ func (dep *audioData) ProcessAudioEvent(evt bus.AudioEvent) {
 		case bus.StopAudioEvent:
 			rl.StopSound(currentAudio)
 			evt.ResetCount()
-			for !rl.IsSoundPlaying(currentAudio) {
+			for rl.IsSoundPlaying(currentAudio) {
 			} //Wait until stopped
 		}
 	}
