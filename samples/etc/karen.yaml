@@ -2,13 +2,13 @@ currentStateName: Walk
 StateMap:
     Attack:
         Name: Attack
-        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
-        Scale: 30
+        Spec: samples/resources/zombiecide/karen/animation/%s%d.png
+        Scale: 50
         Started: false
         FrameTracker:
             CurrentFrame: 1
-            MaxFrame: 8
-            RepeatPerFrame: 5
+            MaxFrame: 6
+            RepeatPerFrame: 8
             CurrentFrameRepeats: 0
             IdleFrames: 1
             LoopFrames: true
@@ -20,12 +20,12 @@ StateMap:
             - attackFunc
     Dead:
         Name: Dead
-        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
-        Scale: 30
+        Spec: samples/resources/zombiecide/karen/animation/%s%d.png
+        Scale: 50
         Started: false
         FrameTracker:
             CurrentFrame: 1
-            MaxFrame: 12
+            MaxFrame: 8
             RepeatPerFrame: 3
             CurrentFrameRepeats: 0
             IdleFrames: 1
@@ -38,12 +38,12 @@ StateMap:
             - deadFunc
     Idle:
         Name: Idle
-        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
-        Scale: 30
+        Spec: samples/resources/zombiecide/karen/animation/%s%d.png
+        Scale: 50
         Started: false
         FrameTracker:
             CurrentFrame: 1
-            MaxFrame: 6
+            MaxFrame: 4
             RepeatPerFrame: 15
             CurrentFrameRepeats: 0
             IdleFrames: 1
@@ -58,13 +58,13 @@ StateMap:
             - idleFunc
     Walk:
         Name: Walk
-        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
-        Scale: 30
+        Spec: samples/resources/zombiecide/karen/animation/%s%d.png
+        Scale: 50
         Started: false
         FrameTracker:
             CurrentFrame: 1
-            MaxFrame: 10
-            RepeatPerFrame: 5
+            MaxFrame: 6
+            RepeatPerFrame: 10
             CurrentFrameRepeats: 1
             IdleFrames: 1
             LoopFrames: true

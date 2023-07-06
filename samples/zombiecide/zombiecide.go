@@ -25,8 +25,12 @@ var zombies = zombiecide{}
 var fontName = "samples/resources/fonts/Roboto-Regular.ttf"
 
 // var headerFontName = "samples/resources/fonts/Roboto-Black.ttf"
+const (
+	henry = "/samples/etc/henry.yaml"
+	karen = "/samples/etc/karen.yaml"
+)
 
-// TODO Refactor this start up to make it more idiomatic.
+// TODO Refactor this start up to make it more idiomatic and bootstrap from the ymal
 func Init() {
 	log.Println("New zombie game")
 
@@ -53,7 +57,9 @@ func Init() {
 
 	//Move to zombicide yaml
 	dir, _ := os.Getwd()
-	var statesFile = dir + "/samples/etc/henry.yaml"
+
+	statesFile := dir + henry
+
 	log.Default().Println(dir)
 	f, e := os.ReadFile(statesFile)
 	if e != nil {
