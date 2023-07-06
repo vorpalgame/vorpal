@@ -2,15 +2,13 @@ package bus
 
 import "github.com/vorpalgame/vorpal/lib"
 
-/// Constructors
-
 func NewPlayAudioEvent(state lib.AudioState) PlayAudioEvent {
-	state.ResetCount() //Make sure it indicates it is ready to play.
-	return &playAudioEventData{state}
+
+	return &playAudioEventData{state.GetAudioFile(), state.IsAudioOnLoop()}
 }
 
 func NewStopAudioEvent(state lib.AudioState) StopAudioEvent {
-	return &stopAudioEventData{state}
+	return &stopAudioEventData{state.GetAudioFile()}
 }
 
 type AudioEventListener interface {
@@ -23,26 +21,29 @@ type AudioEventProcessor interface {
 //////Basic AudioEvent //////
 
 type AudioEvent interface {
-	lib.AudioState
-}
-type audioEventData struct {
-	lib.AudioState
-}
-
-func (e *audioEventData) IncrementCount() int32 {
-	return e.IncrementCount()
-}
-func (e *audioEventData) ResetCount() {
-	e.ResetCount()
+	GetAudioFile() string
 }
 
 /////PlayAudioEvent
+//Need to ensure there is asymmetery in events/implementations they can be
+//distinguished by the case switch.
 
 type PlayAudioEvent interface {
 	AudioEvent
+	IsLoop() bool
 }
+
 type playAudioEventData struct {
-	AudioEvent
+	fileName string
+	isLoop   bool
+}
+
+func (p playAudioEventData) GetAudioFile() string {
+	return p.fileName
+}
+
+func (p playAudioEventData) IsLoop() bool {
+	return p.isLoop
 }
 
 /////StopAudioEvent
@@ -50,6 +51,11 @@ type playAudioEventData struct {
 type StopAudioEvent interface {
 	AudioEvent
 }
+
 type stopAudioEventData struct {
-	AudioEvent
+	fileName string
+}
+
+func (s stopAudioEventData) GetAudioFile() string {
+	return s.fileName
 }

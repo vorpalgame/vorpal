@@ -9,36 +9,35 @@ func NewAudioState(fileName string, loop bool) AudioState {
 
 type AudioState interface {
 	SetAudioFile(fileName string) AudioState
-	SetLoop(shouldLoop bool) AudioState
-	IsLoop() bool
+	SetAudioLoop(shouldLoop bool) AudioState
+	IsAudioOnLoop() bool
 	GetAudioFile() string
-	IncrementCount() int32
-	ResetCount() AudioState
+	IncrementAudio() int32
+	ResetAudioCount() AudioState
 }
 
-// UC so we don't end up with marshaling issues..
 type AudioStateData struct {
 	AudioFile string `yaml:"AudioFile"`
 	LoopAudio bool   `yaml:"LoopAudio"`
 	count     int32  `yaml:"-"`
 }
 
-func (s *AudioStateData) IncrementCount() int32 {
+func (s *AudioStateData) IncrementAudio() int32 {
 	s.count++
 	return s.count
 }
 
-func (s *AudioStateData) ResetCount() AudioState {
+func (s *AudioStateData) ResetAudioCount() AudioState {
 	s.count = 0
 	return s
 }
 
-func (s *AudioStateData) SetLoop(shouldLoop bool) AudioState {
+func (s *AudioStateData) SetAudioLoop(shouldLoop bool) AudioState {
 	s.LoopAudio = shouldLoop
 	return s
 }
 
-func (s *AudioStateData) IsLoop() bool {
+func (s *AudioStateData) IsAudioOnLoop() bool {
 	return s.LoopAudio
 }
 

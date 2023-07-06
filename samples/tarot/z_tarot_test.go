@@ -34,7 +34,7 @@ func writeTarotData() {
 	//tarot.RegisterKeys: ["s", ">S", ">N", ">n"]
 	tarot.HeaderFont = "samples/resources/fonts/Roboto-Black.ttf"
 	tarot.TextFont = "samples/resources/fonts/Roboto-Regular.ttf"
-	tarot.ShuffleAudio = "samples/resources/audio/shuffle.mp3"
+	//tarot.ShuffleAudio = "samples/resources/audio/shuffle.mp3"
 	tarot.TarotDeck = getDeckData()
 
 	file, _ := yaml.Marshal(tarot)

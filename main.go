@@ -13,11 +13,7 @@ import (
 	"github.com/vorpalgame/vorpal/samples/zombiecide"
 )
 
-// TODO We are externalizing configuration to yaml files but
-// that still entails keys and constants. Need to determine a best
-// practice.
-// TODO We should be able to auomate yaml entries to creation of structs/Interfaces
-// and eliminate the need for a lot of if/else hand rolled code.
+// TODO We need to eliminate Viper as it doen't properly handle keys in maps.
 func main() {
 
 	lib.LoadConfiguration("key_mapping.yaml")

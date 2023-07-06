@@ -33,9 +33,9 @@ func Init() {
 	vbus := bus.GetVorpalBus()
 	configKeys := lib.NewKeys(viper.GetStringSlice("RegisterKeys"))
 
-	log.Default().Println(configKeys)
+	//log.Default().Println(configKeys)
 	evt := bus.NewKeysRegistrationEvent(configKeys)
-	log.Default().Println(evt.GetKeys())
+	//log.Default().Println(evt.GetKeys())
 	vbus.SendKeysRegistrationEvent(evt)
 
 	vbus.AddMouseListener(&zombies)
@@ -88,7 +88,7 @@ func Init() {
 func (z *zombiecide) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 		//Using explicit letters due to misreported case from raylib...
-		log.Default().Println(evt.GetKey().ToString())
+		//	log.Default().Println(evt.GetKey().ToString())
 		if evt.GetKey().EqualsIgnoreCase("e") {
 			os.Exit(0)
 		} else if evt.GetKey().EqualsIgnoreCase("r") {

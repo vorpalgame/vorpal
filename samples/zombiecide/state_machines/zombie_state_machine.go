@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
-	"log"
 )
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -20,10 +19,15 @@ func (z *ZombieData) Execute(drawEvent bus.DrawLayersEvent, mouseEvent bus.Mouse
 
 	tx := NewBehaviorTransaction(z.CurrentStateName, mouseEvent, z.getNavigator(), state.getFrameTracker())
 	state.getBehaviors().ExecuteBehaviors(tx)
-	state.render(drawEvent, mouseEvent, z.getNavigator())
+
 	if tx.IsTransition() {
+		bus.GetVorpalBus().SendAudioEvent(bus.NewStopAudioEvent(state.AudioState))
+		state.FrameTracker.ResetFrameCount()
 		z.CurrentStateName = tx.GetNextStateName()
+		state = z.StateMap[z.CurrentStateName]
+		bus.GetVorpalBus().SendAudioEvent(bus.NewPlayAudioEvent(state.AudioState))
 	}
+	state.render(drawEvent, mouseEvent, z.getNavigator())
 }
 
 func (z *ZombieData) getNavigator() lib.Navigator {
@@ -40,7 +44,7 @@ type ZombieState interface {
 }
 
 func (z *ZombieStateData) getFrameTracker() lib.FrameTracker {
-	log.Default().Println(z)
+	//log.Default().Println(z)
 	return z.FrameTracker
 }
 
@@ -65,8 +69,4 @@ func flipHorizontal(mouseEvent bus.MouseEvent, locator lib.Navigator) bool {
 }
 func getZombieImage(spec, name string, frameNumber int32) string {
 	return fmt.Sprintf(spec, name, frameNumber)
-}
-
-func getZombieAudio(name string) string {
-	return "samples/resources/zombiecide/" + name + ".mp3"
 }

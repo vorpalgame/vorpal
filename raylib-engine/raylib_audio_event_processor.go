@@ -23,20 +23,18 @@ func (dep *audioData) ProcessAudioEvent(evt bus.AudioEvent) {
 	if evt != nil {
 		log.Default().Println(evt.GetAudioFile())
 		currentAudio := *dep.GetAudio(evt.GetAudioFile())
-		switch evt := evt.(type) {
+		switch evt.(type) {
 		case bus.PlayAudioEvent:
 			if !rl.IsSoundPlaying(currentAudio) {
-				if evt.IncrementCount() == 1 || evt.IsLoop() {
-					for !rl.IsSoundReady(currentAudio) {
-					} //Loop until resource is ready
-					rl.PlaySound(currentAudio)
-				}
+
+				for !rl.IsSoundReady(currentAudio) {
+				} //Loop until resource is ready
+				rl.PlaySound(currentAudio)
+
 			}
 		case bus.StopAudioEvent:
 			rl.StopSound(currentAudio)
-			evt.ResetCount()
-			for rl.IsSoundPlaying(currentAudio) {
-			} //Wait until stopped
+
 		}
 	}
 

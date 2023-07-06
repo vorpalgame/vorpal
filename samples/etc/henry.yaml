@@ -13,7 +13,7 @@ StateMap:
             IdleFrames: 1
             LoopFrames: true
         AudioState:
-            AudioFile: samples/resources/zombicide/attack.mp3
+            AudioFile: samples/resources/zombiecide/attack.mp3
             LoopAudio: false
         BehaviorList:
             - updateFramesFunc
@@ -31,7 +31,7 @@ StateMap:
             IdleFrames: 1
             LoopFrames: false
         AudioState:
-            AudioFile: samples/resources/zombicide/dead.mp3
+            AudioFile: samples/resources/zombiecide/dead.mp3
             LoopAudio: false
         BehaviorList:
             - updateFramesFunc
@@ -49,7 +49,7 @@ StateMap:
             IdleFrames: 1
             LoopFrames: false
         AudioState:
-            AudioFile: samples/resources/zombicide/idle.mp3
+            AudioFile: samples/resources/zombiecide/idle.mp3
             LoopAudio: false
         BehaviorList:
             - updateFramesFunc
@@ -69,7 +69,7 @@ StateMap:
             IdleFrames: 1
             LoopFrames: true
         AudioState:
-            AudioFile: samples/resources/zombicide/walk.mp3
+            AudioFile: samples/resources/zombiecide/walk.mp3
             LoopAudio: true
         BehaviorList:
             - updateFramesFunc

@@ -20,7 +20,7 @@ type imageCacheEvent struct {
 	imageCacheOperations []ImageCacheOperation
 }
 
-//Need enums
+// Need enums
 type imageCacheOperation struct {
 	image     string
 	operation string
@@ -41,7 +41,7 @@ func (evt *imageCacheEvent) GetImageCacheOperations() []ImageCacheOperation {
 	return evt.imageCacheOperations
 }
 
-//Need enum for ops..
+// Need enum for ops..
 func NewCacheImageOperation(img string, operation string) ImageCacheOperation {
 	return &imageCacheOperation{img, operation}
 
