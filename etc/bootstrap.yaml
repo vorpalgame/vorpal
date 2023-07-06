@@ -8,6 +8,6 @@ configs:
     path: ./etc/tarot
     file: tarot_bootstrap.yaml
 start:
-  tarot
+  zombiecide
 
 # TODO Start should just be the bootstrap yaml and skip the mapping...

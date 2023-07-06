@@ -1,11 +1,86 @@
-name: Henry
-imageTemplate: samples/resources/zombiecide/henry/animation/%s%d.png
-imageScale: 30
-currentLocation:
-  point:
-    x: 600
-    y: 600
-	xMove: -4
-  yMove: -2
-  maxXOffset: 5
-  maxYOffset: 5
+currentStateName: Walk
+StateMap:
+    Attack:
+        Name: Attack
+        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
+        Scale: 30
+        Started: false
+        FrameTracker:
+            CurrentFrame: 1
+            MaxFrame: 8
+            RepeatPerFrame: 3
+            CurrentFrameRepeats: 0
+            IdleFrames: 1
+            LoopFrames: true
+        AudioState:
+            AudioFile: samples/resources/zombicide/attack.mp3
+            LoopAudio: false
+        BehaviorList:
+            - updateFramesFunc
+            - attackFunc
+    Dead:
+        Name: Dead
+        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
+        Scale: 30
+        Started: false
+        FrameTracker:
+            CurrentFrame: 1
+            MaxFrame: 12
+            RepeatPerFrame: 3
+            CurrentFrameRepeats: 0
+            IdleFrames: 1
+            LoopFrames: false
+        AudioState:
+            AudioFile: samples/resources/zombicide/dead.mp3
+            LoopAudio: false
+        BehaviorList:
+            - updateFramesFunc
+            - deadFunc
+    Idle:
+        Name: Idle
+        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
+        Scale: 30
+        Started: false
+        FrameTracker:
+            CurrentFrame: 1
+            MaxFrame: 6
+            RepeatPerFrame: 15
+            CurrentFrameRepeats: 0
+            IdleFrames: 1
+            LoopFrames: false
+        AudioState:
+            AudioFile: samples/resources/zombicide/idle.mp3
+            LoopAudio: false
+        BehaviorList:
+            - updateFramesFunc
+            - attackFunc
+            - moveFunc
+            - idleFunc
+    Walk:
+        Name: Walk
+        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
+        Scale: 30
+        Started: false
+        FrameTracker:
+            CurrentFrame: 1
+            MaxFrame: 10
+            RepeatPerFrame: 3
+            CurrentFrameRepeats: 1
+            IdleFrames: 1
+            LoopFrames: true
+        AudioState:
+            AudioFile: samples/resources/zombicide/walk.mp3
+            LoopAudio: true
+        BehaviorList:
+            - updateFramesFunc
+            - attackFunc
+            - moveFunc
+            - walkFunc
+Navigator:
+    CurrentLocation:
+        X: 600
+        "Y": 600
+    XMove: 4
+    YMove: 2
+    MaxXOffset: 5
+    MaxYOffset: 5

@@ -6,24 +6,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO Refactoring left Point sort of stuck and inconsistent.
 func TestNavigator(t *testing.T) {
 	startX := int32(500)
 	startY := int32(600)
 	maxIncrement := int32(2)
 	zeroIncrement := int32(0)
-	p := NewPoint(startX, startY) //Make X,Y asymmetric to avoid any confusion.
+	//p := NewPoint(startX, startY) //Make X,Y asymmetric to avoid any confusion.
 	//Current mouse is at 800,800 so we should move maximum.
 	largeEvt := NewPoint(800, 800)
 	largeNegativeEvt := NewPoint(-800, -800)
 	//X,Y are only 3 off so no change to point to move is expected.
-	smallEvt := NewPoint(503, 603)
+	smallEvt := PointData{503, 603}
 
 	//2 and -2 are the maximum mouse moves and 5 is the window that determines
 	//when something is "dead". In other words, if the mouse hasn't move more than 5 in X or Y then
 	//don't change the position.
-	l := NewNavigatorOffset(p, -maxIncrement, -maxIncrement, 5, 5)
-
-	assert.Equal(t, l.GetCurrentPoint(), p)
+	l := NewNavigator(smallEvt, -maxIncrement, -maxIncrement, 5, 5)
 
 	//Move calculations will return maximum allowed movement in X,Y directions
 	//as specified in start up. If X or Y are less than the offset window size
@@ -38,7 +37,7 @@ func TestNavigator(t *testing.T) {
 	assert.Equal(t, maxIncrement, move.GetX())
 	assert.Equal(t, maxIncrement, move.GetY())
 
-	move = l.CalculateMove(smallEvt)
+	move = l.CalculateMove(&smallEvt)
 	assert.Equal(t, zeroIncrement, move.GetX())
 	assert.Equal(t, zeroIncrement, move.GetY())
 

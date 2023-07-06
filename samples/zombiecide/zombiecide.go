@@ -1,6 +1,7 @@
 package zombiecide
 
 import (
+	"github.com/vorpalgame/vorpal/samples/zombiecide/state_machines"
 	"log"
 	"os"
 	"time"
@@ -49,7 +50,20 @@ func Init() {
 	vbus.SendTextEvent(textEvent)
 
 	subsumptionZombie := newSubsumptionZombie()
-	stateMachineZombie := NewZombieStateMachine()
+
+	//Move to zombicide yaml
+	dir, _ := os.Getwd()
+	var statesFile = dir + "/samples/etc/henry.yaml"
+	log.Default().Println(dir)
+	f, e := os.ReadFile(statesFile)
+	if e != nil {
+		log.Default().Println(e)
+		os.Exit(1)
+	}
+	stateMachineZombie := state_machines.UnmarshalZombie(f)
+
+	//stateMachineZombie := NewZombieStateMachine()
+
 	//
 	for {
 		if zombies.mouseEvent != nil {

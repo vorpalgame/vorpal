@@ -13,7 +13,7 @@ import (
 func newSubsumptionZombie() SubsumptionZombie {
 
 	//TODO Fix confiuration logic and externalize...
-	zombie := &subsumptionZombieData{make([]BodyPartGroup, 0), lib.NewNavigatorOffset(lib.NewPoint(570, 430), -4, -2, 5, 5), bus.NewImageLayer()}
+	zombie := &subsumptionZombieData{make([]BodyPartGroup, 0), lib.NewNavigator(lib.PointData{570, 430}, -4, -2, 5, 5), bus.NewImageLayer()}
 
 	zombie.add(createRightArm())
 	zombie.add(createLeftArm())

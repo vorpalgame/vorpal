@@ -1,9 +1,7 @@
 package lib
 
-//TODO we need to return different types for X,y
-//for example, raylib uses float32 for some cases (not sure why)
 func NewPoint(x, y int32) Point {
-	return &point{x, y}
+	return &PointData{x, y}
 }
 
 type Point interface {
@@ -12,19 +10,20 @@ type Point interface {
 	Add(Point)
 }
 
-type point struct {
-	x, y int32
+type PointData struct {
+	X int32 `yaml:"X"`
+	Y int32 `yaml:"Y"`
 }
 
-func (p *point) GetX() int32 {
-	return p.x
+func (p *PointData) GetX() int32 {
+	return p.X
 }
 
-func (p *point) GetY() int32 {
-	return p.y
+func (p *PointData) GetY() int32 {
+	return p.Y
 }
 
-func (p *point) Add(addPoint Point) {
-	p.x += addPoint.GetX()
-	p.y += addPoint.GetY()
+func (p *PointData) Add(addPoint Point) {
+	p.X += addPoint.GetX()
+	p.Y += addPoint.GetY()
 }

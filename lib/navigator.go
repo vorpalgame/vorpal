@@ -5,67 +5,79 @@ package lib
 //"log"
 
 func NewLocation() Navigator {
-	return &navigatorData{}
+	return &NavigatorData{}
 }
 
-func NewNavigatorOffset(point Point, xMove, yMove, maxXOffset, maxYOffset int32) Navigator {
-	return &navigatorData{point, xMove, yMove, maxXOffset, maxYOffset}
+func NewNavigator(point PointData, xMove, yMove, maxXOffset, maxYOffset int32) Navigator {
+	return &NavigatorData{&point, xMove, yMove, maxXOffset, maxYOffset}
 }
 
 type Navigator interface {
-	GetCurrentPoint() Point
+	Point
+	MoveTowardMouse(cursorPoint Point)
 	Move(toPoint Point)
 	CalculateMove(pointerLocation Point) Point
-	GetX() int32
-	GetY() int32
-}
-type navigatorData struct {
-	currentLocation                      Point
-	xMove, yMove, maxXOffset, maxYOffset int32
 }
 
-func (cl *navigatorData) GetX() int32 {
-	return cl.currentLocation.GetX()
-}
-func (cl *navigatorData) GetY() int32 {
-	return cl.currentLocation.GetY()
-}
-func (cl *navigatorData) GetCurrentPoint() Point {
-	return cl.currentLocation
+type NavigatorData struct {
+	Location   *PointData `yaml:"CurrentLocation"`
+	XMove      int32      `yaml:"XMove"`
+	YMove      int32      `yaml:"YMove"`
+	MaxXOffset int32      `yaml:"MaxXOffset"`
+	MaxYOffset int32      `yaml:"MaxYOffset"`
 }
 
-func (cl *navigatorData) Move(toPoint Point) {
-	cl.currentLocation.Add(toPoint)
-	//log.Default().Println(cl.GetCurrentPoint())
+func (cl *NavigatorData) Add(point Point) {
+	cl.Location.Add(point)
 }
 
-func (cl *navigatorData) CalculateMove(p Point) Point {
+func (cl *NavigatorData) GetX() int32 {
+	return cl.Location.GetX()
+}
+func (cl *NavigatorData) GetY() int32 {
+	return cl.Location.GetY()
+}
 
-	point := point{cl.xMove, cl.yMove}
+// TODO Should probably clone...
+func (cl *NavigatorData) GetCurrentPoint() Point {
+	return cl.Location
+}
 
-	//abs math function is floating point so just -1 multiple
-	if p.GetX() > cl.GetX() {
-		point.x = point.x * -1
+func (cl *NavigatorData) Move(toPoint Point) {
+	cl.Location.Add(toPoint)
+}
+
+func (cl *NavigatorData) MoveTowardMouse(cursorPoint Point) {
+	cl.Move(cl.CalculateMove(cursorPoint))
+
+}
+func (cl *NavigatorData) CalculateMove(p Point) Point {
+
+	var point = PointData{cl.XMove, cl.YMove}
+
+	if p.GetX() < cl.GetX() {
+		point.X = point.X * -1
 	}
 
-	if p.GetY() > cl.GetY() {
-		point.y = point.y * -1
+	if p.GetY() < cl.GetY() {
+		point.Y = point.Y * -1
 	}
 
 	var xOffset = p.GetX() - cl.GetX()
 	if xOffset < 0 {
 		xOffset *= -1
 	}
-	if xOffset < cl.maxXOffset {
-		point.x = 0
+	if xOffset < cl.MaxXOffset {
+		point.X = 0
 	}
 	yOffset := p.GetY() - cl.GetY()
 	if yOffset < 0 {
 		yOffset *= -1
 	}
-	if yOffset < cl.maxYOffset {
-		point.y = 0
+	if yOffset < cl.MaxYOffset {
+		point.Y = 0
 	}
+
 	return &point
 
 }
