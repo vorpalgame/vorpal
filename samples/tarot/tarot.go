@@ -53,7 +53,7 @@ func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 		if evt.GetKey().EqualsIgnoreCase("S") {
 			//t.ShuffleAudio).Stop()
 			t.bus.SendAudioEvent(bus.NewStopAudioEvent(&t.ShuffleAudio))
-			t.drawEvent.AddImageLayer(bus.NewImageLayer().AddLayerData(bus.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
+			t.drawEvent.AddImageLayer(lib.NewImageLayer().AddLayerData(lib.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
 			t.TarotDeck.Shuffle()
 			t.shuffled = true
 			t.bus.SendAudioEvent(bus.NewPlayAudioEvent(&t.ShuffleAudio))
@@ -77,7 +77,7 @@ func (t *Tarot) doStartupScreen() {
 	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent(lib.NewKeys([]string{"s", "n", "S", "N"})))
 	t.drawEvent = bus.NewDrawLayersEvent()
 
-	t.drawEvent.AddImageLayer(bus.NewImageLayer().AddLayerData(bus.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
+	t.drawEvent.AddImageLayer(lib.NewImageLayer().AddLayerData(lib.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
 
 	t.bus.SendDrawEvent(t.drawEvent)
 	//Get intro text from Yaml file.
@@ -137,10 +137,9 @@ func (t *Tarot) doSendCard() {
 	}
 }
 
-// TODO Current seetting this to 25% hard coded...
-func createImageLayer(displayCard string, mainX, mainY int32) bus.ImageLayer {
-	imgData := bus.NewImageMetadata(displayCard, mainX, mainY, 10)
-	return bus.NewImageLayer().AddLayerData(imgData)
+func createImageLayer(displayCard string, mainX, mainY int32) lib.ImageLayer {
+	imgData := lib.NewImageMetadata(displayCard, mainX, mainY, 10)
+	return lib.NewImageLayer().AddLayerData(imgData)
 }
 
 // TODO Put formatting and font in Yaml

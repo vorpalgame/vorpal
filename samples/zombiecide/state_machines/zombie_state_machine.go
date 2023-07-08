@@ -57,8 +57,8 @@ func (z *ZombieStateData) getBehaviors() BehaviorsExecutor {
 
 func (z *ZombieStateData) render(drawEvent bus.DrawLayersEvent, mouseEvent bus.MouseEvent, navigator lib.Navigator) {
 	img := getZombieImage(z.Spec, z.Name, z.FrameTracker.GetCurrentFrame())
-	metadata := bus.NewImageMetadata(img, navigator.GetX(), navigator.GetY(), z.Scale).SetFlipHorizontal(flipHorizontal(mouseEvent, navigator))
-	layer := bus.NewImageLayer()
+	metadata := lib.NewImageMetadata(img, navigator.GetX(), navigator.GetY(), z.Scale).SetFlipHorizontal(flipHorizontal(mouseEvent, navigator))
+	layer := lib.NewImageLayer()
 	layer.AddLayerData(metadata)
 	drawEvent.AddImageLayer(layer)
 }

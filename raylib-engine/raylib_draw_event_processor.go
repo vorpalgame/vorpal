@@ -3,6 +3,7 @@ package raylibengine
 import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 	"github.com/vorpalgame/vorpal/bus"
+	"github.com/vorpalgame/vorpal/lib"
 )
 
 // /////////////////////////////////////////////////////////////////
@@ -52,7 +53,7 @@ func (e *drawData) renderImageLayers(evt bus.DrawLayersEvent) {
 		}
 	}
 }
-func (e *drawData) isReady(layer bus.ImageLayer) bool {
+func (e *drawData) isReady(layer lib.ImageLayer) bool {
 
 	for _, imgData := range layer.GetLayerData() {
 		if e.GetImage(imgData.GetImage()) == nil {
@@ -61,7 +62,7 @@ func (e *drawData) isReady(layer bus.ImageLayer) bool {
 	}
 	return true
 }
-func (e *drawData) renderLayer(baseImg *rl.Image, layer bus.ImageLayer) *rl.Image {
+func (e *drawData) renderLayer(baseImg *rl.Image, layer lib.ImageLayer) *rl.Image {
 	for _, img := range layer.GetLayerData() {
 		originalImg := e.GetImage(img.GetImage())
 

@@ -13,7 +13,7 @@ import (
 func newSubsumptionZombie() SubsumptionZombie {
 
 	//TODO Fix confiuration logic and externalize...
-	zombie := &subsumptionZombieData{make([]BodyPartGroup, 0), lib.NewNavigator(lib.PointData{570, 430}, -4, -2, 5, 5), bus.NewImageLayer()}
+	zombie := &subsumptionZombieData{make([]BodyPartGroup, 0), lib.NewNavigator(lib.PointData{570, 430}, -4, -2, 5, 5), lib.NewImageLayer()}
 
 	zombie.add(createRightArm())
 	zombie.add(createLeftArm())
@@ -28,7 +28,7 @@ func newSubsumptionZombie() SubsumptionZombie {
 type subsumptionZombieData struct {
 	bodyPartGroups  []BodyPartGroup
 	currentLocation lib.Navigator
-	imageLayer      bus.ImageLayer
+	imageLayer      lib.ImageLayer
 }
 
 // At some point these can have override methods for differentiating behavior.
@@ -44,14 +44,14 @@ const (
 
 // Interfaces...
 type SubsumptionZombie interface {
-	CreateImageLayer(event bus.MouseEvent) bus.ImageLayer
+	CreateImageLayer(event bus.MouseEvent) lib.ImageLayer
 }
 
 // //////////////////////////////////////////////////
 // BODY
 // //////////////////////////////////////////////////
 type BodyEvents interface {
-	construct(img bus.ImageLayer)
+	construct(img lib.ImageLayer)
 	move(evt lib.Point)
 }
 
@@ -63,7 +63,7 @@ type Body interface {
 func (bp *subsumptionZombieData) add(part BodyPartGroup) {
 	bp.bodyPartGroups = append(bp.bodyPartGroups, part)
 }
-func (pd *subsumptionZombieData) construct(img bus.ImageLayer) {
+func (pd *subsumptionZombieData) construct(img lib.ImageLayer) {
 
 	for _, part := range pd.bodyPartGroups {
 		part.construct(img)
@@ -98,7 +98,7 @@ func (bp *bodyPartsData) add(part BodyPart) BodyPartGroup {
 	return bp
 }
 
-func (pd *bodyPartsData) construct(img bus.ImageLayer) {
+func (pd *bodyPartsData) construct(img lib.ImageLayer) {
 	for _, part := range pd.layer {
 		part.construct(img)
 	}
@@ -119,11 +119,11 @@ type BodyPart interface {
 
 type bodyPartData struct {
 	name string
-	img  bus.ImageMetadata
+	img  lib.ImageMetadata
 }
 
 // TODO Locate with bodyPartData
-func (bp *bodyPartData) construct(img bus.ImageLayer) {
+func (bp *bodyPartData) construct(img lib.ImageLayer) {
 	img.AddLayerData(bp.img)
 }
 
@@ -223,7 +223,7 @@ type headData struct {
 	name                      string
 	currentLocation           lib.Point
 	currentHead, currentFrame int
-	heads                     map[int]bus.ImageMetadata
+	heads                     map[int]lib.ImageMetadata
 }
 
 // TODO Rethink the signatures to eliminate this sort of no-op
@@ -231,14 +231,14 @@ func (head *headData) add(bodyPart BodyPart) BodyPartGroup {
 	return head
 }
 
-func (head *headData) construct(img bus.ImageLayer) {
+func (head *headData) construct(img lib.ImageLayer) {
 	img.AddLayerData(head.getCurrentHead())
 }
 func (head *headData) move(evt lib.Point) {
 	head.currentLocation.Add(evt)
 }
 
-func (head *headData) getCurrentHead() bus.ImageMetadata {
+func (head *headData) getCurrentHead() lib.ImageMetadata {
 	head.currentFrame++
 	if head.currentFrame > 10 {
 		head.currentFrame = 1
@@ -254,14 +254,14 @@ func (head *headData) getCurrentHead() bus.ImageMetadata {
 	return h
 }
 
-func newImageData(fileName string, x, y, scale int32) bus.ImageMetadata {
+func newImageData(fileName string, x, y, scale int32) lib.ImageMetadata {
 	base := "samples/resources/zombiecide/karen/bodyparts/"
-	return bus.NewImageMetadata(base+fileName, x, y, scale)
+	return lib.NewImageMetadata(base+fileName, x, y, scale)
 }
 
 // Rewire zombie bobble head later.
 func createHead() BodyPartGroup {
-	bpg := headData{head, lib.NewPoint(570, 430), 1, 1, make(map[int]bus.ImageMetadata)}
+	bpg := headData{head, lib.NewPoint(570, 430), 1, 1, make(map[int]lib.ImageMetadata)}
 	//bpg.add(newBodyPart("neck.png", 610, 510, 20))
 	//Like Pascal numbering :)
 	for i := 1; i < 7; i++ {
@@ -271,7 +271,7 @@ func createHead() BodyPartGroup {
 
 }
 
-func (zombie *subsumptionZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) bus.ImageLayer {
+func (zombie *subsumptionZombieData) CreateImageLayer(mouseEvent bus.MouseEvent) lib.ImageLayer {
 	img := zombie.imageLayer
 
 	img.Reset()
