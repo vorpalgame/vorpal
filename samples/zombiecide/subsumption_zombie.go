@@ -13,7 +13,7 @@ import (
 func newSubsumptionZombie() SubsumptionZombie {
 
 	//TODO Fix confiuration logic and externalize...
-	zombie := &subsumptionZombieData{make([]BodyPartGroup, 0), lib.NewNavigator(lib.PointData{570, 430}, -4, -2, 5, 5), lib.NewImageLayer()}
+	zombie := &subsumptionZombieData{bodyPartGroups: make([]BodyPartGroup, 0), currentLocation: lib.NewNavigator(lib.PointData{570, 430}, -4, -2, 5, 5, nil), imageLayer: lib.NewImageLayer()}
 
 	zombie.add(createRightArm())
 	zombie.add(createLeftArm())
@@ -276,9 +276,9 @@ func (zombie *subsumptionZombieData) CreateImageLayer(mouseEvent bus.MouseEvent)
 
 	img.Reset()
 
-	p := zombie.currentLocation.CalculateMove(mouseEvent.GetCursorPoint())
+	p := zombie.currentLocation.CalculateMoveIncrement(mouseEvent.GetCursorPoint())
 	if p.GetX() != 0 && p.GetY() != 0 {
-		zombie.currentLocation.Move(p)
+		zombie.currentLocation.MoveByIncrement(p)
 	}
 	//TODO we'll keep this cached and not reconstruct if nothing changes...
 	zombie.move(p)

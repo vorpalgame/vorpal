@@ -9,7 +9,8 @@ import (
 
 func TestActionStage(t *testing.T) {
 	ac := ActionStageControllerData{}
-	ac.LoadControlMapFromFile("../samples/resources/zombiecide/behaviormap.png", 1920, 1080)
+	//TODO revamp the configurator to take care of this.
+	ac.LoadControlMapFromFile("../samples/resources/zombiecide/behaviormap.png", 2560, 1440)
 	assert.NotNil(t, ac)
 	pd := &PointData{100, 100}
 	currentColor := ac.CheckBehaviorColorAt(pd)

@@ -55,7 +55,7 @@ func Init() {
 
 	subsumptionZombie := newSubsumptionZombie()
 
-	//Move to zombicide yaml
+	//MoveByIncrement to zombicide yaml
 	dir, _ := os.Getwd()
 
 	statesFile := dir + henry
@@ -67,8 +67,18 @@ func Init() {
 		os.Exit(1)
 	}
 	stateMachineZombie := state_machines.UnmarshalZombie(f)
+	//TODO Thsi needs to come from configuration file...
+	//Attachable functions for testing conditions should be added so
+	//they can be queried.
+	//TODO we need to switch both background types to use absolute size while sprites can use percent
+	//scale or perhaps both scale and width/height.
+	ac := lib.ActionStageControllerData{}
 
-	//stateMachineZombie := NewZombieStateMachine()
+	//TODO We need to revamp the configurator to eliminate Viper and to handle paths to
+	//resources.
+	ac.LoadControlMapFromFile("samples/resources/zombiecide/behaviormap.png", 2087, 1159)
+
+	stateMachineZombie.Navigator.ActionStageController = &ac
 
 	//
 	for {

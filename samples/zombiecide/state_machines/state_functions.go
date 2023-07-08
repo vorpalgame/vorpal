@@ -102,7 +102,7 @@ var moveFunc = func(tx BehaviorTransaction) {
 
 var updateFramesFunc = func(tx BehaviorTransaction) {
 	tx.IncrementFrameCount()
-	tx.UpdateIdleFrames(tx.CalculateMove(tx.GetMouseEvent().GetCursorPoint()))
+	tx.UpdateIdleFrames(tx.CalculateMoveIncrement(tx.GetMouseEvent().GetCursorPoint()))
 
 }
 
