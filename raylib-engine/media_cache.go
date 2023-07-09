@@ -78,15 +78,15 @@ func (c *mediaCache) GetImage(img string) *rl.Image {
 func (c *mediaCache) CacheImages(evt bus.DrawLayersEvent) MediaCache {
 	for _, evt := range evt.GetImageLayers() {
 		for _, imgData := range evt.GetLayerData() {
-			img := c.imageCache[imgData.GetImage()]
+			img := c.imageCache[imgData.GetFileName()]
 			if img == nil {
-				newImg := rl.LoadImage(imgData.GetImage())
+				newImg := rl.LoadImage(imgData.GetFileName())
 
 				width := int32(float32(newImg.Width) * imgData.GetScalePercent())
 				height := int32(float32(newImg.Height) * imgData.GetScalePercent())
 
 				rl.ImageResize(newImg, width, height)
-				c.imageCache[imgData.GetImage()] = newImg
+				c.imageCache[imgData.GetFileName()] = newImg
 			}
 		}
 

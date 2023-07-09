@@ -29,19 +29,17 @@ func NewImageMetadata(img string, x, y, scale int32) ImageMetadata {
 	return &imageMetadata{img, x, y, scale, false}
 }
 
-//TODO We should refactor lib to make it general use the Point
+//TODO diferent types for scale versus fixed size rectangle.
 
 type ImageMetadata interface {
-	GetImage() string
-	GetX() int32
-	GetY() int32
+	GetFileName() string
+	GetPoint() (x, y int32)
 	SetScale(scale int32) ImageMetadata
 	GetScale() int32
 	GetScalePercent() float32
 	IsFlipHorizontal() bool
 	SetFlipHorizontal(bool) ImageMetadata
-	SetX(x int32) ImageMetadata
-	SetY(y int32) ImageMetadata
+	SetPoint(x, y int32) ImageMetadata
 }
 
 type imageMetadata struct {
@@ -60,25 +58,18 @@ func (e *imageMetadata) SetFlipHorizontal(horizontalFlip bool) ImageMetadata {
 func (e *imageMetadata) IsFlipHorizontal() bool {
 	return e.horizontalFlip
 }
-func (e *imageMetadata) GetImage() string {
+func (e *imageMetadata) GetFileName() string {
 	return e.img
 }
 
-func (p *imageMetadata) GetX() int32 {
-	return p.x
+func (p *imageMetadata) GetPoint() (x, y int32) {
+	return p.x, p.y
 }
 
 //TODO Refactor to use Point
 
-func (p *imageMetadata) SetX(x int32) ImageMetadata {
-	p.x = x
-	return p
-}
-func (p *imageMetadata) GetY() int32 {
-	return p.y
-}
-func (p *imageMetadata) SetY(y int32) ImageMetadata {
-	p.y = y
+func (p *imageMetadata) SetPoint(x, y int32) ImageMetadata {
+	p.x, p.y = x, y
 	return p
 }
 func (p *imageMetadata) SetScale(scale int32) ImageMetadata {

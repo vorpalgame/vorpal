@@ -2,6 +2,7 @@ package state_machines
 
 import (
 	"gopkg.in/yaml.v3"
+	"log"
 	"os"
 )
 
@@ -31,8 +32,8 @@ func UnmarshalZombie(f []byte) *ZombieData {
 	if e != nil {
 		panic(e)
 	}
-	//log.Default().Println(zsm)
-
+	log.Default().Println(zsm)
+	log.Default().Println(zsm.Navigator.GetCurrentPoint())
 	return &zsm
 }
 

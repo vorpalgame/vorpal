@@ -42,8 +42,9 @@ func (tep *textData) renderText(evt bus.MultilineTextEvent) {
 		//The next step is to send each presplit line from the other side of the bus
 		//and then iterate over it here.
 		//
-		x := float32(evt.GetLocation().GetX())
-		var y = float32(evt.GetLocation().GetY())
+		intx, inty := evt.GetLocation()
+		var x = float32(intx)
+		var y = float32(inty)
 		for _, txt := range evt.GetText() {
 			tep.CacheFonts(txt)
 			rl.ImageDrawTextEx(renderImg, rl.Vector2{x, y}, *tep.GetFont(txt.GetFont()), txt.GetText(), float32(txt.GetFontSize()), 0, rl.Black)

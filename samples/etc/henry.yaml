@@ -77,9 +77,8 @@ StateMap:
             - moveFunc
             - walkFunc
 Navigator:
-    CurrentLocation:
-        X: 600
-        "Y": 600
+    CurrentX: 600
+    CurrentY: 600
     XMove: 4
     YMove: 2
     MaxXOffset: 5

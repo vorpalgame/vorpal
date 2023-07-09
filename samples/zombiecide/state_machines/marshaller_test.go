@@ -26,7 +26,7 @@ func TestZombieMarshal(t *testing.T) {
 func create() *ZombieData {
 	zs := ZombieData{}
 	zs.CurrentStateName = Walk
-	zs.Navigator = &lib.NavigatorData{&lib.PointData{600, 600}, 4, 2, 5, 5}
+	zs.Navigator = &lib.NavigatorData{600, 600, 4, 2, 5, 5, nil}
 	zs.StateMap = make(map[string]*ZombieStateData)
 	zs.StateMap[Walk] = createBasicState(Walk, henry, []string{UpdateFramesFunc, AttackFunc, MoveFunc, WalkFunc})
 	zs.StateMap[Idle] = createBasicState(Idle, henry, []string{UpdateFramesFunc, AttackFunc, MoveFunc, IdleFunc})
@@ -53,6 +53,6 @@ func createBasicState(name, spec string, behaviors []string) *ZombieStateData {
 	data.Scale = 30
 	data.Started = false
 	data.BehaviorNames = behaviors
-	data.AudioState.ResetCount()
+	data.AudioState.ResetAudioCount()
 	return &data
 }

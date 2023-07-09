@@ -8,7 +8,7 @@ import (
 func CreateTestNavigator() Navigator {
 	maxIncrement := int32(2)
 	maxOffset := int32(5)
-	return &NavigatorData{&PointData{int32(500), int32(600)}, maxIncrement, maxIncrement, maxOffset, maxOffset, nil}
+	return &NavigatorData{500, 600, maxIncrement, maxIncrement, maxOffset, maxOffset, nil}
 }
 func CreateTestAudioData() AudioStateData {
 	data := AudioStateData{}

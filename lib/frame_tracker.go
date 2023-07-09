@@ -11,7 +11,7 @@ type FrameTracker interface {
 	GetCurrentFrame() int32
 	GetMaxFrame() int32
 	SetToLoop(bool) FrameTracker
-	UpdateIdleFrames(point Point) int32
+	UpdateIdleFrames(x, y int32) int32
 	GetIdleFrames() int32
 	IsFrameOnLoop() bool
 	IncrementFrameCount() FrameTracker
@@ -53,8 +53,8 @@ func (fd *FrameTrackerData) SetRepeatFrame(repeatPerFrame int32) FrameTracker {
 	fd.RepeatPerFrame = repeatPerFrame
 	return fd
 }
-func (fd *FrameTrackerData) UpdateIdleFrames(point Point) int32 {
-	if point.GetY() == 0 && point.GetX() == 0 {
+func (fd *FrameTrackerData) UpdateIdleFrames(x, y int32) int32 {
+	if x == 0 && y == 0 {
 		fd.IdleFrames++
 	} else {
 		fd.IdleFrames = 0

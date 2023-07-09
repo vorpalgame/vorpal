@@ -13,7 +13,7 @@ import (
 func newSubsumptionZombie() SubsumptionZombie {
 
 	//TODO Fix confiuration logic and externalize...
-	zombie := &subsumptionZombieData{bodyPartGroups: make([]BodyPartGroup, 0), currentLocation: lib.NewNavigator(lib.PointData{570, 430}, -4, -2, 5, 5, nil), imageLayer: lib.NewImageLayer()}
+	zombie := &subsumptionZombieData{bodyPartGroups: make([]BodyPartGroup, 0), currentLocation: lib.NewNavigator(570, 430, -4, -2, 5, 5, nil), imageLayer: lib.NewImageLayer()}
 
 	zombie.add(createRightArm())
 	zombie.add(createLeftArm())
@@ -52,7 +52,7 @@ type SubsumptionZombie interface {
 // //////////////////////////////////////////////////
 type BodyEvents interface {
 	construct(img lib.ImageLayer)
-	move(evt lib.Point)
+	move(x, y int32)
 }
 
 type Body interface {
@@ -71,10 +71,10 @@ func (pd *subsumptionZombieData) construct(img lib.ImageLayer) {
 }
 
 // Fix the logic...
-func (pd *subsumptionZombieData) move(evt lib.Point) {
-	if evt.GetX() != 0 && evt.GetY() != 0 {
+func (pd *subsumptionZombieData) move(x, y int32) {
+	if x != 0 && y != 0 {
 		for _, part := range pd.bodyPartGroups {
-			part.move(evt)
+			part.move(x, y)
 		}
 	}
 }
@@ -104,9 +104,9 @@ func (pd *bodyPartsData) construct(img lib.ImageLayer) {
 	}
 }
 
-func (pd *bodyPartsData) move(evt lib.Point) {
+func (pd *bodyPartsData) move(x, y int32) {
 	for _, part := range pd.layer {
-		part.move(evt)
+		part.move(x, y)
 	}
 }
 
@@ -127,11 +127,9 @@ func (bp *bodyPartData) construct(img lib.ImageLayer) {
 	img.AddLayerData(bp.img)
 }
 
-// TODO Need to refactor imgmetadta to use Point...
-// Override for individual parts as necessary...
-func (bp *bodyPartData) move(evt lib.Point) {
-	bp.img.SetX(bp.img.GetX() + evt.GetX())
-	bp.img.SetY(bp.img.GetY() + evt.GetY())
+func (bp *bodyPartData) move(incrX, incrY int32) {
+	x, y := bp.img.GetPoint()
+	bp.img.SetPoint(x+incrX, y+incrY)
 }
 
 func newBodyPart(fileName string, x, y, scale int32) BodyPart {
@@ -221,7 +219,7 @@ func createTorso() BodyPartGroup {
 // /////////////////////////////////////////////////
 type headData struct {
 	name                      string
-	currentLocation           lib.Point
+	x, y                      int32
 	currentHead, currentFrame int
 	heads                     map[int]lib.ImageMetadata
 }
@@ -234,8 +232,9 @@ func (head *headData) add(bodyPart BodyPart) BodyPartGroup {
 func (head *headData) construct(img lib.ImageLayer) {
 	img.AddLayerData(head.getCurrentHead())
 }
-func (head *headData) move(evt lib.Point) {
-	head.currentLocation.Add(evt)
+func (head *headData) move(x, y int32) {
+	head.x += x
+	head.y += y
 }
 
 func (head *headData) getCurrentHead() lib.ImageMetadata {
@@ -248,9 +247,7 @@ func (head *headData) getCurrentHead() lib.ImageMetadata {
 		}
 	}
 	h := head.heads[head.currentHead]
-	//TODO Again, ImageMetadata needs to use Point
-	h.SetX(head.currentLocation.GetX())
-	h.SetY(head.currentLocation.GetY())
+	h.SetPoint(head.getCurrentHead().GetPoint())
 	return h
 }
 
@@ -261,7 +258,7 @@ func newImageData(fileName string, x, y, scale int32) lib.ImageMetadata {
 
 // Rewire zombie bobble head later.
 func createHead() BodyPartGroup {
-	bpg := headData{head, lib.NewPoint(570, 430), 1, 1, make(map[int]lib.ImageMetadata)}
+	bpg := headData{head, 570, 430, 1, 1, make(map[int]lib.ImageMetadata)}
 	//bpg.add(newBodyPart("neck.png", 610, 510, 20))
 	//Like Pascal numbering :)
 	for i := 1; i < 7; i++ {
@@ -276,12 +273,12 @@ func (zombie *subsumptionZombieData) CreateImageLayer(mouseEvent bus.MouseEvent)
 
 	img.Reset()
 
-	p := zombie.currentLocation.CalculateMoveIncrement(mouseEvent.GetCursorPoint())
-	if p.GetX() != 0 && p.GetY() != 0 {
-		zombie.currentLocation.MoveByIncrement(p)
+	x, y := zombie.currentLocation.CalculateMoveIncrement(mouseEvent.GetCursorPoint())
+	if x != 0 && y != 0 {
+		zombie.currentLocation.MoveByIncrement(x, y)
 	}
 	//TODO we'll keep this cached and not reconstruct if nothing changes...
-	zombie.move(p)
+	zombie.move(x, y)
 	zombie.construct(img)
 	return img
 }

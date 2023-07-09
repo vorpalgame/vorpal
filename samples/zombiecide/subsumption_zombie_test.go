@@ -18,7 +18,7 @@ func TestBasicSubsumption(t *testing.T) {
 	imgData := img.GetLayerData()[0]
 	assert.NotNil(t, imgData)
 
-	assert.Greater(t, len(imgData.GetImage()), 0)
+	assert.Greater(t, len(imgData.GetFileName()), 0)
 
 }
 

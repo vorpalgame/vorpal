@@ -12,7 +12,7 @@ import (
 
 // Revisit the use of pointer for image.Image. There were isseus in marshaling so switched to value.
 type ActionStageController interface {
-	CheckBehaviorColorAt(point Point) color.Color
+	CheckBehaviorColorAt(x, y int32) color.Color
 	SetControlMap(image *image.Image, width, height int) ActionStageController
 	LoadControlMapFromFile(file string, width, height int) ActionStageController
 }
@@ -21,10 +21,10 @@ type ActionStageControllerData struct {
 	controlMap *image.Image
 }
 
-func (a *ActionStageControllerData) CheckBehaviorColorAt(point Point) color.Color {
-	if a.controlMap != nil && point != nil {
+func (a *ActionStageControllerData) CheckBehaviorColorAt(x, y int32) color.Color {
+	if a.controlMap != nil {
 		img := *a.controlMap
-		return img.At(int(point.GetX()), int(point.GetY()))
+		return img.At(int(x), int(y))
 	}
 	panic("No control map")
 }

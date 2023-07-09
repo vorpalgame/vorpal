@@ -76,7 +76,7 @@ func Init() {
 
 	//TODO We need to revamp the configurator to eliminate Viper and to handle paths to
 	//resources.
-	ac.LoadControlMapFromFile("samples/resources/zombiecide/behaviormap.png", 2087, 1159)
+	ac.LoadControlMapFromFile("samples/resources/zombiecide/behaviorland.png", 1920, 1080)
 
 	stateMachineZombie.Navigator.ActionStageController = &ac
 

@@ -56,7 +56,7 @@ func (e *drawData) renderImageLayers(evt bus.DrawLayersEvent) {
 func (e *drawData) isReady(layer lib.ImageLayer) bool {
 
 	for _, imgData := range layer.GetLayerData() {
-		if e.GetImage(imgData.GetImage()) == nil {
+		if e.GetImage(imgData.GetFileName()) == nil {
 			return false
 		}
 	}
@@ -64,7 +64,7 @@ func (e *drawData) isReady(layer lib.ImageLayer) bool {
 }
 func (e *drawData) renderLayer(baseImg *rl.Image, layer lib.ImageLayer) *rl.Image {
 	for _, img := range layer.GetLayerData() {
-		originalImg := e.GetImage(img.GetImage())
+		originalImg := e.GetImage(img.GetFileName())
 
 		//If at any point an image is not loaded and ready, we bail out for this frame.
 		if originalImg != nil {
@@ -80,7 +80,10 @@ func (e *drawData) renderLayer(baseImg *rl.Image, layer lib.ImageLayer) *rl.Imag
 				if img.IsFlipHorizontal() {
 					rl.ImageFlipHorizontal(clonedImage)
 				}
-				rl.ImageDraw(baseImg, clonedImage, rl.NewRectangle(0, 0, float32(clonedImage.Width), float32(clonedImage.Height)), rl.NewRectangle(float32(img.GetX()), float32(img.GetY()), float32(clonedImage.Width), float32(clonedImage.Height)), rl.RayWhite)
+				//Create generic
+				x, y := img.GetPoint()
+				destRect := rl.NewRectangle(float32(x), float32(y), float32(clonedImage.Width), float32(clonedImage.Height))
+				rl.ImageDraw(baseImg, clonedImage, rl.NewRectangle(0, 0, float32(clonedImage.Width), float32(clonedImage.Height)), destRect, rl.RayWhite)
 				rl.UnloadImage(clonedImage)
 			}
 

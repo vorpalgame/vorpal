@@ -22,18 +22,19 @@ type TextEventProcessor interface {
 
 type TextEvent interface {
 	Reinitialize() TextEvent
-	GetLocation() lib.Point
+	GetLocation() (x, y int32)
 	SetLocation(x, y int32) TextEvent
 }
 type textEventData struct {
-	lib.Point
+	X, Y int32
 }
 
-func (ted *textEventData) GetLocation() lib.Point {
-	return ted.Point
+func (ted *textEventData) GetLocation() (x, y int32) {
+	return ted.X, ted.Y
 }
 func (ted *textEventData) SetLocation(x, y int32) TextEvent {
-	ted.Point = lib.NewPoint(x, y)
+	ted.X = x
+	ted.Y = y
 	return ted
 }
 
@@ -71,7 +72,7 @@ var nextTextEventId = int32(0)
 
 func NewMultilineTextEvent(font string, fontSize, x, y int32) MultilineTextEvent {
 	nextTextEventId++ //Oddly can't do this in the struct
-	return &multilineTextEventData{textEventData{lib.NewPoint(x, y)}, lib.NewFont(font, fontSize), make([]lib.TextLine, 0), nextTextEventId}
+	return &multilineTextEventData{textEventData{x, y}, lib.NewFont(font, fontSize), make([]lib.TextLine, 0), nextTextEventId}
 
 }
 

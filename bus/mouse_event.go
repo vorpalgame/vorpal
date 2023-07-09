@@ -9,7 +9,7 @@ type MouseEventListener interface {
 //////
 
 func NewMouseEvent(leftButton, rightButton, middleButton lib.MouseButtonState, x int32, y int32) MouseEvent {
-	return &mouseEvent{leftButton, rightButton, middleButton, lib.NewPoint(x, y)}
+	return &mouseEvent{leftButton, rightButton, middleButton, x, y}
 }
 
 // //
@@ -17,14 +17,12 @@ type MouseEvent interface {
 	LeftButton() lib.MouseButtonState
 	RightButton() lib.MouseButtonState
 	MiddleButton() lib.MouseButtonState
-	GetX() int32
-	GetY() int32
-	GetCursorPoint() lib.Point
+	GetCursorPoint() (x, y int32)
 }
 
 type mouseEvent struct {
 	left, right, middle lib.MouseButtonState
-	cursortLocation     lib.Point
+	x, y                int32
 }
 
 func (evt *mouseEvent) LeftButton() lib.MouseButtonState {
@@ -37,13 +35,7 @@ func (evt *mouseEvent) RightButton() lib.MouseButtonState {
 func (evt *mouseEvent) MiddleButton() lib.MouseButtonState {
 	return evt.middle
 }
-func (evt *mouseEvent) GetX() int32 {
-	return evt.cursortLocation.GetX()
-}
 
-func (evt *mouseEvent) GetY() int32 {
-	return evt.cursortLocation.GetY()
-}
-func (evt *mouseEvent) GetCursorPoint() lib.Point {
-	return evt.cursortLocation
+func (evt *mouseEvent) GetCursorPoint() (x, y int32) {
+	return evt.x, evt.y
 }
