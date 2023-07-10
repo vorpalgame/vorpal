@@ -1,20 +1,19 @@
 package raylibengine
 
 import (
-	"log"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
 )
 
+// TODO Work out engine initizliation sequence with
+// window size, title, location, etc. to eliminate hard coded values.
 func NewEngine() bus.Engine {
-	log.Println("Init'd")
+
 	e := engine{}
 	e.MediaCache = NewMediaCache()
 	e.StandardMediaPeerController = bus.NewGameController()
 	e.VorpalBus = bus.GetVorpalBus()
-
 	return &e
 }
 
@@ -26,11 +25,12 @@ type engine struct {
 }
 
 func (e *engine) Start() {
-
+	//These need to be set from events...
 	rl.InitWindow(1920, 1080, "")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
 	rl.InitAudioDevice()
+	defer rl.CloseAudioDevice()
 
 	for !rl.WindowShouldClose() {
 		//async safe.
@@ -54,7 +54,6 @@ func (e *engine) Start() {
 }
 
 func (e *engine) renderTexture() {
-	//Make sure we don't get a race on nil check.
 	renderImg := e.GetCurrentRenderImage()
 	if renderImg != nil {
 		previousTexture := e.currentTexture
@@ -64,7 +63,6 @@ func (e *engine) renderTexture() {
 }
 
 func (e *engine) sendMouseEvents() {
-
 	evt := bus.NewMouseEvent(getMouseButton(rl.MouseLeftButton, "Left"), getMouseButton(rl.MouseMiddleButton, "Center"), getMouseButton(rl.MouseRightButton, "Right"), int32(rl.GetMouseX()), int32(rl.GetMouseY()))
 	e.SendMouseEvent(evt)
 
