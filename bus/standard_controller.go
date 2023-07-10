@@ -2,7 +2,7 @@ package bus
 
 type StandardMediaPeerController interface {
 	ControllerListener
-	GetControlEvent() ControlEvent
+	GetControlEvents() []ControlEvent
 	GetDrawEvent() DrawEvent
 	GetAudioEvent() AudioEvent //One event at at time...
 	GetTextEvent() TextEvent
@@ -22,7 +22,7 @@ type controller struct {
 	textEvent             TextEvent             //TODO put multiple keys in one event...
 	imageCacheEvent       ImageCacheEvent       //Could have multiples so should be slice...
 	keysRegistrationEvent KeysRegistrationEvent //Only one set of keys to listen for at a time.
-	controlEvent          ControlEvent          //May need slice..
+	controlEvents         []ControlEvent        //May need slice..
 }
 
 var c = controller{}
@@ -36,7 +36,7 @@ func NewGameController() StandardMediaPeerController {
 }
 func (c *controller) OnControlEvent(controlChannel <-chan ControlEvent) {
 	for evt := range controlChannel {
-		c.controlEvent = evt
+		c.controlEvents = append(c.controlEvents, evt)
 	}
 }
 
@@ -86,9 +86,9 @@ func (c *controller) GetAudioEvent() AudioEvent {
 }
 
 // Don't repeat process.
-func (c *controller) GetControlEvent() ControlEvent {
-	temp := c.controlEvent
-	c.controlEvent = nil
+func (c *controller) GetControlEvents() []ControlEvent {
+	temp := c.controlEvents
+	c.controlEvents = nil
 	return temp
 }
 

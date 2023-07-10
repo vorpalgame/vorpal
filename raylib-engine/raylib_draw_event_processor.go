@@ -10,21 +10,13 @@ import (
 // /// Draw Event Processor
 // /////////////////////////////////////////////////////////////////
 
-type drawData struct {
-	MediaCache
-}
-
-func NewDrawEventProcessor(mediaCache MediaCache) bus.DrawEventProcessor {
-	return &drawData{mediaCache}
-}
-
-func (dep *drawData) ProcessDrawEvent(evt bus.DrawEvent) {
+var raylibProcessDrawEvent = func(evt bus.DrawEvent, cache MediaCache) {
 
 	if evt != nil {
 		switch evt := evt.(type) {
 		case bus.DrawLayersEvent:
-			dep.CacheImages(evt)
-			dep.renderImageLayers(evt)
+			cache.CacheImages(evt)
+			renderImageLayers(evt, cache)
 		}
 	}
 }
@@ -32,39 +24,39 @@ func (dep *drawData) ProcessDrawEvent(evt bus.DrawEvent) {
 // /////////////////////////////////////////////////////////////////
 // /// Draw Layer Event rendering
 // /////////////////////////////////////////////////////////////////
-func (e *drawData) renderImageLayers(evt bus.DrawLayersEvent) {
+func renderImageLayers(evt bus.DrawLayersEvent, cache MediaCache) {
 
 	for _, layer := range evt.GetImageLayers() {
-		if !e.isReady(layer) {
+		if !isReady(layer, cache) {
 			return
 		}
 	}
 	var renderImg *rl.Image
 
 	for _, layer := range evt.GetImageLayers() {
-		renderImg = e.renderLayer(renderImg, layer)
+		renderImg = renderLayer(renderImg, layer, cache)
 	}
 
 	if renderImg != nil {
-		previousImg := e.GetCurrentRenderImage()
-		e.SetCurrentRenderImage(renderImg)
+		previousImg := cache.GetCurrentRenderImage()
+		cache.SetCurrentRenderImage(renderImg)
 		if previousImg != nil {
 			rl.UnloadImage(previousImg)
 		}
 	}
 }
-func (e *drawData) isReady(layer lib.ImageLayer) bool {
+func isReady(layer lib.ImageLayer, cache MediaCache) bool {
 
 	for _, imgData := range layer.GetLayerData() {
-		if e.GetImage(imgData.GetFileName()) == nil {
+		if cache.GetImage(imgData.GetFileName()) == nil {
 			return false
 		}
 	}
 	return true
 }
-func (e *drawData) renderLayer(baseImg *rl.Image, layer lib.ImageLayer) *rl.Image {
+func renderLayer(baseImg *rl.Image, layer lib.ImageLayer, cache MediaCache) *rl.Image {
 	for _, img := range layer.GetLayerData() {
-		originalImg := e.GetImage(img.GetFileName())
+		originalImg := cache.GetImage(img.GetFileName())
 
 		//If at any point an image is not loaded and ready, we bail out for this frame.
 		if originalImg != nil {
@@ -87,8 +79,6 @@ func (e *drawData) renderLayer(baseImg *rl.Image, layer lib.ImageLayer) *rl.Imag
 				rl.UnloadImage(clonedImage)
 			}
 
-		} else {
-			return nil
 		}
 
 	}

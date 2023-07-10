@@ -10,19 +10,11 @@ import (
 // /// Audio Event Processor
 // /////////////////////////////////////////////////////////////////
 
-type audioData struct {
-	MediaCache
-}
-
-func NewAudioEventProcessor(mediaCache MediaCache) bus.AudioEventProcessor {
-	return &audioData{mediaCache}
-}
-
-func (dep *audioData) ProcessAudioEvent(evt bus.AudioEvent) {
+var raylibProcessAudioEvent = func(evt bus.AudioEvent, cache MediaCache) {
 
 	if evt != nil {
 		log.Default().Println(evt.GetAudioFile())
-		currentAudio := *dep.GetAudio(evt.GetAudioFile())
+		currentAudio := *cache.GetAudio(evt.GetAudioFile())
 		switch evt.(type) {
 		case bus.PlayAudioEvent:
 			if !rl.IsSoundPlaying(currentAudio) {

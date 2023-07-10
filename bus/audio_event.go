@@ -14,9 +14,6 @@ func NewStopAudioEvent(state lib.AudioState) StopAudioEvent {
 type AudioEventListener interface {
 	OnAudioEvent(audioChannel <-chan AudioEvent)
 }
-type AudioEventProcessor interface {
-	ProcessAudioEvent(event AudioEvent)
-}
 
 //////Basic AudioEvent //////
 

@@ -16,10 +16,6 @@ type DrawEventListener interface {
 	OnDrawEvent(drawChannel <-chan DrawEvent)
 }
 
-type DrawEventProcessor interface {
-	ProcessDrawEvent(evt DrawEvent)
-}
-
 type DrawEvent interface {
 	Reset()
 }

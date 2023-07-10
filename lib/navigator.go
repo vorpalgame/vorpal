@@ -1,11 +1,5 @@
 package lib
 
-import "log"
-
-//TODO Unit tests...
-
-//"log"
-
 func NewLocation() Navigator {
 	return &NavigatorData{}
 }
@@ -42,7 +36,6 @@ func (cl *NavigatorData) GetCurrentPoint() (x, y int32) {
 	return cl.X, cl.Y
 }
 
-// OK hack the color check for now...
 func (cl *NavigatorData) MoveByIncrement(x, y int32) {
 
 	if cl.isLegal(x, y) {
@@ -51,23 +44,19 @@ func (cl *NavigatorData) MoveByIncrement(x, y int32) {
 
 }
 
-// This inelegant hack is here for prototyping...
-// Golang doesn't use 0...255 for RGB
-
-// The move is legal if it doesn't wander into illegal areas or if no behavior map is set.
 func (cl *NavigatorData) isLegal(x, y int32) bool {
-	absoluteX, absoluteY := cl.GetCurrentPoint()
-	absoluteX += x
-	absoluteY += y
 	var isLegal bool = true
 	if cl.ActionStageController != nil {
+		//Sample mechanisms for determining legal behavior...
+		absoluteX, absoluteY := cl.GetCurrentPoint()
+		absoluteX += x
+		absoluteY += y
 		color := cl.ActionStageController.CheckBehaviorColorAt(absoluteX, absoluteY)
 
 		r, g, b, _ := color.RGBA()
 		//TODO Should probably use black as legal color so we just check 0
 		isLegal = 65535 == r && 65535 == g && 65535 == b
 	}
-	log.Default().Println(isLegal)
 	return isLegal
 }
 
@@ -80,8 +69,7 @@ func (cl *NavigatorData) MoveTowardMouse(x, y int32) {
 func (cl *NavigatorData) CalculateMoveIncrement(moveToX, moveToY int32) (x, y int32) {
 
 	incrementX, incrementY := cl.increment(moveToX, moveToY)
-	//var incrementX, incrementY = getIncrement(cl.XMove, cl.YMove, cl.X, cl.Y, moveToX, moveToY)
-	//TODO Add the offset checks back in.
+	//Offset checks could be cleaner...
 	var xOffset = moveToX - cl.X
 	if xOffset < 0 {
 		xOffset *= -1

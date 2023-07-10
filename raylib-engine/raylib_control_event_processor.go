@@ -9,20 +9,18 @@ import (
 // /// Raylib Control Event Processor
 // /////////////////////////////////////////////////////////////////
 
-type controlData struct {
-}
+var raylibProcessControlEvent = func(evts []bus.ControlEvent) {
 
-func NewControlEventProcessor() bus.ControlEventProcessor {
-	return &controlData{}
-}
+	if evts != nil {
+		for _, evt := range evts {
+			switch evt := evt.(type) {
+			case bus.WindowTitleEvent:
+				rl.SetWindowTitle(evt.GetTitle())
 
-func (dep *controlData) ProcessControlEvent(evt bus.ControlEvent) {
+			case bus.WindowSizeEvent:
+				rl.SetWindowSize(evt.GetWindowSize())
+			}
 
-	if evt != nil {
-		switch evt := evt.(type) {
-		case bus.WindowTitleEvent:
-			rl.SetWindowTitle(evt.GetTitle())
 		}
-
 	}
 }

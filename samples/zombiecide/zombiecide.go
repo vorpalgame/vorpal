@@ -20,7 +20,8 @@ type zombiecide struct {
 	currentZombie string
 }
 
-// TODO Need a configuration mechanism with YAML or JSON to eliminate the need for hard code.
+//Sample file for different possible use cases...
+
 var zombies = zombiecide{}
 var fontName = "samples/resources/fonts/Roboto-Regular.ttf"
 
@@ -35,9 +36,11 @@ func Init() {
 	log.Println("New zombie game")
 
 	vbus := bus.GetVorpalBus()
-	configKeys := lib.NewKeys(viper.GetStringSlice("RegisterKeys"))
 
+	vbus.SendControlEvent(bus.NewWindowSizeEvent(1920, 1080))
+	vbus.SendControlEvent(bus.NewWindowTitleEvent("Zombicicide!"))
 	//log.Default().Println(configKeys)
+	configKeys := lib.NewKeys(viper.GetStringSlice("RegisterKeys"))
 	evt := bus.NewKeysRegistrationEvent(configKeys)
 	//log.Default().Println(evt.GetKeys())
 	vbus.SendKeysRegistrationEvent(evt)
@@ -67,7 +70,6 @@ func Init() {
 		os.Exit(1)
 	}
 	stateMachineZombie := state_machines.UnmarshalZombie(f)
-	//TODO Thsi needs to come from configuration file...
 	//Attachable functions for testing conditions should be added so
 	//they can be queried.
 	//TODO we need to switch both background types to use absolute size while sprites can use percent

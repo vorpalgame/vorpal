@@ -5,9 +5,6 @@ import "github.com/vorpalgame/vorpal/lib"
 type TextEventListener interface {
 	OnTextEvent(textChannel <-chan TextEvent)
 }
-type TextEventProcessor interface {
-	ProcessTextEvent(evt TextEvent)
-}
 
 //TODO Builder pattern isn't quite right for this yet. Refactor to correct.
 //TODO Set/Get Location and Reinitialize should be implemented

@@ -14,10 +14,7 @@ func NewEngine() bus.Engine {
 	e.MediaCache = NewMediaCache()
 	e.StandardMediaPeerController = bus.NewGameController()
 	e.VorpalBus = bus.GetVorpalBus()
-	e.DrawEventProcessor = NewDrawEventProcessor(e.MediaCache)
-	e.ControlEventProcessor = NewControlEventProcessor()
-	e.TextEventProcessor = NewTextEventProcessor(e.MediaCache)
-	e.AudioEventProcessor = NewAudioEventProcessor(e.MediaCache)
+
 	return &e
 }
 
@@ -25,33 +22,32 @@ type engine struct {
 	bus.VorpalBus
 	MediaCache
 	bus.StandardMediaPeerController
-	bus.DrawEventProcessor
-	bus.ControlEventProcessor
-	bus.TextEventProcessor
-	bus.AudioEventProcessor
-	currentTexture        rl.Texture2D
-	currentlyPlayingAudio map[string]*rl.Sound
+	currentTexture rl.Texture2D
 }
 
-// TODO window init, size, title should come from control event...
 func (e *engine) Start() {
-	rl.InitWindow(1920, 1080, "Get Window Title from Event!")
+
+	rl.InitWindow(1920, 1080, "")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
 	rl.InitAudioDevice()
 
 	for !rl.WindowShouldClose() {
-		e.sendMouseEvents()
-		e.sendKeyEvents()
-		e.ProcessControlEvent(e.GetControlEvent())
-		e.ProcessDrawEvent(e.GetDrawEvent())
-		e.ProcessTextEvent(e.GetTextEvent())
-		e.ProcessAudioEvent(e.GetAudioEvent())
+		//async safe.
+		go e.sendMouseEvents()
+		go e.sendKeyEvents()
+		go raylibProcessControlEvent(e.GetControlEvents())
+		go raylibProcessAudioEvent(e.GetAudioEvent(), e.MediaCache)
+
+		//Process these on thread...
+		raylibProcessDrawEvent(e.GetDrawEvent(), e.MediaCache)
+		raylibProcessTextEvent(e.GetTextEvent(), e.MediaCache)
+
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
 
 		e.renderTexture()
-		rl.DrawTexture(e.currentTexture, 0, 0, rl.RayWhite)
+		rl.DrawTexture(e.currentTexture, 0, 0, rl.RayWhite) //TODO not sure about the white background...
 		rl.EndDrawing()
 
 	}
