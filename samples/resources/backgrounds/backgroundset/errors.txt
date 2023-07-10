@@ -1,2 +1,0 @@
-[2/16/2017, 10:50:11 PM] layer "tree02.pg": Unsupported extension: pg
-[2/16/2017, 10:50:11 PM] layer "background.psd": Unsupported extension: psd
