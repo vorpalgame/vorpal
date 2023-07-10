@@ -34,14 +34,16 @@ Why a Tarot card sample? Well, it's fun but it  is also the kind of problem set 
 ## How It Works
 The front end game logic sends a DrawEvent that lists one to N images along with the coordinates and size they should be rendered at by the game engine. The slice of ImageLayer treated as a Z coordinate system. The image file name, x, y, width and height coordinates are specified in the ImageLayer. 
 
+While different draw event types can be created, the layered event is likely a common use case. This permits various images to be drawn on different layers allowing for parallax, sprite movement, etc. Since no actual image or audio data is being passed over the bus, this could also be used for rendering
+images to to be sent over a socket. 
+
 ### DrawEvent
 ```
-type DrawEvent interface {
-	GetImageLayers() []ImageLayer
-	AddImageLayer(imgLayer ImageLayer)
-	Reset()
+type DrawLayersEvent interface {
+	DrawEvent
+	GetImageLayers() []lib.ImageLayer
+	AddImageLayer(imgLayer lib.ImageLayer) DrawEvent
 }
-
 type ImageLayer interface {
 	GetImage() string
 	GetX() int32
