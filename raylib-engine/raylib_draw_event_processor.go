@@ -73,8 +73,10 @@ func renderLayer(baseImg *rl.Image, layer lib.ImageLayer, cache MediaCache) *rl.
 					rl.ImageFlipHorizontal(clonedImage)
 				}
 				//Create generic
-				x, y := img.GetPoint()
-				destRect := rl.NewRectangle(float32(x), float32(y), float32(clonedImage.Width), float32(clonedImage.Height))
+
+				//TODO Reivisit this. We are transitioning from using scale to actual image size.
+				x, y, width, height := img.GetRectangle()
+				destRect := rl.NewRectangle(float32(x), float32(y), float32(width), float32(height))
 				rl.ImageDraw(baseImg, clonedImage, rl.NewRectangle(0, 0, float32(clonedImage.Width), float32(clonedImage.Height)), destRect, rl.RayWhite)
 				rl.UnloadImage(clonedImage)
 			}

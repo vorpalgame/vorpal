@@ -8,6 +8,8 @@ import (
 	"github.com/vorpalgame/vorpal/lib"
 )
 
+// TODO Revisit all the sizeing as we've switched from scaled to absolute.
+// Scaling has to take place on game side.
 type TarotGame interface {
 }
 
@@ -53,7 +55,7 @@ func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 		if evt.GetKey().EqualsIgnoreCase("S") {
 			//t.ShuffleAudio).Stop()
 			t.bus.SendAudioEvent(bus.NewStopAudioEvent(&t.ShuffleAudio))
-			t.drawEvent.AddImageLayer(lib.NewImageLayer().AddLayerData(lib.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
+			t.drawEvent.AddImageLayer(lib.NewImageLayer().AddLayerData(lib.NewImageMetadata(t.BackgroundImage, 0, 0, 1920, 1080)))
 			t.TarotDeck.Shuffle()
 			t.shuffled = true
 			t.bus.SendAudioEvent(bus.NewPlayAudioEvent(&t.ShuffleAudio))
@@ -77,7 +79,7 @@ func (t *Tarot) doStartupScreen() {
 	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent(lib.NewKeys([]string{"s", "n", "S", "N"})))
 	t.drawEvent = bus.NewDrawLayersEvent()
 
-	t.drawEvent.AddImageLayer(lib.NewImageLayer().AddLayerData(lib.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
+	t.drawEvent.AddImageLayer(lib.NewImageLayer().AddLayerData(lib.NewImageMetadata(t.BackgroundImage, 0, 0, 1920, 1080)))
 
 	t.bus.SendDrawEvent(t.drawEvent)
 	//Get intro text from Yaml file.
@@ -138,7 +140,7 @@ func (t *Tarot) doSendCard() {
 }
 
 func createImageLayer(displayCard string, mainX, mainY int32) lib.ImageLayer {
-	imgData := lib.NewImageMetadata(displayCard, mainX, mainY, 10)
+	imgData := lib.NewImageMetadata(displayCard, mainX, mainY, 150, 200)
 	return lib.NewImageLayer().AddLayerData(imgData)
 }
 

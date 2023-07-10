@@ -26,7 +26,7 @@ func (a *ActionStageControllerData) CheckBehaviorColorAt(x, y int32) color.Color
 		img := *a.controlMap
 		return img.At(int(x), int(y))
 	}
-	panic("No control map")
+	return color.White
 }
 
 func (a *ActionStageControllerData) SetControlMap(i *image.Image, width, height int) ActionStageController {

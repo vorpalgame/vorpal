@@ -81,9 +81,8 @@ func (c *mediaCache) CacheImages(evt bus.DrawLayersEvent) MediaCache {
 			img := c.imageCache[imgData.GetFileName()]
 			if img == nil {
 				newImg := rl.LoadImage(imgData.GetFileName())
-
-				width := int32(float32(newImg.Width) * imgData.GetScalePercent())
-				height := int32(float32(newImg.Height) * imgData.GetScalePercent())
+				//TODO Determine if resize shoudl be here or not...
+				_, _, width, height := imgData.GetRectangle()
 
 				rl.ImageResize(newImg, width, height)
 				c.imageCache[imgData.GetFileName()] = newImg

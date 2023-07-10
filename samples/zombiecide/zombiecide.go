@@ -15,7 +15,6 @@ type zombiecide struct {
 	bus bus.VorpalBus
 	//textEvent  bus.TextEvent
 	mouseEvent    bus.MouseEvent
-	background    lib.ImageLayer
 	keyEvent      bus.KeyEvent
 	currentZombie string
 }
@@ -50,8 +49,6 @@ func Init() {
 	zombies.currentZombie = "h"
 	zombies.bus = vbus
 
-	//TODO The data elements here should come from the yaml.
-	zombies.background = lib.NewImageLayer().AddLayerData(lib.NewImageMetadata("samples/resources/zombiecide/background.png", 0, 0, 33))
 	zombies.mouseEvent = nil
 	textEvent := bus.NewMultilineTextEvent(fontName, 18, 0, 0).AddText("Press 'g' for George or 'h' for Henry. \n Zombies follow the mouse pointer. \nLeft Mouse Button causes Henry to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n NOTE: George the parts zombie is still being worked on.").SetLocation(1200, 100)
 	vbus.SendTextEvent(textEvent)
@@ -78,6 +75,7 @@ func Init() {
 
 	//TODO We need to revamp the configurator to eliminate Viper and to handle paths to
 	//resources.
+	//Need new behavior map for different environment
 	ac.LoadControlMapFromFile("samples/resources/zombiecide/behaviorland.png", 1920, 1080)
 
 	stateMachineZombie.Navigator.ActionStageController = &ac
@@ -86,11 +84,12 @@ func Init() {
 	for {
 		if zombies.mouseEvent != nil {
 			drawEvt := bus.NewDrawLayersEvent()
-			drawEvt.AddImageLayer(zombies.background)
+			createBackground(drawEvt)
 			if zombies.currentZombie == "h" {
 				stateMachineZombie.Execute(drawEvt, zombies.mouseEvent, zombies.keyEvent)
+				createForeground(drawEvt)
 			} else {
-				drawEvt.AddImageLayer(subsumptionZombie.CreateImageLayer(zombies.mouseEvent)) //This shoulc change to look more like state zombie.
+				drawEvt.AddImageLayer(subsumptionZombie.CreateImageLayer(zombies.mouseEvent))
 			}
 			vbus.SendDrawEvent(drawEvt)
 			zombies.keyEvent = nil
@@ -103,6 +102,17 @@ func Init() {
 
 }
 
+func createBackground(evt bus.DrawLayersEvent) {
+	layer := lib.NewImageLayer()
+	layer.AddLayerData(lib.NewImageMetadata("samples/resources/zombiecide/background.png", 0, 0, 1920, 1080))
+	evt.AddImageLayer(layer)
+
+}
+func createForeground(evt bus.DrawLayersEvent) {
+	layer := lib.NewImageLayer()
+	layer.AddLayerData(lib.NewImageMetadata("samples/resources/zombiecide/foreground.png", 0, 0, 1920, 1080))
+	evt.AddImageLayer(layer)
+}
 func (z *zombiecide) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 		//Using explicit letters due to misreported case from raylib...

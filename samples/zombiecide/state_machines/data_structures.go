@@ -11,7 +11,8 @@ type ZombieData struct {
 type ZombieStateData struct {
 	Name              string                `yaml:"Name"`
 	Spec              string                `yaml:"Spec"`
-	Scale             int32                 `yaml:"Scale"`
+	Width             int32                 `yaml:"Width"`
+	Height            int32                 `yaml:"Height"`
 	Started           bool                  `yaml:"Started"`
 	FrameTracker      *lib.FrameTrackerData `yaml:"FrameTracker"`
 	AudioState        *lib.AudioStateData   `yaml:"AudioState"`

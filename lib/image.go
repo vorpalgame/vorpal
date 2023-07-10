@@ -25,27 +25,24 @@ func (i *imageLayer) AddLayerData(img ImageMetadata) ImageLayer {
 	return i
 }
 
-func NewImageMetadata(img string, x, y, scale int32) ImageMetadata {
-	return &imageMetadata{img, x, y, scale, false}
+func NewImageMetadata(img string, x, y, width, height int32) ImageMetadata {
+	return &imageMetadata{img, x, y, width, height, false}
 }
 
 //TODO diferent types for scale versus fixed size rectangle.
 
 type ImageMetadata interface {
 	GetFileName() string
-	GetPoint() (x, y int32)
-	SetScale(scale int32) ImageMetadata
-	GetScale() int32
-	GetScalePercent() float32
+	GetRectangle() (x, y, width, height int32)
+	SetRectangle(x, y, width, height int32) ImageMetadata
 	IsFlipHorizontal() bool
 	SetFlipHorizontal(bool) ImageMetadata
-	SetPoint(x, y int32) ImageMetadata
 }
 
 type imageMetadata struct {
-	img            string
-	x, y, scale    int32
-	horizontalFlip bool
+	img                 string
+	x, y, width, height int32
+	horizontalFlip      bool
 }
 type imageLayer struct {
 	images []ImageMetadata
@@ -62,24 +59,13 @@ func (e *imageMetadata) GetFileName() string {
 	return e.img
 }
 
-func (p *imageMetadata) GetPoint() (x, y int32) {
-	return p.x, p.y
+func (p *imageMetadata) GetRectangle() (x, y, width, height int32) {
+	return p.x, p.y, p.width, p.height
 }
 
 //TODO Refactor to use Point
 
-func (p *imageMetadata) SetPoint(x, y int32) ImageMetadata {
-	p.x, p.y = x, y
+func (p *imageMetadata) SetRectangle(x, y, width, height int32) ImageMetadata {
+	p.x, p.y, p.width, p.height = x, y, width, height
 	return p
-}
-func (p *imageMetadata) SetScale(scale int32) ImageMetadata {
-	p.scale = scale
-	return p
-}
-func (p *imageMetadata) GetScale() int32 {
-	return p.scale
-}
-
-func (p *imageMetadata) GetScalePercent() float32 {
-	return float32(p.scale) / 100
 }

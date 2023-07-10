@@ -128,12 +128,12 @@ func (bp *bodyPartData) construct(img lib.ImageLayer) {
 }
 
 func (bp *bodyPartData) move(incrX, incrY int32) {
-	x, y := bp.img.GetPoint()
-	bp.img.SetPoint(x+incrX, y+incrY)
+	x, y, width, height := bp.img.GetRectangle()
+	bp.img.SetRectangle(x+incrX, y+incrY, width, height)
 }
 
-func newBodyPart(fileName string, x, y, scale int32) BodyPart {
-	return &bodyPartData{fileName, newImageData(fileName, x, y, scale)}
+func newBodyPart(fileName string, x, y, width, height int32) BodyPart {
+	return &bodyPartData{fileName, newImageData(fileName, x, y, width, height)}
 }
 
 // //////////////////////////////////////////////////
@@ -145,9 +145,9 @@ type leftLegData struct {
 
 func createLeftLeg() BodyPartGroup {
 	bpg := leftLegData{&bodyPartsData{leftLeg, make([]BodyPart, 0)}}
-	bpg.add(newBodyPart("left_leg.png", 600, 585, 20))
-	bpg.add(newBodyPart("left_leg_down.png", 600, 640, 20))
-	bpg.add(newBodyPart("left_foot.png", 600, 680, 20))
+	bpg.add(newBodyPart("left_leg.png", 600, 585, 50, 50))
+	bpg.add(newBodyPart("left_leg_down.png", 600, 640, 50, 50))
+	bpg.add(newBodyPart("left_foot.png", 600, 680, 50, 50))
 	return &bpg
 
 }
@@ -161,9 +161,9 @@ type rightLegData struct {
 
 func createRightLeg() BodyPartGroup {
 	bpg := rightLegData{&bodyPartsData{rightLeg, make([]BodyPart, 0)}}
-	bpg.add(newBodyPart("right_leg.png", 635, 585, 20))
-	bpg.add(newBodyPart("right_leg_down.png", 635, 640, 20))
-	bpg.add(newBodyPart("right_foot.png", 635, 680, 20))
+	bpg.add(newBodyPart("right_leg.png", 635, 585, 50, 50))
+	bpg.add(newBodyPart("right_leg_down.png", 635, 640, 50, 50))
+	bpg.add(newBodyPart("right_foot.png", 635, 680, 50, 50))
 	return &bpg
 }
 
@@ -176,9 +176,9 @@ type leftArmData struct {
 
 func createLeftArm() BodyPartGroup {
 	bpg := leftArmData{&bodyPartsData{leftArm, make([]BodyPart, 0)}}
-	bpg.add(newBodyPart("left_arm.png", 590, 570, 20))
-	bpg.add(newBodyPart("left_hand.png", 600, 585, 20))
-	bpg.add(newBodyPart("left_shoulder.png", 585, 540, 20))
+	bpg.add(newBodyPart("left_arm.png", 590, 570, 50, 50))
+	bpg.add(newBodyPart("left_hand.png", 600, 585, 50, 50))
+	bpg.add(newBodyPart("left_shoulder.png", 585, 540, 50, 50))
 	return &bpg
 
 }
@@ -192,9 +192,9 @@ type rightArmData struct {
 
 func createRightArm() BodyPartGroup {
 	bpg := rightArmData{&bodyPartsData{rightArm, make([]BodyPart, 0)}}
-	bpg.add(newBodyPart("right_hand.png", 655, 585, 20))
-	bpg.add(newBodyPart("right_arm.png", 655, 570, 20))
-	bpg.add(newBodyPart("right_shoulder.png", 640, 540, 20))
+	bpg.add(newBodyPart("right_hand.png", 655, 585, 50, 50))
+	bpg.add(newBodyPart("right_arm.png", 655, 570, 50, 50))
+	bpg.add(newBodyPart("right_shoulder.png", 640, 540, 50, 50))
 	return &bpg
 
 }
@@ -208,8 +208,8 @@ type torsoData struct {
 
 func createTorso() BodyPartGroup {
 	bpg := torsoData{&bodyPartsData{torso, make([]BodyPart, 0)}}
-	bpg.add(newBodyPart("body.png", 600, 525, 20))
-	bpg.add(newBodyPart("body_2.png", 600, 580, 20))
+	bpg.add(newBodyPart("body.png", 600, 525, 50, 50))
+	bpg.add(newBodyPart("body_2.png", 600, 580, 50, 50))
 	return &bpg
 
 }
@@ -247,22 +247,23 @@ func (head *headData) getCurrentHead() lib.ImageMetadata {
 		}
 	}
 	h := head.heads[head.currentHead]
-	h.SetPoint(head.getCurrentHead().GetPoint())
+	h.SetRectangle(head.getCurrentHead().GetRectangle())
 	return h
 }
 
-func newImageData(fileName string, x, y, scale int32) lib.ImageMetadata {
+func newImageData(fileName string, x, y, width, height int32) lib.ImageMetadata {
 	base := "samples/resources/zombiecide/karen/bodyparts/"
-	return lib.NewImageMetadata(base+fileName, x, y, scale)
+	return lib.NewImageMetadata(base+fileName, x, y, width, height)
 }
 
 // Rewire zombie bobble head later.
 func createHead() BodyPartGroup {
 	bpg := headData{head, 570, 430, 1, 1, make(map[int]lib.ImageMetadata)}
-	//bpg.add(newBodyPart("neck.png", 610, 510, 20))
+	//bpg.add(newBodyPart("neck.png", 610, 510, 50,50))
 	//Like Pascal numbering :)
+	//reivsit this for the sizes...
 	for i := 1; i < 7; i++ {
-		bpg.heads[i] = newImageData(fmt.Sprintf("head%d.png", i), 570, 430, 20)
+		bpg.heads[i] = newImageData(fmt.Sprintf("head%d.png", i), 570, 430, 50, 50)
 	}
 	return &bpg
 
