@@ -11,7 +11,7 @@ import (
 func NewEngine() bus.Engine {
 
 	e := engine{}
-	e.MediaCache = NewMediaCache()
+	e.MediaCacheData = NewMediaCache()
 	e.StandardMediaPeerController = bus.NewGameController()
 	e.VorpalBus = bus.GetVorpalBus()
 	return &e
@@ -19,9 +19,8 @@ func NewEngine() bus.Engine {
 
 type engine struct {
 	bus.VorpalBus
-	MediaCache
+	MediaCacheData
 	bus.StandardMediaPeerController
-	currentTexture rl.Texture2D
 }
 
 func (e *engine) Start() {
@@ -37,17 +36,19 @@ func (e *engine) Start() {
 		go e.sendMouseEvents()
 		go e.sendKeyEvents()
 		go raylibProcessControlEvent(e.GetControlEvents())
-		go raylibProcessAudioEvent(e.GetAudioEvent(), e.MediaCache)
+		go raylibProcessAudioEvent(e.GetAudioEvent(), &e.MediaCacheData)
 
 		//Process these on thread...
-		raylibProcessDrawEvent(e.GetDrawEvent(), e.MediaCache)
-		raylibProcessTextEvent(e.GetTextEvent(), e.MediaCache)
+		raylibProcessDrawEvent(e.GetDrawEvent(), &e.MediaCacheData)
+		raylibProcessTextEvent(e.GetTextEvent(), &e.MediaCacheData)
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
 
 		e.renderTexture()
-		rl.DrawTexture(e.currentTexture, 0, 0, rl.RayWhite) //TODO not sure about the white background...
+		if e.GetCurrentTexture() != nil {
+			rl.DrawTexture(*e.GetCurrentTexture(), 0, 0, rl.RayWhite)
+		} //TODO not sure about the white background...
 		rl.EndDrawing()
 
 	}
@@ -56,9 +57,12 @@ func (e *engine) Start() {
 func (e *engine) renderTexture() {
 	renderImg := e.GetCurrentRenderImage()
 	if renderImg != nil {
-		previousTexture := e.currentTexture
-		e.currentTexture = rl.LoadTextureFromImage(renderImg)
-		rl.UnloadTexture(previousTexture)
+		previousTexture := e.CurrentTexture
+		newTexture := rl.LoadTextureFromImage(renderImg)
+		e.SetCurrentTexture(&newTexture)
+		if previousTexture != nil {
+			rl.UnloadTexture(*previousTexture)
+		}
 	}
 }
 

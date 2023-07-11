@@ -21,13 +21,7 @@ type zombiecide struct {
 //Sample file for different possible use cases...
 
 var zombies = zombiecide{}
-var fontName = "samples/resources/fonts/Roboto-Regular.ttf"
-
-// var headerFontName = "samples/resources/fonts/Roboto-Black.ttf"
-const (
-	henry = "/samples/etc/henry.yaml"
-	karen = "/samples/etc/karen.yaml"
-)
+var fontName = "./samples/resources/fonts/Roboto-Regular.ttf"
 
 // TODO Refactor this start up to make it more idiomatic and bootstrap from the ymal
 func Init() {
@@ -50,7 +44,6 @@ func Init() {
 	zombies.bus = vbus
 
 	zombies.mouseEvent = nil
-	textEvent := bus.NewMultilineTextEvent(fontName, 18, 0, 0).AddText("Press 'g' for George or 'h' for Henry. \n Zombies follow the mouse pointer. \nLeft Mouse Button causes Henry to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n NOTE: George the parts zombie is still being worked on.").SetLocation(1200, 100)
 
 	//MoveByIncrement to zombicide yaml
 
@@ -75,7 +68,8 @@ func Init() {
 	//TODO currently we inject this into the navigator but may
 	//be better as wrapper or chain of responsiblity.
 	stateMachineZombie.Navigator.ActionStageController = &ac
-
+	textEvent := bus.NewMultilineTextEvent(fontName, 18, 0, 0).AddText("Henry follows the mouse point where legally possible.\nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.")
+	textEvent.SetLocation(100, 100)
 	//
 	for {
 		if zombies.mouseEvent != nil {
@@ -83,9 +77,9 @@ func Init() {
 			drawEvt.AddImageLayer(*scene.Background)
 			stateMachineZombie.Execute(drawEvt, zombies.mouseEvent, zombies.keyEvent)
 			drawEvt.AddImageLayer(*scene.Foreground)
-
-			vbus.SendDrawEvent(drawEvt)
 			vbus.SendTextEvent(textEvent)
+			vbus.SendDrawEvent(drawEvt)
+
 			zombies.keyEvent = nil
 			time.Sleep(20 * time.Millisecond)
 
