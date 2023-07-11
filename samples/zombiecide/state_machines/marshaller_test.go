@@ -50,7 +50,8 @@ func createBasicState(name, spec string, behaviors []string) *ZombieStateData {
 
 	data.Name = name
 	data.Spec = spec
-	data.Scale = 30
+	data.Width = 1920
+	data.Height = 1080
 	data.Started = false
 	data.BehaviorNames = behaviors
 	data.AudioState.ResetAudioCount()

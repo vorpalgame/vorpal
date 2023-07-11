@@ -10,11 +10,10 @@ import (
 	"os"
 )
 
-// Revisit the use of pointer for image.Image. There were isseus in marshaling so switched to value.
 type ActionStageController interface {
 	CheckBehaviorColorAt(x, y int32) color.Color
 	SetControlMap(image *image.Image, width, height int) ActionStageController
-	LoadControlMapFromFile(file string, width, height int) ActionStageController
+	Load(data *ImageLayerData) ActionStageController
 }
 
 type ActionStageControllerData struct {
@@ -49,8 +48,12 @@ func writeTestFile(file string, dest image.Image) {
 	}
 }
 
-func (a *ActionStageControllerData) LoadControlMapFromFile(file string, width, height int) ActionStageController {
-	f, err := os.Open(file)
+// TODO This shoudl probably be the ImageMetadata and not layer. Not sure if
+// a behavior map would have more than one layer but it is possible.
+// In that case we'll likely need different behavior map types.
+func (a *ActionStageControllerData) Load(data *ImageLayerData) ActionStageController {
+	layer := data.LayerMetadata[0]
+	f, err := os.Open(layer.ImageFileName)
 	if err != nil {
 		panic(err)
 	}
@@ -59,6 +62,6 @@ func (a *ActionStageControllerData) LoadControlMapFromFile(file string, width, h
 	if err != nil {
 		panic(err)
 	}
-	a.SetControlMap(&img, width, height)
+	a.SetControlMap(&img, int(layer.Width), int(layer.Height))
 	return a
 }

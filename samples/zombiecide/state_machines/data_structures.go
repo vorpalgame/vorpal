@@ -3,7 +3,7 @@ package state_machines
 import "github.com/vorpalgame/vorpal/lib"
 
 type ZombieData struct {
-	CurrentStateName string                      `yaml:"currentStateName"`
+	CurrentStateName string                      `yaml:"CurrentStateName"`
 	StateMap         map[string]*ZombieStateData `yaml:"StateMap"`
 	Navigator        *lib.NavigatorData          `yaml:"Navigator"`
 }

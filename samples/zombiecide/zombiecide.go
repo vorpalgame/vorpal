@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/spf13/viper"
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
 )
@@ -35,13 +34,14 @@ func Init() {
 	log.Println("New zombie game")
 
 	vbus := bus.GetVorpalBus()
-
-	vbus.SendControlEvent(bus.NewWindowSizeEvent(1920, 1080))
-	vbus.SendControlEvent(bus.NewWindowTitleEvent("Zombicicide!"))
+	//This loading/configuration needs to be consolidated into configurator
+	//as we eliminate Viper in the next step.
+	scene := lib.UnmarshalScene("./samples/etc/zombie_bootstrap.yaml")
+	vbus.SendControlEvent(bus.NewWindowSizeEvent(scene.WindowWidth, scene.WindowHeight))
+	vbus.SendControlEvent(bus.NewWindowTitleEvent(scene.WindowTitle))
 	//log.Default().Println(configKeys)
-	configKeys := lib.NewKeys(viper.GetStringSlice("RegisterKeys"))
+	configKeys := lib.NewKeys(scene.RegisterKeys)
 	evt := bus.NewKeysRegistrationEvent(configKeys)
-	//log.Default().Println(evt.GetKeys())
 	vbus.SendKeysRegistrationEvent(evt)
 
 	vbus.AddMouseListener(&zombies)
@@ -51,17 +51,11 @@ func Init() {
 
 	zombies.mouseEvent = nil
 	textEvent := bus.NewMultilineTextEvent(fontName, 18, 0, 0).AddText("Press 'g' for George or 'h' for Henry. \n Zombies follow the mouse pointer. \nLeft Mouse Button causes Henry to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n NOTE: George the parts zombie is still being worked on.").SetLocation(1200, 100)
-	vbus.SendTextEvent(textEvent)
-
-	subsumptionZombie := newSubsumptionZombie()
 
 	//MoveByIncrement to zombicide yaml
-	dir, _ := os.Getwd()
 
-	statesFile := dir + henry
-
-	log.Default().Println(dir)
-	f, e := os.ReadFile(statesFile)
+	//We're only using the first one right now...
+	f, e := os.ReadFile(scene.Actors[0])
 	if e != nil {
 		log.Default().Println(e)
 		os.Exit(1)
@@ -76,25 +70,24 @@ func Init() {
 	//TODO We need to revamp the configurator to eliminate Viper and to handle paths to
 	//resources.
 	//Need new behavior map for different environment
-	ac.LoadControlMapFromFile("samples/resources/zombiecide/behaviorland.png", 1920, 1080)
+	ac.Load(scene.BehaviorMap)
 
+	//TODO currently we inject this into the navigator but may
+	//be better as wrapper or chain of responsiblity.
 	stateMachineZombie.Navigator.ActionStageController = &ac
 
 	//
 	for {
 		if zombies.mouseEvent != nil {
 			drawEvt := bus.NewDrawLayersEvent()
-			createBackground(drawEvt)
-			if zombies.currentZombie == "h" {
-				stateMachineZombie.Execute(drawEvt, zombies.mouseEvent, zombies.keyEvent)
-				createForeground(drawEvt)
-			} else {
-				drawEvt.AddImageLayer(subsumptionZombie.CreateImageLayer(zombies.mouseEvent))
-			}
+			drawEvt.AddImageLayer(*scene.Background)
+			stateMachineZombie.Execute(drawEvt, zombies.mouseEvent, zombies.keyEvent)
+			drawEvt.AddImageLayer(*scene.Foreground)
+
 			vbus.SendDrawEvent(drawEvt)
+			vbus.SendTextEvent(textEvent)
 			zombies.keyEvent = nil
 			time.Sleep(20 * time.Millisecond)
-			//Execute to send image and sound
 
 		}
 
@@ -102,17 +95,6 @@ func Init() {
 
 }
 
-func createBackground(evt bus.DrawLayersEvent) {
-	layer := lib.NewImageLayer()
-	layer.AddLayerData(lib.NewImageMetadata("samples/resources/zombiecide/background.png", 0, 0, 1920, 1080))
-	evt.AddImageLayer(layer)
-
-}
-func createForeground(evt bus.DrawLayersEvent) {
-	layer := lib.NewImageLayer()
-	layer.AddLayerData(lib.NewImageMetadata("samples/resources/zombiecide/foreground.png", 0, 0, 1920, 1080))
-	evt.AddImageLayer(layer)
-}
 func (z *zombiecide) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 		//Using explicit letters due to misreported case from raylib...

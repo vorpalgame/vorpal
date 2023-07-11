@@ -45,18 +45,18 @@ func renderImageLayers(evt bus.DrawLayersEvent, cache MediaCache) {
 		}
 	}
 }
-func isReady(layer lib.ImageLayer, cache MediaCache) bool {
+func isReady(layer lib.ImageLayerData, cache MediaCache) bool {
 
-	for _, imgData := range layer.GetLayerData() {
-		if cache.GetImage(imgData.GetFileName()) == nil {
+	for _, imgData := range layer.LayerMetadata {
+		if cache.GetImage(imgData.ImageFileName) == nil {
 			return false
 		}
 	}
 	return true
 }
-func renderLayer(baseImg *rl.Image, layer lib.ImageLayer, cache MediaCache) *rl.Image {
-	for _, img := range layer.GetLayerData() {
-		originalImg := cache.GetImage(img.GetFileName())
+func renderLayer(baseImg *rl.Image, layer lib.ImageLayerData, cache MediaCache) *rl.Image {
+	for _, img := range layer.LayerMetadata {
+		originalImg := cache.GetImage(img.ImageFileName)
 
 		//If at any point an image is not loaded and ready, we bail out for this frame.
 		if originalImg != nil {
@@ -69,14 +69,12 @@ func renderLayer(baseImg *rl.Image, layer lib.ImageLayer, cache MediaCache) *rl.
 				//rl.ImageClearBackground(baseImg, rl.White)
 			} else {
 
-				if img.IsFlipHorizontal() {
+				if img.HorizontalFlip {
 					rl.ImageFlipHorizontal(clonedImage)
 				}
 				//Create generic
 
-				//TODO Reivisit this. We are transitioning from using scale to actual image size.
-				x, y, width, height := img.GetRectangle()
-				destRect := rl.NewRectangle(float32(x), float32(y), float32(width), float32(height))
+				destRect := rl.NewRectangle(float32(img.X), float32(img.Y), float32(img.Width), float32(img.Height))
 				rl.ImageDraw(baseImg, clonedImage, rl.NewRectangle(0, 0, float32(clonedImage.Width), float32(clonedImage.Height)), destRect, rl.RayWhite)
 				rl.UnloadImage(clonedImage)
 			}

@@ -1,4 +1,4 @@
-currentStateName: Walk
+CurrentStateName: Walk
 StateMap:
     Attack:
         Name: Attack

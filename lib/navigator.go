@@ -16,16 +16,6 @@ type Navigator interface {
 	ActionStageController
 }
 
-type NavigatorData struct {
-	X                     int32 `yaml:"CurrentX"`
-	Y                     int32 `yaml:"CurrentY"`
-	XMove                 int32 `yaml:"XMove"`
-	YMove                 int32 `yaml:"YMove"`
-	MaxXOffset            int32 `yaml:"MaxXOffset"`
-	MaxYOffset            int32 `yaml:"MaxYOffset"`
-	ActionStageController `yaml:"-"`
-}
-
 func (cl *NavigatorData) Add(x, y int32) {
 	cl.X += x
 	cl.Y += y

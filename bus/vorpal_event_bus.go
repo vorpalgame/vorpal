@@ -21,8 +21,8 @@ type VorpalBus interface {
 	AddAudioEventListener(eventListener AudioEventListener)
 	AddTextEventListener(eventListener TextEventListener)
 	AddImageCacheEventListener(eventListener ImageCacheEventListener)
-	AddKeysRegistrationEventListener(eventLiustener KeysRegistrationEventListener)
-	AddControlEventListener(eventLiustener ControlEventListener)
+	AddKeysRegistrationEventListener(eventListener KeysRegistrationEventListener)
+	AddControlEventListener(eventListener ControlEventListener)
 
 	SendMouseEvent(event MouseEvent)
 	SendKeysRegistrationEvent(event KeysRegistrationEvent)
@@ -57,6 +57,7 @@ func (eb *vorpalEventBus) AddControllerListener(eventListener ControllerListener
 // and consider the earlier  ones to be frame misses.
 // The controller determines correct behavior
 // Practical limit of 10 though as more indicates a lot of processing misses.
+
 func (bus *vorpalEventBus) AddControlEventListener(eventListener ControlEventListener) {
 	listenerChannel := make(chan ControlEvent, 10)
 	bus.controlEventListenerChannel = append(bus.controlEventListenerChannel, listenerChannel)

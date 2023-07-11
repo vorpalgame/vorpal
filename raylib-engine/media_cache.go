@@ -77,15 +77,13 @@ func (c *mediaCache) GetImage(img string) *rl.Image {
 
 func (c *mediaCache) CacheImages(evt bus.DrawLayersEvent) MediaCache {
 	for _, evt := range evt.GetImageLayers() {
-		for _, imgData := range evt.GetLayerData() {
-			img := c.imageCache[imgData.GetFileName()]
+		for _, imgData := range evt.LayerMetadata {
+			img := c.imageCache[imgData.ImageFileName]
 			if img == nil {
-				newImg := rl.LoadImage(imgData.GetFileName())
-				//TODO Determine if resize shoudl be here or not...
-				_, _, width, height := imgData.GetRectangle()
+				newImg := rl.LoadImage(imgData.ImageFileName)
 
-				rl.ImageResize(newImg, width, height)
-				c.imageCache[imgData.GetFileName()] = newImg
+				rl.ImageResize(newImg, imgData.Width, imgData.Height)
+				c.imageCache[imgData.ImageFileName] = newImg
 			}
 		}
 
