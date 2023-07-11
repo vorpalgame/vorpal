@@ -15,8 +15,6 @@ type MediaCache interface {
 	GetFont(fontName string) *rl.Font
 	GetAudio(fileName string) *rl.Sound
 	GetCurrentRenderImage() *rl.Image
-	GetCurrentTexture() *rl.Texture2D
-	SetCurrentTexture(*rl.Texture2D)
 }
 
 type MediaCacheData struct {
@@ -24,15 +22,6 @@ type MediaCacheData struct {
 	fontCache          map[string]*rl.Font
 	audioCache         map[string]*rl.Sound
 	CurrentRenderImage *rl.Image
-	CurrentTexture     *rl.Texture2D
-}
-
-func (c *MediaCacheData) GetCurrentTexture() *rl.Texture2D {
-	return c.CurrentTexture
-}
-
-func (c *MediaCacheData) SetCurrentTexture(d *rl.Texture2D) {
-	c.CurrentTexture = d
 }
 
 func NewMediaCache() MediaCacheData {

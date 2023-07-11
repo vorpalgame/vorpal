@@ -7,41 +7,54 @@ import (
 )
 
 type RenderTransaction struct {
-	RenderImage   *rl.Image
-	RenderTexture *rl.Texture2D
 	DrawEvent     bus.DrawEvent
 	TextEvent     bus.TextEvent
+	MediaCache    MediaCache
+	RenderImage   *rl.Image //Mot used currently but will be in future instead of cache.
+	RenderTexture *rl.Texture2D
+}
+
+func NewRenderTransaction(drawEvent bus.DrawEvent, textEvent bus.TextEvent, mediaCache MediaCache) RenderTransaction {
+	return RenderTransaction{drawEvent, textEvent, mediaCache, nil, nil}
 }
 
 type renderingPipelineFunction = func(tx RenderTransaction)
+
+func NewRendererPipeline() RendererPipeline {
+	pipeline := RenderPipelineData{}
+	pipeline.Add(drawRenderer).Add(textRenderer).Add(textureRenderer)
+	return &pipeline
+}
 
 type RenderPipelineData struct {
 	pipeline []renderingPipelineFunction
 }
 
-type RenderPipeline interface {
-	Add(function renderingPipelineFunction) RenderPipeline
+type RendererPipeline interface {
+	Add(function renderingPipelineFunction) RendererPipeline
 	Execute(transaction RenderTransaction)
 }
 
-func (r RenderPipelineData) Add(function renderingPipelineFunction) RenderPipeline {
+func (r *RenderPipelineData) Add(function renderingPipelineFunction) RendererPipeline {
 	r.pipeline = append(r.pipeline, function)
 	return r
 }
 
-func (r RenderPipelineData) Execute(transaction RenderTransaction) {
+func (r *RenderPipelineData) Execute(transaction RenderTransaction) {
+	//log.Println(r.pipeline)
 	for _, function := range r.pipeline {
 		function(transaction)
 	}
 }
 
 var drawRenderer = func(tx RenderTransaction) {
-	log.Println("Draw Renderer")
-	log.Println(tx.RenderImage)
+	//log.Println("Drawing renderer")
+	raylibProcessDrawEvent(tx.DrawEvent, tx.MediaCache)
 }
 
 var textRenderer = func(tx RenderTransaction) {
-	log.Println("Text Renderer")
+	//log.Println("Text Renderer")
+	raylibProcessTextEvent(tx.TextEvent, tx.MediaCache)
 }
 
 var textureRenderer = func(tx RenderTransaction) {

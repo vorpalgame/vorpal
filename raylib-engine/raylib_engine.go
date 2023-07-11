@@ -11,16 +11,19 @@ import (
 func NewEngine() bus.Engine {
 
 	e := engine{}
-	e.MediaCacheData = NewMediaCache()
+
 	e.StandardMediaPeerController = bus.NewGameController()
 	e.VorpalBus = bus.GetVorpalBus()
 	return &e
 }
 
+var cache = NewMediaCache()
+
 type engine struct {
 	bus.VorpalBus
-	MediaCacheData
 	bus.StandardMediaPeerController
+	CurrentRenderImage *rl.Image
+	CurrentTexture     *rl.Texture2D
 }
 
 func (e *engine) Start() {
@@ -30,24 +33,23 @@ func (e *engine) Start() {
 	rl.SetTargetFPS(60)
 	rl.InitAudioDevice()
 	defer rl.CloseAudioDevice()
+	pipeline := NewRendererPipeline()
 
 	for !rl.WindowShouldClose() {
 		//async safe.
 		go e.sendMouseEvents()
 		go e.sendKeyEvents()
 		go raylibProcessControlEvent(e.GetControlEvents())
-		go raylibProcessAudioEvent(e.GetAudioEvent(), &e.MediaCacheData)
-
-		//Process these on thread...
-		raylibProcessDrawEvent(e.GetDrawEvent(), &e.MediaCacheData)
-		raylibProcessTextEvent(e.GetTextEvent(), &e.MediaCacheData)
-
+		go raylibProcessAudioEvent(e.GetAudioEvent(), &cache)
+		//TODO Move to off thread processing and decouple from rl. thread.
+		pipeline.Execute(NewRenderTransaction(e.GetDrawEvent(), e.GetTextEvent(), &cache))
+		e.CurrentRenderImage = cache.GetCurrentRenderImage()
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
 
 		e.renderTexture()
-		if e.GetCurrentTexture() != nil {
-			rl.DrawTexture(*e.GetCurrentTexture(), 0, 0, rl.RayWhite)
+		if e.CurrentTexture != nil {
+			rl.DrawTexture(*e.CurrentTexture, 0, 0, rl.RayWhite)
 		} //TODO not sure about the white background...
 		rl.EndDrawing()
 
@@ -55,14 +57,15 @@ func (e *engine) Start() {
 }
 
 func (e *engine) renderTexture() {
-	renderImg := e.GetCurrentRenderImage()
+	renderImg := e.CurrentRenderImage
 	if renderImg != nil {
 		previousTexture := e.CurrentTexture
 		newTexture := rl.LoadTextureFromImage(renderImg)
-		e.SetCurrentTexture(&newTexture)
+		e.CurrentTexture = &newTexture
 		if previousTexture != nil {
 			rl.UnloadTexture(*previousTexture)
 		}
+
 	}
 }
 
