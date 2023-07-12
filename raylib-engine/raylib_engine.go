@@ -6,8 +6,6 @@ import (
 	"github.com/vorpalgame/vorpal/lib"
 )
 
-// TODO Work out engine initizliation sequence with
-// window size, title, location, etc. to eliminate hard coded values.
 func NewEngine() bus.Engine {
 
 	e := engine{}
@@ -33,6 +31,8 @@ func (e *engine) Start() {
 	rl.SetTargetFPS(60)
 	rl.InitAudioDevice()
 	defer rl.CloseAudioDevice()
+	//When the interface is set for render transaction we can stop using the pointer.
+
 	pipeline := NewRendererPipeline()
 
 	for !rl.WindowShouldClose() {
@@ -41,23 +41,32 @@ func (e *engine) Start() {
 		go e.sendKeyEvents()
 		go raylibProcessControlEvent(e.GetControlEvents())
 		go raylibProcessAudioEvent(e.GetAudioEvent(), cache)
-		//TODO Move to off thread processing and decouple from rl. thread.
-		//TODO Create interface for Transaction and aovid pointer business.
+
 		tx := NewRenderTransaction(e.GetDrawEvent(), e.GetTextEvent(), cache, e.CurrentTexture)
 		pipeline.Execute(&tx)
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
-		//The hand off between rendering pipeline and the raylib thread.
 		if tx.RenderTexture != nil {
 			e.CurrentTexture = tx.RenderTexture
 		}
-
 		if e.CurrentTexture != nil {
 			rl.DrawTexture(*e.CurrentTexture, 0, 0, rl.RayWhite)
 		}
 		rl.EndDrawing()
 
+	}
+}
+
+func asyncRendering(toRenderChannel <-chan *renderData, fromRenderChannel chan<- *renderData) {
+	pipeline := NewRendererPipeline()
+	for true {
+		select {
+		case transaction := <-toRenderChannel:
+			pipeline.Execute(transaction)
+			fromRenderChannel <- transaction
+		default:
+		}
 	}
 }
 
