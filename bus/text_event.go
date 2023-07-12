@@ -9,12 +9,12 @@ type TextEventListener interface {
 //TODO Builder pattern isn't quite right for this yet. Refactor to correct.
 //TODO Set/Get Location and Reinitialize should be implemented
 //in a generic way to return the actual event. For example,
-//MultilineTextEvent is a TextEvent but it should return that
-//interface and not TextEvent only. Otherwise the builder pattern
+//MultilineTextEvent is a textEvent but it should return that
+//interface and not textEvent only. Otherwise the builder pattern
 //is broken.
 
 // ////////////////////////////////////////////////
-// // TextEvent
+// // textEvent
 // ////////////////////////////////////////////////
 
 type TextEvent interface {

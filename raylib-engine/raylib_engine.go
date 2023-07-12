@@ -40,31 +40,23 @@ func (e *engine) Start() {
 		go e.sendMouseEvents()
 		go e.sendKeyEvents()
 		go raylibProcessControlEvent(e.GetControlEvents())
-		go raylibProcessAudioEvent(e.GetAudioEvent(), &cache)
+		go raylibProcessAudioEvent(e.GetAudioEvent(), cache)
 		//TODO Move to off thread processing and decouple from rl. thread.
-		pipeline.Execute(NewRenderTransaction(e.GetDrawEvent(), e.GetTextEvent(), &cache))
-		e.CurrentRenderImage = cache.GetCurrentRenderImage()
+		//TODO Create interface for Transaction and aovid pointer business.
+		tx := NewRenderTransaction(e.GetDrawEvent(), e.GetTextEvent(), cache, e.CurrentTexture)
+		pipeline.Execute(&tx)
+
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
+		//The hand off between rendering pipeline and the raylib thread.
+		if tx.RenderTexture != nil {
+			e.CurrentTexture = tx.RenderTexture
+		}
 
-		e.renderTexture()
 		if e.CurrentTexture != nil {
 			rl.DrawTexture(*e.CurrentTexture, 0, 0, rl.RayWhite)
-		} //TODO not sure about the white background...
-		rl.EndDrawing()
-
-	}
-}
-
-func (e *engine) renderTexture() {
-	renderImg := e.CurrentRenderImage
-	if renderImg != nil {
-		previousTexture := e.CurrentTexture
-		newTexture := rl.LoadTextureFromImage(renderImg)
-		e.CurrentTexture = &newTexture
-		if previousTexture != nil {
-			rl.UnloadTexture(*previousTexture)
 		}
+		rl.EndDrawing()
 
 	}
 }
