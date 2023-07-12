@@ -1,9 +1,10 @@
-currentStateName: Walk
+CurrentStateName: Walk
 StateMap:
     Attack:
         Name: Attack
         Spec: samples/resources/zombiecide/henry/animation/%s%d.png
-        Scale: 30
+        Width: 150
+        Height: 171
         Started: false
         FrameTracker:
             CurrentFrame: 1
@@ -21,7 +22,8 @@ StateMap:
     Dead:
         Name: Dead
         Spec: samples/resources/zombiecide/henry/animation/%s%d.png
-        Scale: 30
+        Width:  200
+        Height: 200
         Started: false
         FrameTracker:
             CurrentFrame: 1
@@ -39,7 +41,8 @@ StateMap:
     Idle:
         Name: Idle
         Spec: samples/resources/zombiecide/henry/animation/%s%d.png
-        Scale: 30
+        Width:  150
+        Height: 171
         Started: false
         FrameTracker:
             CurrentFrame: 1
@@ -59,7 +62,8 @@ StateMap:
     Walk:
         Name: Walk
         Spec: samples/resources/zombiecide/henry/animation/%s%d.png
-        Scale: 30
+        Width:  150
+        Height: 171
         Started: false
         FrameTracker:
             CurrentFrame: 1
@@ -78,7 +82,7 @@ StateMap:
             - walkFunc
 Navigator:
     CurrentX: 600
-    CurrentY: 600
+    CurrentY: 900
     XMove: 4
     YMove: 2
     MaxXOffset: 5

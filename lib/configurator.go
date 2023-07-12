@@ -9,6 +9,7 @@ import (
 
 var intid bool = false
 
+// TODO Refactor and remove Viper...
 // Could add Reset or Reinitialize TBD...
 func InitConfigurator() {
 	if !intid {

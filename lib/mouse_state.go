@@ -1,7 +1,6 @@
 package lib
 
-//////
-
+// TODO Either move this back to the mouse event or move the x,y coordinates in here.
 type MouseButtonState interface {
 	Name() string
 	IsDown() bool

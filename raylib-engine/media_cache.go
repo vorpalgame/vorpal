@@ -7,42 +7,33 @@ import (
 )
 
 type MediaCache interface {
-	CacheImages(event bus.DrawLayersEvent) MediaCache
-	CacheFonts(event lib.Font) MediaCache
-	SetCurrentRenderImage(img *rl.Image) MediaCache
-	DoCacheControl(event bus.ImageCacheEvent) MediaCache
+	CacheImages(event bus.DrawLayersEvent)
+	CacheFonts(event lib.Font)
+	DoCacheControl(event bus.ImageCacheEvent)
 	GetImage(img string) *rl.Image
 	GetFont(fontName string) *rl.Font
 	GetAudio(fileName string) *rl.Sound
-	GetCurrentRenderImage() *rl.Image
 }
 
-type mediaCache struct {
-	imageCache         map[string]*rl.Image
-	fontCache          map[string]*rl.Font
-	audioCache         map[string]*rl.Sound
-	currentRenderImage *rl.Image
+type MediaCacheData struct {
+	imageCache map[string]*rl.Image
+	fontCache  map[string]*rl.Font
+	audioCache map[string]*rl.Sound
 }
 
 func NewMediaCache() MediaCache {
-	cache := mediaCache{}
+	cache := MediaCacheData{}
 	cache.imageCache = make(map[string]*rl.Image)
 	cache.fontCache = make(map[string]*rl.Font)
 	cache.audioCache = make(map[string]*rl.Sound)
 	return &cache
 }
-func (c *mediaCache) GetCurrentRenderImage() *rl.Image {
-	return c.currentRenderImage
-}
-func (c *mediaCache) SetCurrentRenderImage(img *rl.Image) MediaCache {
-	c.currentRenderImage = img
-	return c
-}
-func (c *mediaCache) GetFont(fontName string) *rl.Font {
+
+func (c *MediaCacheData) GetFont(fontName string) *rl.Font {
 	return c.fontCache[fontName]
 
 }
-func (c *mediaCache) GetAudio(fileName string) *rl.Sound {
+func (c *MediaCacheData) GetAudio(fileName string) *rl.Sound {
 	if c.audioCache[fileName] == nil {
 		audio := rl.LoadSound(fileName)
 		c.audioCache[fileName] = &audio
@@ -51,23 +42,24 @@ func (c *mediaCache) GetAudio(fileName string) *rl.Sound {
 
 }
 
-func (c *mediaCache) CacheFonts(evt lib.Font) MediaCache {
+func (c *MediaCacheData) CacheFonts(evt lib.Font) {
+
 	c.doFontCache(evt.GetFont())
 	//TODO Refactor as necessary.
 	// for _, line := range evt.GetText() {
 	// 	c.doFontCache(line.GetFont())
 	// }
-	return c
+
 }
-func (c *mediaCache) doFontCache(fontName string) MediaCache {
+func (c *MediaCacheData) doFontCache(fontName string) {
 	if c.fontCache[fontName] == nil {
+
 		font := rl.LoadFont(fontName)
 		c.fontCache[fontName] = &font
 	}
-	return c
 }
 
-func (c *mediaCache) GetImage(img string) *rl.Image {
+func (c *MediaCacheData) GetImage(img string) *rl.Image {
 	return c.imageCache[img]
 }
 
@@ -75,26 +67,22 @@ func (c *mediaCache) GetImage(img string) *rl.Image {
 // name+scale. This may also be where the image cache  event comes in.
 // In any case, it appears that scaling per image draw is a bit to expensive.
 
-func (c *mediaCache) CacheImages(evt bus.DrawLayersEvent) MediaCache {
+func (c *MediaCacheData) CacheImages(evt bus.DrawLayersEvent) {
 	for _, evt := range evt.GetImageLayers() {
-		for _, imgData := range evt.GetLayerData() {
-			img := c.imageCache[imgData.GetFileName()]
+		for _, imgData := range evt.LayerMetadata {
+			img := c.imageCache[imgData.ImageFileName]
 			if img == nil {
-				newImg := rl.LoadImage(imgData.GetFileName())
+				newImg := rl.LoadImage(imgData.ImageFileName)
 
-				width := int32(float32(newImg.Width) * imgData.GetScalePercent())
-				height := int32(float32(newImg.Height) * imgData.GetScalePercent())
-
-				rl.ImageResize(newImg, width, height)
-				c.imageCache[imgData.GetFileName()] = newImg
+				rl.ImageResize(newImg, imgData.Width, imgData.Height)
+				c.imageCache[imgData.ImageFileName] = newImg
 			}
 		}
 
 	}
-	return c
 }
 
-func (c *mediaCache) DoCacheControl(evt bus.ImageCacheEvent) MediaCache {
+func (c *MediaCacheData) DoCacheControl(evt bus.ImageCacheEvent) {
 	if evt != nil {
 		for _, op := range evt.GetImageCacheOperations() {
 			if op.GetOperation() == "add" {
@@ -104,5 +92,4 @@ func (c *mediaCache) DoCacheControl(evt bus.ImageCacheEvent) MediaCache {
 			}
 		}
 	}
-	return c
 }

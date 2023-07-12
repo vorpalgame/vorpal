@@ -6,22 +6,22 @@ import (
 	"github.com/vorpalgame/vorpal/lib"
 )
 
-// TODO Work out engine initizliation sequence with
-// window size, title, location, etc. to eliminate hard coded values.
 func NewEngine() bus.Engine {
 
 	e := engine{}
-	e.MediaCache = NewMediaCache()
+
 	e.StandardMediaPeerController = bus.NewGameController()
 	e.VorpalBus = bus.GetVorpalBus()
 	return &e
 }
 
+var cache = NewMediaCache()
+
 type engine struct {
 	bus.VorpalBus
-	MediaCache
 	bus.StandardMediaPeerController
-	currentTexture rl.Texture2D
+	CurrentRenderImage *rl.Image
+	CurrentTexture     *rl.Texture2D
 }
 
 func (e *engine) Start() {
@@ -31,34 +31,30 @@ func (e *engine) Start() {
 	rl.SetTargetFPS(60)
 	rl.InitAudioDevice()
 	defer rl.CloseAudioDevice()
+	//When the interface is set for render transaction we can stop using the pointer.
+
+	pipeline := NewRendererPipeline()
 
 	for !rl.WindowShouldClose() {
 		//async safe.
 		go e.sendMouseEvents()
 		go e.sendKeyEvents()
 		go raylibProcessControlEvent(e.GetControlEvents())
-		go raylibProcessAudioEvent(e.GetAudioEvent(), e.MediaCache)
-
-		//Process these on thread...
-		raylibProcessDrawEvent(e.GetDrawEvent(), e.MediaCache)
-		raylibProcessTextEvent(e.GetTextEvent(), e.MediaCache)
+		go raylibProcessAudioEvent(e.GetAudioEvent(), cache)
+		//Baton pass between threads...
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
-
-		e.renderTexture()
-		rl.DrawTexture(e.currentTexture, 0, 0, rl.RayWhite) //TODO not sure about the white background...
+		tx := NewRenderTransaction(e.GetDrawEvent(), e.GetTextEvent(), cache, e.CurrentTexture)
+		pipeline.Execute(&tx)
+		if tx.RenderTexture != nil {
+			e.CurrentTexture = tx.RenderTexture
+		}
+		if e.CurrentTexture != nil {
+			rl.DrawTexture(*e.CurrentTexture, 0, 0, rl.RayWhite)
+		}
 		rl.EndDrawing()
 
-	}
-}
-
-func (e *engine) renderTexture() {
-	renderImg := e.GetCurrentRenderImage()
-	if renderImg != nil {
-		previousTexture := e.currentTexture
-		e.currentTexture = rl.LoadTextureFromImage(renderImg)
-		rl.UnloadTexture(previousTexture)
 	}
 }
 

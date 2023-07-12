@@ -8,6 +8,8 @@ import (
 	"github.com/vorpalgame/vorpal/lib"
 )
 
+// TODO Revisit all the sizeing as we've switched from scaled to absolute.
+// Scaling has to take place on game side.
 type TarotGame interface {
 }
 
@@ -47,13 +49,19 @@ func NewGame() TarotGame {
 
 }
 
+// TODO We are currently constructing and passing with structs due to issue disecvoered
+// with the marshaling. The interfaces and constructors shoudl be wired back in now that those
+// are straightened out.
 func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 
 		if evt.GetKey().EqualsIgnoreCase("S") {
 			//t.ShuffleAudio).Stop()
 			t.bus.SendAudioEvent(bus.NewStopAudioEvent(&t.ShuffleAudio))
-			t.drawEvent.AddImageLayer(lib.NewImageLayer().AddLayerData(lib.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
+			layer := lib.ImageLayerData{}
+			metatdata := lib.ImageMetadata{t.BackgroundImage, 0, 0, 1920, 1080, false}
+			layer.LayerMetadata = append(layer.LayerMetadata, &metatdata)
+			t.drawEvent.AddImageLayer(layer)
 			t.TarotDeck.Shuffle()
 			t.shuffled = true
 			t.bus.SendAudioEvent(bus.NewPlayAudioEvent(&t.ShuffleAudio))
@@ -77,8 +85,10 @@ func (t *Tarot) doStartupScreen() {
 	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent(lib.NewKeys([]string{"s", "n", "S", "N"})))
 	t.drawEvent = bus.NewDrawLayersEvent()
 
-	t.drawEvent.AddImageLayer(lib.NewImageLayer().AddLayerData(lib.NewImageMetadata(t.BackgroundImage, 0, 0, 100)))
-
+	layer := lib.ImageLayerData{}
+	metatdata := lib.ImageMetadata{t.BackgroundImage, 0, 0, 1920, 1080, false}
+	layer.LayerMetadata = append(layer.LayerMetadata, &metatdata)
+	t.drawEvent.AddImageLayer(layer)
 	t.bus.SendDrawEvent(t.drawEvent)
 	//Get intro text from Yaml file.
 	t.textEvent = bus.NewMultilineTextEvent(t.TextFont, 18, 0, 0).AddText("Press S to shuffle and N to deal next card.")
@@ -137,9 +147,11 @@ func (t *Tarot) doSendCard() {
 	}
 }
 
-func createImageLayer(displayCard string, mainX, mainY int32) lib.ImageLayer {
-	imgData := lib.NewImageMetadata(displayCard, mainX, mainY, 10)
-	return lib.NewImageLayer().AddLayerData(imgData)
+func createImageLayer(displayCard string, mainX, mainY int32) lib.ImageLayerData {
+	imgData := lib.ImageMetadata{displayCard, mainX, mainY, 155, 255, false}
+	layer := lib.ImageLayerData{}
+	layer.LayerMetadata = append(layer.LayerMetadata, &imgData)
+	return layer
 }
 
 // TODO Put formatting and font in Yaml

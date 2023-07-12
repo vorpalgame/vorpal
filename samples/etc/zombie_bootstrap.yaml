@@ -1,6 +1,38 @@
-Title: Zombiecide
-RegisterKeys: ["e", "E", "R", "r", "g", "G", "h", "H"]
-
-configs:
-  henry: henry.yaml
-  karen: karen.yaml
+WindowTitle: Zombiecide
+WindowWidth: 1920
+WindowHeight: 1080
+RegisterKeys:
+  - e
+  - E
+  - R
+  - r
+  - g
+  - G
+  - h
+  - H
+Background:
+  LayerMetadata:
+    - ImageFileName: ./samples/resources/zombiecide/background.png
+      X: 0
+      "Y": 0
+      Width: 1920
+      Height: 1080
+      HorizontalFlip: false
+BehaviorMap:
+  LayerMetadata:
+    - ImageFileName: ./samples/resources/zombiecide/behaviorland.png
+      X: 0
+      "Y": 0
+      Width: 1920
+      Height: 1080
+      HorizontalFlip: false
+Foreground:
+  LayerMetadata:
+    - ImageFileName: ./samples/resources/zombiecide/foreground.png
+      X: 0
+      "Y": 0
+      Width: 1920
+      Height: 1080
+      HorizontalFlip: false
+Actors:
+  - ./samples/etc/henry.yaml

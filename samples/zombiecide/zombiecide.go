@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/spf13/viper"
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
 )
@@ -15,7 +14,6 @@ type zombiecide struct {
 	bus bus.VorpalBus
 	//textEvent  bus.TextEvent
 	mouseEvent    bus.MouseEvent
-	background    lib.ImageLayer
 	keyEvent      bus.KeyEvent
 	currentZombie string
 }
@@ -23,26 +21,21 @@ type zombiecide struct {
 //Sample file for different possible use cases...
 
 var zombies = zombiecide{}
-var fontName = "samples/resources/fonts/Roboto-Regular.ttf"
-
-// var headerFontName = "samples/resources/fonts/Roboto-Black.ttf"
-const (
-	henry = "/samples/etc/henry.yaml"
-	karen = "/samples/etc/karen.yaml"
-)
+var fontName = "./samples/resources/fonts/Roboto-Regular.ttf"
 
 // TODO Refactor this start up to make it more idiomatic and bootstrap from the ymal
 func Init() {
 	log.Println("New zombie game")
 
 	vbus := bus.GetVorpalBus()
-
-	vbus.SendControlEvent(bus.NewWindowSizeEvent(1920, 1080))
-	vbus.SendControlEvent(bus.NewWindowTitleEvent("Zombicicide!"))
+	//This loading/configuration needs to be consolidated into configurator
+	//as we eliminate Viper in the next step.
+	scene := lib.UnmarshalScene("./samples/etc/zombie_bootstrap.yaml")
+	vbus.SendControlEvent(bus.NewWindowSizeEvent(scene.WindowWidth, scene.WindowHeight))
+	vbus.SendControlEvent(bus.NewWindowTitleEvent(scene.WindowTitle))
 	//log.Default().Println(configKeys)
-	configKeys := lib.NewKeys(viper.GetStringSlice("RegisterKeys"))
+	configKeys := lib.NewKeys(scene.RegisterKeys)
 	evt := bus.NewKeysRegistrationEvent(configKeys)
-	//log.Default().Println(evt.GetKeys())
 	vbus.SendKeysRegistrationEvent(evt)
 
 	vbus.AddMouseListener(&zombies)
@@ -50,21 +43,12 @@ func Init() {
 	zombies.currentZombie = "h"
 	zombies.bus = vbus
 
-	//TODO The data elements here should come from the yaml.
-	zombies.background = lib.NewImageLayer().AddLayerData(lib.NewImageMetadata("samples/resources/zombiecide/background.png", 0, 0, 33))
 	zombies.mouseEvent = nil
-	textEvent := bus.NewMultilineTextEvent(fontName, 18, 0, 0).AddText("Press 'g' for George or 'h' for Henry. \n Zombies follow the mouse pointer. \nLeft Mouse Button causes Henry to Attack. \nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.\n NOTE: George the parts zombie is still being worked on.").SetLocation(1200, 100)
-	vbus.SendTextEvent(textEvent)
-
-	subsumptionZombie := newSubsumptionZombie()
 
 	//MoveByIncrement to zombicide yaml
-	dir, _ := os.Getwd()
 
-	statesFile := dir + henry
-
-	log.Default().Println(dir)
-	f, e := os.ReadFile(statesFile)
+	//We're only using the first one right now...
+	f, e := os.ReadFile(scene.Actors[0])
 	if e != nil {
 		log.Default().Println(e)
 		os.Exit(1)
@@ -78,24 +62,26 @@ func Init() {
 
 	//TODO We need to revamp the configurator to eliminate Viper and to handle paths to
 	//resources.
-	ac.LoadControlMapFromFile("samples/resources/zombiecide/behaviorland.png", 1920, 1080)
+	//Need new behavior map for different environment
+	ac.Load(scene.BehaviorMap)
 
+	//TODO currently we inject this into the navigator but may
+	//be better as wrapper or chain of responsiblity.
 	stateMachineZombie.Navigator.ActionStageController = &ac
-
+	textEvent := bus.NewMultilineTextEvent(fontName, 18, 0, 0).AddText("Henry follows the mouse point where legally possible.\nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.")
+	textEvent.SetLocation(100, 100)
 	//
 	for {
 		if zombies.mouseEvent != nil {
 			drawEvt := bus.NewDrawLayersEvent()
-			drawEvt.AddImageLayer(zombies.background)
-			if zombies.currentZombie == "h" {
-				stateMachineZombie.Execute(drawEvt, zombies.mouseEvent, zombies.keyEvent)
-			} else {
-				drawEvt.AddImageLayer(subsumptionZombie.CreateImageLayer(zombies.mouseEvent)) //This shoulc change to look more like state zombie.
-			}
+			drawEvt.AddImageLayer(*scene.Background)
+			stateMachineZombie.Execute(drawEvt, zombies.mouseEvent, zombies.keyEvent)
+			drawEvt.AddImageLayer(*scene.Foreground)
+			vbus.SendTextEvent(textEvent)
 			vbus.SendDrawEvent(drawEvt)
+
 			zombies.keyEvent = nil
 			time.Sleep(20 * time.Millisecond)
-			//Execute to send image and sound
 
 		}
 

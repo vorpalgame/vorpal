@@ -5,7 +5,7 @@ package lib
 /////////////////////////////////////////////////////
 
 func NewFont(font string, size int32) Font {
-	return &fontData{font, size}
+	return &FontData{font, size}
 }
 
 type Font interface {
@@ -15,27 +15,22 @@ type Font interface {
 	SetFontSize(int32) Font
 }
 
-type fontData struct {
-	font     string
-	fontSize int32
-}
-
-func (f *fontData) SetFont(font string) Font {
-	f.font = font
+func (f *FontData) SetFont(font string) Font {
+	f.Font = font
 	return f
 }
 
-func (f *fontData) SetFontSize(size int32) Font {
-	f.fontSize = size
+func (f *FontData) SetFontSize(size int32) Font {
+	f.FontSize = size
 	return f
 }
 
-func (f *fontData) GetFont() string {
-	return f.font
+func (f *FontData) GetFont() string {
+	return f.Font
 }
 
-func (f *fontData) GetFontSize() int32 {
-	return f.fontSize
+func (f *FontData) GetFontSize() int32 {
+	return f.FontSize
 }
 
 /////////////////////////////////////////////////////
@@ -50,14 +45,9 @@ type TextLine interface {
 // //// TextLine
 
 func NewTextLine(text string, font Font) TextLine {
-	return &textLine{text, font}
+	return &TextLineData{text, font}
 }
 
-type textLine struct {
-	text string
-	Font
-}
-
-func (p *textLine) GetText() string {
-	return p.text
+func (p *TextLineData) GetText() string {
+	return p.Test
 }
