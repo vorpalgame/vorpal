@@ -53,6 +53,7 @@ func (c *MediaCacheData) CacheFonts(evt lib.Font) {
 }
 func (c *MediaCacheData) doFontCache(fontName string) {
 	if c.fontCache[fontName] == nil {
+
 		font := rl.LoadFont(fontName)
 		c.fontCache[fontName] = &font
 	}

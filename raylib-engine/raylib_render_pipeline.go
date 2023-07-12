@@ -71,14 +71,15 @@ var rayLibTextureProcessor = func(tx *renderData) {
 	if renderImg != nil {
 		newTexture := rl.LoadTextureFromImage(renderImg)
 		tx.RenderTexture = &newTexture
-
+		//Texture is loaded so unload images and previous texture.
+		rl.UnloadImage(renderImg)
+		tx.RenderImage = nil
 		if tx.PreviousTexture != nil {
 			rl.UnloadTexture(*tx.PreviousTexture)
 		}
 
 	}
-	//log.Default().Println("tx.RenderTexture")
-	//log.Default().Println(tx.RenderTexture)
+
 }
 
 // /////////////////////////////////////////////////////////////////

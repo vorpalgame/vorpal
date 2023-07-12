@@ -22,8 +22,8 @@ StateMap:
     Dead:
         Name: Dead
         Spec: samples/resources/zombiecide/henry/animation/%s%d.png
-        Width:  150
-        Height: 171
+        Width:  200
+        Height: 200
         Started: false
         FrameTracker:
             CurrentFrame: 1

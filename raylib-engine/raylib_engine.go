@@ -41,12 +41,12 @@ func (e *engine) Start() {
 		go e.sendKeyEvents()
 		go raylibProcessControlEvent(e.GetControlEvents())
 		go raylibProcessAudioEvent(e.GetAudioEvent(), cache)
-
-		tx := NewRenderTransaction(e.GetDrawEvent(), e.GetTextEvent(), cache, e.CurrentTexture)
-		pipeline.Execute(&tx)
+		//Baton pass between threads...
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
+		tx := NewRenderTransaction(e.GetDrawEvent(), e.GetTextEvent(), cache, e.CurrentTexture)
+		pipeline.Execute(&tx)
 		if tx.RenderTexture != nil {
 			e.CurrentTexture = tx.RenderTexture
 		}
@@ -55,18 +55,6 @@ func (e *engine) Start() {
 		}
 		rl.EndDrawing()
 
-	}
-}
-
-func asyncRendering(toRenderChannel <-chan *renderData, fromRenderChannel chan<- *renderData) {
-	pipeline := NewRendererPipeline()
-	for true {
-		select {
-		case transaction := <-toRenderChannel:
-			pipeline.Execute(transaction)
-			fromRenderChannel <- transaction
-		default:
-		}
 	}
 }
 
