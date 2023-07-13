@@ -7,7 +7,9 @@ import (
 )
 
 // Common struct used by all that are also yaml annotated for marshaling.
-// Marshaling creates issues when using interfaces.
+// Marshaling creates issues when using interfaces. However, we now need
+//to rewire to interfaces for bus events while maintainging integrity of
+//marshaling weirdness.
 
 type ImageLayerData struct {
 	LayerMetadata []*ImageMetadata `yaml:"LayerMetadata"`

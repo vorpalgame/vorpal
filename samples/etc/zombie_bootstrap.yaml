@@ -1,5 +1,5 @@
-WindowTitle: Zombiecide
-WindowWidth: 1920
+WindowTitle:  Zombiecide
+WindowWidth:  1920
 WindowHeight: 1080
 RegisterKeys:
   - e
@@ -12,27 +12,27 @@ RegisterKeys:
   - H
 Background:
   LayerMetadata:
-    - ImageFileName: ./samples/resources/zombiecide/background.png
-      X: 0
-      "Y": 0
-      Width: 1920
-      Height: 1080
+    - ImageFileName:  ./samples/resources/zombiecide/background.png
+      X:              0
+      "Y":            0
+      Width:          1920
+      Height:         1080
       HorizontalFlip: false
 BehaviorMap:
   LayerMetadata:
-    - ImageFileName: ./samples/resources/zombiecide/behaviorland.png
-      X: 0
-      "Y": 0
-      Width: 1920
-      Height: 1080
+    - ImageFileName:  ./samples/resources/zombiecide/behaviorland.png
+      X:              0
+      "Y":            0
+      Width:          1920
+      Height:         1080
       HorizontalFlip: false
 Foreground:
   LayerMetadata:
-    - ImageFileName: ./samples/resources/zombiecide/foreground.png
-      X: 0
-      "Y": 0
-      Width: 1920
-      Height: 1080
+    - ImageFileName:  ./samples/resources/zombiecide/foreground.png
+      X:              0
+      "Y":            0
+      Width:          1920
+      Height:         1080
       HorizontalFlip: false
 Actors:
   - ./samples/etc/henry.yaml

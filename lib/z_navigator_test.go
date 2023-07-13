@@ -5,7 +5,7 @@ import (
 )
 
 func TestNavigator(t *testing.T) {
-	//TODO Point struct has been removed so we need to revamp this test...
+	//TODO Point struct has been removed so we need to revamp this testdata...
 	//startX := int32(500)
 	//startY := int32(600)
 	//maxIncrement := int32(2)
@@ -20,7 +20,7 @@ func TestNavigator(t *testing.T) {
 	////2 and -2 are the maximum mouse moves and 5 is the window that determines
 	////when something is "dead". In other words, if the mouse hasn't move more than 5 in X or Y then
 	////don't change the position.
-	////We can test behavior map separately
+	////We can testdata behavior map separately
 	//l := NewNavigator(smallEvt, -maxIncrement, -maxIncrement, 5, 5, nil)
 	//
 	////MoveByIncrement calculations will return maximum allowed movement in X,Y directions
@@ -28,7 +28,7 @@ func TestNavigator(t *testing.T) {
 	////then no change will happen. For exmaple if X or Y mouse position are
 	////only 1 or 2 pixels difference and the offest is 5 pixels, the 0 is returned
 	////indicating no movement should be recorded.
-	////In the test the small event is only 3 pixels different and that's less than
+	////In the testdata the small event is only 3 pixels different and that's less than
 	////the specified size of 5 for the offset so zero is returned.
 	////Note that the calculation doesn't change current location as that
 	////is a separate operation.

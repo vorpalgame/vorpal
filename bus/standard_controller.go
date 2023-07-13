@@ -1,12 +1,11 @@
 package bus
 
 type StandardMediaPeerController interface {
-	ControllerListener
+	EngineControlListener
 	GetControlEvents() []ControlEvent
 	GetDrawEvent() DrawEvent
 	GetAudioEvent() AudioEvent //One event at at time...
 	GetTextEvent() TextEvent
-	GetImageCacheEvent() ImageCacheEvent
 	GetKeysRegistrationEvent() KeysRegistrationEvent
 }
 
@@ -20,7 +19,6 @@ type controller struct {
 	drawEvent             DrawEvent
 	audioEvent            []AudioEvent          //Different audio events for stop, start, etc. so they need to be kept in slice for processing.
 	textEvent             TextEvent             //TODO put multiple keys in one event...
-	imageCacheEvent       ImageCacheEvent       //Could have multiples so should be slice...
 	keysRegistrationEvent KeysRegistrationEvent //Only one set of keys to listen for at a time.
 	controlEvents         []ControlEvent        //May need slice..
 }
@@ -48,11 +46,6 @@ func (c *controller) OnDrawEvent(drawChannel <-chan DrawEvent) {
 
 }
 
-func (c *controller) OnImageCacheEvent(cacheChannel <-chan ImageCacheEvent) {
-	for evt := range cacheChannel {
-		c.imageCacheEvent = evt
-	}
-}
 func (c *controller) OnKeyRegistrationEvent(keyRegistrationChannel <-chan KeysRegistrationEvent) {
 	for evt := range keyRegistrationChannel {
 		c.keysRegistrationEvent = evt
@@ -106,9 +99,4 @@ func (c *controller) GetTextEvent() TextEvent {
 
 func (c *controller) GetKeysRegistrationEvent() KeysRegistrationEvent {
 	return c.keysRegistrationEvent
-}
-
-// TODO In process
-func (c *controller) GetImageCacheEvent() ImageCacheEvent {
-	return c.imageCacheEvent
 }

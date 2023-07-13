@@ -7,10 +7,10 @@ import (
 
 // Rename after integration...
 
-var testMetadataFile string = "../etc/testMetadataFile.yaml"
-var testLayerFile string = "../etc/testLayerFile.yaml"
-var testNavigatorFile string = "../etc/testNavigatorFile.yaml"
-var testSceneFile string = "../etc/testSceneFile.yaml"
+var testMetadataFile string = "testdata/testMetadataFile.yaml"
+var testLayerFile string = "testdata/testLayerFile.yaml"
+var testNavigatorFile string = "testdata/testNavigatorFile.yaml"
+var testSceneFile string = "testdata/testSceneFile.yaml"
 
 func TestRoundtripImageMetadata(t *testing.T) {
 	out := createImageData()

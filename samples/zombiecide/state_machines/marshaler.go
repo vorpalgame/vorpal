@@ -21,7 +21,7 @@ const (
 	Attack = "Attack"
 )
 
-var statesFile string = "test.yaml"
+var statesFile string = "testdata.yaml"
 
 const dir = "../../etc/"
 
