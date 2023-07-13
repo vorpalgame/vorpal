@@ -1,5 +1,30 @@
 package bus
 
+type ControllerListener interface {
+	DrawEventListener
+	AudioEventListener
+	TextEventListener
+	ImageCacheEventListener
+	KeysRegistrationEventListener
+	ControlEventListener
+}
+type DrawEventListener interface {
+	OnDrawEvent(drawChannel <-chan DrawEvent)
+}
+type TextEventListener interface {
+	OnTextEvent(textChannel <-chan TextEvent)
+}
+
+type ControlEventListener interface {
+	OnControlEvent(controlChannel <-chan ControlEvent)
+}
+type AudioEventListener interface {
+	OnAudioEvent(audioChannel <-chan AudioEvent)
+}
+type MouseEventListener interface {
+	OnMouseEvent(mouseChannel <-chan MouseEvent)
+}
+
 type vorpalEventBus struct {
 	keyEventListenerChannels             []chan KeyEvent
 	mouseListenerChannels                []chan MouseEvent

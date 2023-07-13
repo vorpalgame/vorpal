@@ -11,9 +11,6 @@ func NewMouseEvent(event mouse.Event) MouseEvent {
 type mouseState struct {
 	mouse.Event
 }
-type MouseEventListener interface {
-	OnMouseEvent(mouseChannel <-chan MouseEvent)
-}
 
 type MouseEvent interface {
 	GetCursorPoint() CursorPoint

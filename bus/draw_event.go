@@ -15,10 +15,6 @@ func NewDrawEvent() DrawEvent {
 
 /////////////////////////////////////
 
-type DrawEventListener interface {
-	OnDrawEvent(drawChannel <-chan DrawEvent)
-}
-
 // /////////// DrawEvent and the drawEvent struct are no-ops or signaling at best.
 type DrawEvent interface {
 }

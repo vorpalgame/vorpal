@@ -1,9 +1,5 @@
 package bus
 
-type ControlEventListener interface {
-	OnControlEvent(controlChannel <-chan ControlEvent)
-}
-
 type ControlEvent interface{}
 
 //////////
