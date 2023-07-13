@@ -1,5 +1,6 @@
 # Vorpal Engine
-##News
+
+## News
 The libraries are currently modularized and are being revamped on feedback from initial development work. A new native graphic engine, in addition to the Raylib engine, is being developed. This new Go native engine will be the reference engine as it will not require special C libraries, compilers or Go extension configuration. Raylib will still be used and will likely be more performant. One could develop using the reference engine and switch to Raylib for release. Future versions may also be developed for SDL2, Ebiten, etc. 
 
 The development of the native engine has brought to light some common design elements that may be standardized and for which wrapper classes will be developed. For example, the native Go mouse.Event uses float32 for X,Y cursor, and stores button state as a number with bit masks for modifiers. The wrapper class can use an opionionated of the API to provide more convenience to the developer. As an example, insted of bit masking or comparsion to determine button state, one might have check the wapper event like this:
