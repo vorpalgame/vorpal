@@ -73,9 +73,9 @@ func (c *controller) OnTextEvent(textChannel <-chan TextEvent) {
 }
 
 func (c *controller) GetDrawEvent() DrawEvent {
-	evt := c.drawEvent
-	c.drawEvent = nil
-	return evt
+	//evt := c.drawEvent
+	//c.drawEvent = nil
+	return c.drawEvent
 }
 
 func (c *controller) GetAudioEvent() AudioEvent {

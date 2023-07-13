@@ -7,6 +7,7 @@ import (
 	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/image/draw"
+	"golang.org/x/mobile/event/key"
 	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/mouse"
 	"image"
@@ -18,6 +19,7 @@ import (
 type engine struct {
 	bus.VorpalBus
 	bus.StandardMediaPeerController
+	MediaCache
 	currentRenderImage, currentDisplayImage image.Image
 	window                                  screen.Window
 	screen                                  screen.Screen
@@ -27,76 +29,139 @@ func NewEngine() lib.Engine {
 
 	log.Println("New native engine...")
 	e := engine{}
-
+	e.MediaCache = NewMediaCache()
 	e.StandardMediaPeerController = bus.NewGameController()
 	e.VorpalBus = bus.GetVorpalBus()
-	go e.initWindow()
-
+	go initWindow(&e)
 	return &e
 }
+
 func (e *engine) Start() {
 	log.Println("Start Native Engine...")
-	e.renderLoop()
-
-}
-func (e *engine) renderLoop() {
+	renderPipelineChan := make(chan bus.DrawEvent, 1)
+	go renderPipeline(e, renderPipelineChan)
 	for {
-		e.VorpalBus.SendMouseEvent(bus.NewDefaultMouseEvent(800, 800))
-
-		evt := e.GetDrawEvent()
-		if evt != nil {
-			log.Println("Loading...")
-			log.Println(evt)
-			switch evt := evt.(type) {
-			case bus.DrawLayersEvent:
-				e.renderImageLayers(evt)
-				//log.Println(evt)
-			}
-		}
+		renderPipelineChan <- e.GetDrawEvent()
 	}
-}
-func (e *engine) renderImageLayers(evt bus.DrawLayersEvent) {
-	log.Println("Render image...")
-
-	var buffer *image.RGBA
-	for _, layer := range evt.GetImageLayers() {
-		for _, imgData := range layer.LayerMetadata {
-			img := *loadImage(imgData.ImageFileName)
-			if buffer == nil {
-				buffer = image.NewRGBA(img.Bounds())
-			} else {
-				toRect := image.Rect(0, 0, int(imgData.Width), int(imgData.Height))
-				resizedImage := image.NewRGBA(toRect)
-				draw.NearestNeighbor.Scale(resizedImage, resizedImage.Rect, img, img.Bounds(), draw.Over, nil)
-				//log.Default().Println(img.Bounds())
-				img = resizedImage
-
-			}
-
-			draw.Draw(buffer, getRect(imgData), img, *getPoint(0, 0), draw.Over)
-
-		}
-	}
-	//write(buffer)
-
-	//os.Exit(1)
-	e.blit(buffer)
 
 }
 
-// TODO We need thes on ImageMetadta interfaces...
+var initWindow = func(e *engine) {
+	driver.Main(func(s screen.Screen) {
+		e.screen = s
+		w, err := s.NewWindow(nil)
+		e.window = w
+		if err != nil {
+			panic(err)
+			return
+		}
+		defer w.Release()
+		mouseChannel := make(chan mouse.Event, 1)
+		go processMouse(e, mouseChannel)
+		lifecycleChannel := make(chan lifecycle.Event, 1)
+		go processLifeCycle(e, lifecycleChannel)
+		keyChannel := make(chan key.Event, 1)
+		go processKey(e, keyChannel)
+		for {
+			switch evt := w.NextEvent().(type) {
+			case lifecycle.Event:
+				lifecycleChannel <- evt
+			case mouse.Event:
+				mouseChannel <- evt
+			case key.Event:
+				keyChannel <- evt
+			}
+		}
+	})
+}
+
+var renderPipeline = func(e *engine, drawChannel <-chan bus.DrawEvent) {
+	cacheChan := make(chan bus.DrawLayersEvent, 1)
+	go cacheImages(e, cacheChan)
+	for evt := range drawChannel {
+		switch evt := evt.(type) {
+		case bus.DrawLayersEvent:
+			cacheChan <- evt
+		}
+
+	}
+}
+
+var cacheImages = func(e *engine, drawChannel <-chan bus.DrawLayersEvent) {
+	renderChan := make(chan bus.DrawLayersEvent, 1)
+	go renderImageLayers(e, renderChan)
+	for evt := range drawChannel {
+		e.CacheImages(evt)
+		renderChan <- evt
+	}
+
+}
+
+var renderImageLayers = func(e *engine, drawChannel <-chan bus.DrawLayersEvent) {
+	blitChannel := make(chan *image.RGBA, 1)
+	go blitImage(e, blitChannel)
+	for evt := range drawChannel {
+		var buffer *image.RGBA
+		for _, layer := range evt.GetImageLayers() {
+			for _, imgData := range layer.LayerMetadata {
+				img := *e.GetImage(imgData.ImageFileName)
+				if buffer == nil {
+					buffer = image.NewRGBA(img.Bounds())
+				}
+				draw.Draw(buffer, getRect(imgData), img, *getPoint(0, 0), draw.Over)
+			}
+
+		}
+		blitChannel <- buffer
+	}
+}
+
+var blitImage = func(e *engine, channel <-chan *image.RGBA) {
+
+	for buffer := range channel {
+		b, _ := e.screen.NewBuffer(buffer.Bounds().Max)
+		draw.Draw(b.RGBA(), b.Bounds(), buffer, *getPoint(0, 0), draw.Over)
+		e.window.Upload(image.Point{0, 0}, b, buffer.Bounds())
+		e.window.Publish()
+		b.Release()
+		buffer = nil
+	}
+}
+
+// TODO Rewrite the key even to use the key.Event internally.
+var processKey = func(e *engine, channel <-chan key.Event) {
+	for event := range channel {
+		log.Println(event)
+		e.SendKeyEvent(bus.NewKeyEvent(event))
+	}
+
+}
+
+var processMouse = func(e *engine, channel <-chan mouse.Event) {
+	for event := range channel {
+		e.SendMouseEvent(bus.NewMouseEvent(event))
+	}
+
+}
+
+var processLifeCycle = func(e *engine, channel <-chan lifecycle.Event) {
+	for event := range channel {
+		log.Println("processLifecycle")
+		log.Println(event)
+
+		if event.To == lifecycle.StageDead {
+		} else if event.To == lifecycle.StageVisible {
+		}
+	}
+
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// TODO We need these on ImageMetadta interfaces...
 func getRect(imgData *lib.ImageMetadata) image.Rectangle {
 	return image.Rectangle{*getPoint(imgData.X, imgData.Y), *getPoint(imgData.X+imgData.Width, imgData.Y+imgData.Height)}
 }
 
-func (e *engine) blit(buffer *image.RGBA) {
-
-	b, _ := e.screen.NewBuffer(buffer.Bounds().Max)
-	draw.Draw(b.RGBA(), b.Bounds(), buffer, *getPoint(0, 0), draw.Over)
-	log.Println("Updload image...")
-	e.window.Upload(image.Point{0, 0}, b, buffer.Bounds())
-	e.window.Publish()
-}
 func getPoint(x, y int32) *image.Point {
 	return &image.Point{int(x), int(y)}
 }
@@ -108,55 +173,4 @@ func write(buffer *image.RGBA) {
 		os.Exit(1)
 	}
 	png.Encode(out, buffer)
-}
-func loadImage(imageFileName string) *image.Image {
-	log.Println(imageFileName)
-	f, err := os.Open(imageFileName)
-	if err != nil {
-		log.Fatal(err)
-		panic(err)
-	}
-	defer f.Close()
-	img, err := png.Decode(f)
-	if err != nil {
-		panic(err)
-	}
-	return &img
-}
-func (e *engine) doEventLoop() {
-
-	for {
-		switch evt := e.window.NextEvent().(type) {
-		case lifecycle.Event:
-			if evt.To == lifecycle.StageDead {
-				return
-			}
-		case mouse.Event:
-			e.VorpalBus.SendMouseEvent(bus.NewDefaultMouseEvent(int32(evt.X), int32(evt.Y)))
-		}
-	}
-}
-
-func (e *engine) initWindow() {
-	driver.Main(func(s screen.Screen) {
-		e.screen = s
-		w, err := s.NewWindow(nil)
-		e.window = w
-		if err != nil {
-			panic(err)
-			return
-		}
-		defer w.Release()
-
-		for {
-			switch evt := w.NextEvent().(type) {
-			case lifecycle.Event:
-				if evt.To == lifecycle.StageDead {
-					return
-				}
-			case mouse.Event:
-				e.VorpalBus.SendMouseEvent(bus.NewDefaultMouseEvent(int32(evt.X), int32(evt.Y)))
-			}
-		}
-	})
 }

@@ -17,8 +17,6 @@ import (
 // TODO We need to eliminate Viper as it doen't properly handle keys in maps.
 func main() {
 
-	lib.LoadConfiguration("key_mapping.yaml")
-	lib.InitKeyMap()
 	lib.LoadConfiguration("bootstrap.yaml")
 
 	fmt.Println("New game....")

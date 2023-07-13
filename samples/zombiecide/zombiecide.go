@@ -33,9 +33,8 @@ func Init() {
 	scene := lib.UnmarshalScene("./samples/etc/zombie_bootstrap.yaml")
 	vbus.SendControlEvent(bus.NewWindowSizeEvent(scene.WindowWidth, scene.WindowHeight))
 	vbus.SendControlEvent(bus.NewWindowTitleEvent(scene.WindowTitle))
-	//log.Default().Println(configKeys)
-	configKeys := lib.NewKeys(scene.RegisterKeys)
-	evt := bus.NewKeysRegistrationEvent(configKeys)
+
+	evt := bus.NewKeyRegistrationEvent(scene.RegisterKeys)
 	vbus.SendKeysRegistrationEvent(evt)
 
 	vbus.AddMouseListener(&zombies)
@@ -91,16 +90,15 @@ func Init() {
 
 func (z *zombiecide) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
-		//Using explicit letters due to misreported case from raylib...
-		//	log.Default().Println(evt.GetKey().ToString())
-		if evt.GetKey().EqualsIgnoreCase("e") {
+
+		if evt.EqualsString("e") {
 			os.Exit(0)
-		} else if evt.GetKey().EqualsIgnoreCase("r") {
+		} else if evt.EqualsString("r") {
 			//TODO Stop and close old resources if necessary...
 			//zombies.zombie = NewZombie()
-		} else if evt.GetKey().EqualsIgnoreCase("h") {
+		} else if evt.EqualsString("h") {
 			z.currentZombie = "h"
-		} else if evt.GetKey().EqualsIgnoreCase("g") {
+		} else if evt.EqualsString("g") {
 			z.currentZombie = "g"
 		} else {
 			z.keyEvent = evt

@@ -55,7 +55,7 @@ func NewGame() TarotGame {
 func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 
-		if evt.GetKey().EqualsIgnoreCase("S") {
+		if evt.EqualsString("S") {
 			//t.ShuffleAudio).Stop()
 			t.bus.SendAudioEvent(bus.NewStopAudioEvent(&t.ShuffleAudio))
 			layer := lib.ImageLayerData{}
@@ -67,7 +67,7 @@ func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 			t.bus.SendAudioEvent(bus.NewPlayAudioEvent(&t.ShuffleAudio))
 			t.currentCard = 0
 			t.doSendCard()
-		} else if evt.GetKey().EqualsIgnoreCase("N") && t.shuffled {
+		} else if evt.EqualsString("N") && t.shuffled {
 			t.doSendCard()
 		}
 
@@ -82,7 +82,7 @@ func (t *Tarot) doStartupScreen() {
 	//These should be registered from the yaml configuration
 	//TODO Get key bindings from yaml file...
 	t.bus.SendControlEvent(bus.NewWindowTitleEvent(t.Title))
-	t.bus.SendKeysRegistrationEvent(bus.NewKeysRegistrationEvent(lib.NewKeys([]string{"s", "n", "S", "N"})))
+	t.bus.SendKeysRegistrationEvent(bus.NewKeyRegistrationEvent([]string{"s", "n", "S", "N"}))
 	t.drawEvent = bus.NewDrawLayersEvent()
 
 	layer := lib.ImageLayerData{}
@@ -179,8 +179,6 @@ func (t *Tarot) formatCardText(card TarotCard) {
 }
 func (t *Tarot) OnMouseEvent(mouseChannel <-chan bus.MouseEvent) {
 	for evt := range mouseChannel {
-		if evt.LeftButton().IsDown() {
-			//fmt.Println(evt)
-		}
+		_ = evt
 	}
 }

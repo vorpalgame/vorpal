@@ -1,5 +1,7 @@
 package lib
 
+//TODO Standardize the Point interface and struct and create appropriate helper methods.
+
 func NewLocation() Navigator {
 	return &NavigatorData{}
 }

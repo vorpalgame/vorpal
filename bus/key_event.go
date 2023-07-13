@@ -1,44 +1,62 @@
 package bus
 
-import "github.com/vorpalgame/vorpal/lib"
+import (
+	"golang.org/x/mobile/event/key"
+)
+
+func NewKeyEvent(key key.Event) KeyEvent {
+	return &keyEvent{key}
+}
+
+// TODO This was rewritten and key strings are not connected.
+func NewKeyRegistrationEvent(keyStrs []string) KeysRegistrationEvent {
+	//TODO Wire up the lookups...
+	keys := make([]key.Event, len(keyStrs))
+	return &keysRegistrationEvent{keys}
+}
+
+// ////////////////////////////////////////////////////////////////////
+type KeysRegistrationEvent interface {
+	GetKeys() []key.Event
+}
+type keysRegistrationEvent struct {
+	keys []key.Event
+}
+
+func (k *keysRegistrationEvent) GetKeys() []key.Event {
+	return k.keys
+}
 
 type KeysRegistrationEventListener interface {
 	OnKeyRegistrationEvent(keyRegistrationChannel <-chan KeysRegistrationEvent)
 }
-
-type KeysRegistrationEvent interface {
-	lib.Keys
+type KeyEvent interface {
+	ToString() string
+	ToAscii() int32
+	EqualsAscii(keyToCheckVal int32) bool
+	EqualsString(key string) bool
 }
 
-type keyRegistrationEventData struct {
-	lib.Keys
+type keyEvent struct {
+	key key.Event
 }
-
-func NewKeysRegistrationEvent(keys lib.Keys) KeysRegistrationEvent {
-	return &keyRegistrationEventData{keys}
-
-}
-
 type KeyEventListener interface {
 	OnKeyEvent(keyChannel <-chan KeyEvent)
 }
 
-type KeyEvent interface {
-	GetKey() lib.Key
+func (k *keyEvent) ToString() string {
+	return k.key.String()
 }
 
-type keyEvent struct {
-	key lib.Key
+func (k *keyEvent) ToAscii() int32 {
+	return k.key.Rune
 }
 
-func NewKeyEvent(key lib.Key) NotifyKeyEvent {
-	return &keyEvent{key}
+func (k *keyEvent) EqualsAscii(keyToCheckVal int32) bool {
+	return k.key.Rune == keyToCheckVal
 }
 
-type NotifyKeyEvent interface {
-	GetKey() lib.Key
-}
-
-func (evt *keyEvent) GetKey() lib.Key {
-	return evt.key
+// TODO make this a bit more robust. Fine for now as we are doing rewrite.
+func (k *keyEvent) EqualsString(key string) bool {
+	return k.key.Rune == int32(key[0])
 }
