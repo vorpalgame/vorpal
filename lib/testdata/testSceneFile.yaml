@@ -1,0 +1,38 @@
+WindowTitle:  Window Title
+WindowWidth:  1920
+WindowHeight: 1080
+RegisterKeys:
+  - e
+  - E
+  - R
+  - r
+  - g
+  - G
+  - h
+  - H
+Background:
+  LayerMetadata:
+    - ImageFileName:  samples/resources/zombiecide/background.png
+      X:              0
+      "Y":            0
+      Width:          1920
+      Height:         1080
+      HorizontalFlip: false
+BehaviorMap:
+  LayerMetadata:
+    - ImageFileName:  samples/resources/zombiecide/background.png
+      X:              0
+      "Y":            0
+      Width:          1920
+      Height:         1080
+      HorizontalFlip: false
+Foreground:
+  LayerMetadata:
+    - ImageFileName:  samples/resources/zombiecide/background.png
+      X:              0
+      "Y":            0
+      Width:          1920
+      Height:         1080
+      HorizontalFlip: false
+Actors:
+  - /samples/etc/henry.yaml
