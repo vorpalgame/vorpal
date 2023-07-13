@@ -70,12 +70,7 @@ func (e *engine) renderImageLayers(evt bus.DrawLayersEvent) {
 				draw.NearestNeighbor.Scale(resizedImage, resizedImage.Rect, img, img.Bounds(), draw.Over, nil)
 				//log.Default().Println(img.Bounds())
 				img = resizedImage
-				//
-				if img.Bounds().Max.X == 150 {
-					//write(resizedImage)
-					log.Default().Println(img.Bounds())
 
-				}
 			}
 
 			draw.Draw(buffer, getRect(imgData), img, *getPoint(0, 0), draw.Over)
