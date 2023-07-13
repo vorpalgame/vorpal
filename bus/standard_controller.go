@@ -31,6 +31,7 @@ func NewGameController() StandardMediaPeerController {
 	c.bus = GetVorpalBus()
 
 	c.bus.AddControllerListener(&c)
+	//TODO Revisit why this is here...
 	c.audioEvent = make([]AudioEvent, 0, 50)
 	return &c
 }

@@ -6,7 +6,10 @@ type MouseEventListener interface {
 	OnMouseEvent(mouseChannel <-chan MouseEvent)
 }
 
-//////
+// ////
+func NewDefaultMouseEvent(x int32, y int32) MouseEvent {
+	return &mouseEvent{lib.NewMouseButtonState("left", false), lib.NewMouseButtonState("center", false), lib.NewMouseButtonState("right", false), x, y}
+}
 
 func NewMouseEvent(leftButton, rightButton, middleButton lib.MouseButtonState, x int32, y int32) MouseEvent {
 	return &mouseEvent{leftButton, rightButton, middleButton, x, y}

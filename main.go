@@ -8,7 +8,8 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/vorpalgame/vorpal/lib"
-	raylibengine "github.com/vorpalgame/vorpal/raylib-engine"
+	//engine "github.com/vorpalgame/vorpal/raylib-engine"
+	engine "github.com/vorpalgame/vorpal/native-engine"
 	"github.com/vorpalgame/vorpal/samples/tarot"
 	"github.com/vorpalgame/vorpal/samples/zombiecide"
 )
@@ -20,9 +21,10 @@ func main() {
 	lib.InitKeyMap()
 	lib.LoadConfiguration("bootstrap.yaml")
 
-	fmt.Println("New game engine")
+	fmt.Println("New game....")
 
-	c := raylibengine.NewEngine()
+	c := engine.NewEngine()
+
 	start := viper.GetString("start")
 	log.Default().Println(start)
 	if start == "tarot" {
@@ -33,5 +35,4 @@ func main() {
 		go zombiecide.Init()
 	}
 	c.Start()
-
 }

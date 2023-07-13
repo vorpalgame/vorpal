@@ -6,7 +6,7 @@ import (
 	"github.com/vorpalgame/vorpal/lib"
 )
 
-func NewEngine() bus.Engine {
+func NewEngine() lib.Engine {
 
 	e := engine{}
 
