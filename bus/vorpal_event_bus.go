@@ -35,14 +35,13 @@ type vorpalEventBus struct {
 }
 
 type VorpalBus interface {
-	//Convenience listener collectionss...
-	AddControllerListener(eventListener EngineControlListener)
+
 	///Individual listeners....
 	AddKeyEventListener(eventListener KeyEventListener)
 	AddMouseListener(eventListener MouseEventListener)
 	AddDrawEventListener(eventListener DrawEventListener)
 	AddAudioEventListener(eventListener AudioEventListener)
-
+	AddTextEventListener(eventListener TextEventListener)
 	AddKeysRegistrationEventListener(eventListener KeysRegistrationEventListener)
 	AddControlEventListener(eventListener ControlEventListener)
 
@@ -59,14 +58,6 @@ var eb = vorpalEventBus{}
 
 func GetVorpalBus() VorpalBus {
 	return &eb
-}
-
-func (eb *vorpalEventBus) AddControllerListener(eventListener EngineControlListener) {
-	eb.AddDrawEventListener(eventListener)
-	eb.AddAudioEventListener(eventListener)
-	eb.AddTextEventListener(eventListener)
-	eb.AddKeysRegistrationEventListener(eventListener)
-	eb.AddControlEventListener(eventListener)
 }
 
 // Channels that can buffer multiple events or where we don't care for only the latest

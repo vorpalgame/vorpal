@@ -11,6 +11,7 @@ import (
 	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/mouse"
 	"image"
+	"image/color"
 	"image/png"
 	"log"
 	"os"
@@ -18,11 +19,25 @@ import (
 
 type engine struct {
 	bus.VorpalBus
-	bus.StandardMediaPeerController
+	//bus.StandardMediaPeerController
 	MediaCache
 	currentRenderImage, currentDisplayImage image.Image
 	window                                  screen.Window
 	screen                                  screen.Screen
+	drawEventChannel                        chan bus.DrawEvent
+	textEventChannel                        chan bus.TextEvent
+}
+
+func (e *engine) OnTextEvent(inputChannel <-chan bus.TextEvent) {
+	for evt := range inputChannel {
+		e.textEventChannel <- evt
+	}
+}
+
+func (e *engine) OnDrawEvent(inputChannel <-chan bus.DrawEvent) {
+	for evt := range inputChannel {
+		e.drawEventChannel <- evt
+	}
 }
 
 func NewEngine() lib.Engine {
@@ -30,20 +45,22 @@ func NewEngine() lib.Engine {
 	log.Println("New native engine...")
 	e := engine{}
 	e.MediaCache = NewMediaCache()
-	e.StandardMediaPeerController = bus.NewGameController()
+	e.drawEventChannel = make(chan bus.DrawEvent, 10)
+	e.textEventChannel = make(chan bus.TextEvent, 10)
 	e.VorpalBus = bus.GetVorpalBus()
+	e.AddDrawEventListener(&e)
+	e.AddTextEventListener(&e)
 	go initWindow(&e)
 	return &e
 }
 
 func (e *engine) Start() {
 	log.Println("Start Native Engine...")
-	renderPipelineChan := make(chan bus.DrawEvent, 1)
-	go renderPipeline(e, renderPipelineChan)
+	go textPipeline(e, e.textEventChannel)
+	go renderPipeline(e, e.drawEventChannel)
 	for {
-		renderPipelineChan <- e.GetDrawEvent()
+		//Loop until exit is called...
 	}
-
 }
 
 var initWindow = func(e *engine) {
@@ -75,10 +92,18 @@ var initWindow = func(e *engine) {
 	})
 }
 
-var renderPipeline = func(e *engine, drawChannel <-chan bus.DrawEvent) {
+var textPipeline = func(e *engine, inputChannel <-chan bus.TextEvent) {
+	for evt := range inputChannel {
+		_ = evt
+		//log.Println("Text Event...")
+		//log.Println(evt)
+	}
+}
+
+var renderPipeline = func(e *engine, inputChannel <-chan bus.DrawEvent) {
 	cacheChan := make(chan bus.DrawLayersEvent, 1)
 	go cacheImages(e, cacheChan)
-	for evt := range drawChannel {
+	for evt := range inputChannel {
 		switch evt := evt.(type) {
 		case bus.DrawLayersEvent:
 			cacheChan <- evt
@@ -87,20 +112,20 @@ var renderPipeline = func(e *engine, drawChannel <-chan bus.DrawEvent) {
 	}
 }
 
-var cacheImages = func(e *engine, drawChannel <-chan bus.DrawLayersEvent) {
+var cacheImages = func(e *engine, inputChannel <-chan bus.DrawLayersEvent) {
 	renderChan := make(chan bus.DrawLayersEvent, 1)
 	go renderImageLayers(e, renderChan)
-	for evt := range drawChannel {
+	for evt := range inputChannel {
 		e.CacheImages(evt)
 		renderChan <- evt
 	}
 
 }
 
-var renderImageLayers = func(e *engine, drawChannel <-chan bus.DrawLayersEvent) {
+var renderImageLayers = func(e *engine, inputChannel <-chan bus.DrawLayersEvent) {
 	blitChannel := make(chan *image.RGBA, 1)
 	go blitImage(e, blitChannel)
-	for evt := range drawChannel {
+	for evt := range inputChannel {
 		var buffer *image.RGBA
 		for _, layer := range evt.GetImageLayers() {
 			for _, imgData := range layer.LayerMetadata {
@@ -108,11 +133,55 @@ var renderImageLayers = func(e *engine, drawChannel <-chan bus.DrawLayersEvent) 
 				if buffer == nil {
 					buffer = image.NewRGBA(img.Bounds())
 				}
+				if imgData.HorizontalFlip {
+					img = flip(img)
+				}
 				draw.Draw(buffer, getRect(imgData), img, *getPoint(0, 0), draw.Over)
 			}
 
 		}
 		blitChannel <- buffer
+	}
+}
+
+func flip(img image.Image) image.Image {
+	// create and return a grid of pixels
+	size := img.Bounds().Size()
+	var grid [][]color.Color
+	for i := 0; i < size.X; i++ {
+		var y []color.Color
+		for j := 0; j < size.Y; j++ {
+			y = append(y, img.At(i, j))
+		}
+		grid = append(grid, y)
+	}
+	flipHorizontal(grid)
+	xlen, ylen := len(grid), len(grid[0])
+	rect := image.Rect(0, 0, xlen, ylen)
+	flipImg := image.NewNRGBA(rect)
+	for x := 0; x < xlen; x++ {
+		for y := 0; y < ylen; y++ {
+			flipImg.Set(x, y, grid[x][y])
+		}
+	}
+	return image.Image(flipImg)
+}
+func flipHorizontal(grid [][]color.Color) {
+	for x := 0; x < len(grid); x++ {
+		col := grid[x]
+		for y := 0; y < len(col)/2; y++ {
+			z := len(col) - y - 1
+			col[y], col[z] = col[z], col[y]
+		}
+	}
+}
+func flipVertical(grid [][]color.Color) {
+	for x := 0; x < len(grid); x++ {
+		col := grid[x]
+		for y := 0; y < len(col)/2; y++ {
+			z := len(col) - y - 1
+			col[y], col[z] = col[z], col[y]
+		}
 	}
 }
 
