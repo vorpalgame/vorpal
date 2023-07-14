@@ -7,6 +7,9 @@ import (
 	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/image/draw"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/basicfont"
+	"golang.org/x/image/math/fixed"
 	"golang.org/x/mobile/event/key"
 	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/mouse"
@@ -17,6 +20,8 @@ import (
 	"os"
 )
 
+//TODO We should revisit the caching mechanisms and flushing and perhaps caching reversed/flipped images.
+
 type engine struct {
 	bus.VorpalBus
 	//bus.StandardMediaPeerController
@@ -26,6 +31,28 @@ type engine struct {
 	screen                                  screen.Screen
 	drawEventChannel                        chan bus.DrawEvent
 	textEventChannel                        chan bus.TextEvent
+	controlEventChannel                     chan bus.ControlEvent
+	audioEventChannel                       chan bus.AudioEvent
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+//// Listener methods to take messages from bus channel and them to local channel
+//// This permits local implementation and processing on channel to be blocking, non-blocking
+//// and split on multiple pipeline channels whichever makes sense for the current engine
+//// implementation. The bus conveys the message but the internal channels are set up
+//// to reflect the processing and concurrency requirements.
+/////////////////////////////////////////////////////////////////////////////////////////
+
+func (e *engine) OnAudioEvent(inputChannel <-chan bus.AudioEvent) {
+	for evt := range inputChannel {
+		e.audioEventChannel <- evt
+	}
+}
+
+func (e *engine) OnControlEvent(inputChannel <-chan bus.ControlEvent) {
+	for evt := range inputChannel {
+		e.controlEventChannel <- evt
+	}
 }
 
 func (e *engine) OnTextEvent(inputChannel <-chan bus.TextEvent) {
@@ -45,22 +72,19 @@ func NewEngine() lib.Engine {
 	log.Println("New native engine...")
 	e := engine{}
 	e.MediaCache = NewMediaCache()
-	e.drawEventChannel = make(chan bus.DrawEvent, 10)
-	e.textEventChannel = make(chan bus.TextEvent, 10)
+	//Adjust channel sizes if needed....
+	e.drawEventChannel = make(chan bus.DrawEvent, 1)
+	e.textEventChannel = make(chan bus.TextEvent, 1)
+	e.controlEventChannel = make(chan bus.ControlEvent, 1)
+	e.audioEventChannel = make(chan bus.AudioEvent, 1)
+
 	e.VorpalBus = bus.GetVorpalBus()
 	e.AddDrawEventListener(&e)
 	e.AddTextEventListener(&e)
+	e.AddControlEventListener(&e)
+	e.AddAudioEventListener(&e)
 	go initWindow(&e)
 	return &e
-}
-
-func (e *engine) Start() {
-	log.Println("Start Native Engine...")
-	go textPipeline(e, e.textEventChannel)
-	go renderPipeline(e, e.drawEventChannel)
-	for {
-		//Loop until exit is called...
-	}
 }
 
 var initWindow = func(e *engine) {
@@ -92,9 +116,34 @@ var initWindow = func(e *engine) {
 	})
 }
 
+func (e *engine) Start() {
+	log.Println("Start Native Engine...")
+	go textPipeline(e, e.textEventChannel)
+	go audioPipeline(e, e.audioEventChannel)
+	go controlPipeline(e, e.controlEventChannel)
+	go renderPipeline(e, e.drawEventChannel)
+	for { //Loop until exit is called...
+	}
+}
+
+var audioPipeline = func(e *engine, inputChannel chan bus.AudioEvent) {
+	for event := range inputChannel {
+		_ = event
+	}
+}
+
+var controlPipeline = func(e *engine, inputChannel chan bus.ControlEvent) {
+	for event := range inputChannel {
+		_ = event
+	}
+}
+
 var textPipeline = func(e *engine, inputChannel <-chan bus.TextEvent) {
-	for evt := range inputChannel {
-		_ = evt
+	for event := range inputChannel {
+		switch evt := event.(type) {
+		case bus.MultilineTextEvent:
+			_ = evt
+		}
 		//log.Println("Text Event...")
 		//log.Println(evt)
 	}
@@ -140,49 +189,51 @@ var renderImageLayers = func(e *engine, inputChannel <-chan bus.DrawLayersEvent)
 			}
 
 		}
+		//drawText(buffer)
 		blitChannel <- buffer
 	}
 }
 
+func pt(p fixed.Point26_6) image.Point {
+	return image.Point{
+		X: int(p.X+32) >> 6,
+		Y: int(p.Y+32) >> 6,
+	}
+}
+
+func drawText(dst *image.RGBA) {
+	//draw.Draw(dst, dst.Bounds(), image.Black, image.Point{}, draw.Src)
+
+	d := &font.Drawer{
+		Dst:  dst,
+		Src:  image.White,
+		Face: basicfont.Face7x13,
+	}
+	ss := []string{
+		"The quick brown fox jumps over the lazy dog.",
+		"Hello, 世界.",
+		"U+FFFD is \ufffd.",
+	}
+	for i, s := range ss {
+		d.Dot = fixed.P(20, 100*i+80)
+		dot0 := pt(d.Dot)
+		d.DrawString(s)
+		dot1 := pt(d.Dot)
+		dst.SetRGBA(dot0.X, dot0.Y, color.RGBA{0xff, 0x00, 0x00, 0xff})
+		dst.SetRGBA(dot1.X, dot1.Y, color.RGBA{0x00, 0x00, 0xff, 0xff})
+	}
+}
+
 func flip(img image.Image) image.Image {
-	// create and return a grid of pixels
 	size := img.Bounds().Size()
-	var grid [][]color.Color
-	for i := 0; i < size.X; i++ {
-		var y []color.Color
-		for j := 0; j < size.Y; j++ {
-			y = append(y, img.At(i, j))
-		}
-		grid = append(grid, y)
-	}
-	flipHorizontal(grid)
-	xlen, ylen := len(grid), len(grid[0])
-	rect := image.Rect(0, 0, xlen, ylen)
-	flipImg := image.NewNRGBA(rect)
-	for x := 0; x < xlen; x++ {
-		for y := 0; y < ylen; y++ {
-			flipImg.Set(x, y, grid[x][y])
+	flipImg := image.NewNRGBA(img.Bounds())
+	for x := 0; x < size.X; x++ {
+		for y := 0; y < size.Y; y++ {
+			xp := size.X - x - 1
+			flipImg.Set(x, y, img.At(xp, y))
 		}
 	}
-	return image.Image(flipImg)
-}
-func flipHorizontal(grid [][]color.Color) {
-	for x := 0; x < len(grid); x++ {
-		col := grid[x]
-		for y := 0; y < len(col)/2; y++ {
-			z := len(col) - y - 1
-			col[y], col[z] = col[z], col[y]
-		}
-	}
-}
-func flipVertical(grid [][]color.Color) {
-	for x := 0; x < len(grid); x++ {
-		col := grid[x]
-		for y := 0; y < len(col)/2; y++ {
-			z := len(col) - y - 1
-			col[y], col[z] = col[z], col[y]
-		}
-	}
+	return flipImg
 }
 
 var blitImage = func(e *engine, channel <-chan *image.RGBA) {
