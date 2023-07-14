@@ -5,9 +5,12 @@ import "github.com/vorpalgame/vorpal/lib"
 ///// Constructors //////////////////
 
 func NewDrawLayersEvent() DrawLayersEvent {
-	evt := drawEvent{}
+	evt := drawLayerEvent{}
 	evt.imageLayers = make([]lib.ImageLayerData, 0)
 	return &evt
+}
+func NewDrawEvent() DrawEvent {
+	return &drawEvent{}
 }
 
 /////////////////////////////////////
@@ -16,29 +19,34 @@ type DrawEventListener interface {
 	OnDrawEvent(drawChannel <-chan DrawEvent)
 }
 
+// /////////// DrawEvent and the drawEvent struct are no-ops or signaling at best.
 type DrawEvent interface {
-	Reset()
 }
+type drawEvent struct{}
+
+/////////////////////////////////////////////////
 
 type DrawLayersEvent interface {
 	DrawEvent
+	Reset()
 	GetImageLayers() []lib.ImageLayerData
 	AddImageLayer(imgLayer lib.ImageLayerData) DrawEvent
 }
 
-type drawEvent struct {
+type drawLayerEvent struct {
 	imageLayers []lib.ImageLayerData
 }
 
-func (evt *drawEvent) Reset() {
+func (evt *drawLayerEvent) Reset() {
 	evt.imageLayers = make([]lib.ImageLayerData, 0)
 }
 
-func (evt *drawEvent) AddImageLayer(img lib.ImageLayerData) DrawEvent {
+func (evt *drawLayerEvent) AddImageLayer(img lib.ImageLayerData) DrawEvent {
 	evt.imageLayers = append(evt.imageLayers, img)
+
 	return evt
 }
 
-func (evt *drawEvent) GetImageLayers() []lib.ImageLayerData {
+func (evt *drawLayerEvent) GetImageLayers() []lib.ImageLayerData {
 	return evt.imageLayers
 }

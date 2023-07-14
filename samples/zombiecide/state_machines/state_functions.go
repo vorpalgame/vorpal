@@ -3,6 +3,7 @@ package state_machines
 import (
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
+	"golang.org/x/mobile/event/mouse"
 	"log"
 )
 
@@ -97,18 +98,18 @@ func (b *behaviorsList) addBehavior(behavior executeBehavior) *behaviorsList {
 }
 
 var moveFunc = func(tx BehaviorTransaction) {
-	tx.MoveTowardMouse(tx.GetMouseEvent().GetCursorPoint())
+	tx.MoveTowardMouse(tx.GetMouseEvent().GetCursorPoint().To())
 }
 
 var updateFramesFunc = func(tx BehaviorTransaction) {
 	tx.IncrementFrameCount()
-	tx.UpdateIdleFrames(tx.CalculateMoveIncrement(tx.GetMouseEvent().GetCursorPoint()))
+	tx.UpdateIdleFrames(tx.CalculateMoveIncrement(tx.GetMouseEvent().GetCursorPoint().To()))
 
 }
 
 var attackFunc = func(tx BehaviorTransaction) {
 	currentlyAttacking := tx.GetCurrentStateName() == Attack
-	mouseButtonDown := tx.GetMouseEvent().LeftButton().IsDown()
+	mouseButtonDown := tx.GetMouseEvent().IsPressed(mouse.ButtonLeft)
 
 	if currentlyAttacking && !mouseButtonDown {
 		tx.SetNextStateName(Walk)

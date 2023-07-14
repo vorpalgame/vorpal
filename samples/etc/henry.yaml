@@ -2,7 +2,7 @@ CurrentStateName: Walk
 StateMap:
     Attack:
         Name: Attack
-        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
+        Spec: ./samples/resources/zombiecide/henry/animation/%s%d.png
         Width: 150
         Height: 171
         Started: false
@@ -14,14 +14,14 @@ StateMap:
             IdleFrames: 1
             LoopFrames: true
         AudioState:
-            AudioFile: samples/resources/zombiecide/attack.mp3
+            AudioFile: ./samples/resources/zombiecide/attack.mp3
             LoopAudio: false
         BehaviorList:
             - updateFramesFunc
             - attackFunc
     Dead:
         Name: Dead
-        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
+        Spec: ./samples/resources/zombiecide/henry/animation/%s%d.png
         Width:  200
         Height: 200
         Started: false
@@ -33,14 +33,14 @@ StateMap:
             IdleFrames: 1
             LoopFrames: false
         AudioState:
-            AudioFile: samples/resources/zombiecide/dead.mp3
+            AudioFile: ./samples/resources/zombiecide/dead.mp3
             LoopAudio: false
         BehaviorList:
             - updateFramesFunc
             - deadFunc
     Idle:
         Name: Idle
-        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
+        Spec: ./samples/resources/zombiecide/henry/animation/%s%d.png
         Width:  150
         Height: 171
         Started: false
@@ -52,7 +52,7 @@ StateMap:
             IdleFrames: 1
             LoopFrames: false
         AudioState:
-            AudioFile: samples/resources/zombiecide/idle.mp3
+            AudioFile: ./samples/resources/zombiecide/idle.mp3
             LoopAudio: false
         BehaviorList:
             - updateFramesFunc
@@ -61,7 +61,7 @@ StateMap:
             - idleFunc
     Walk:
         Name: Walk
-        Spec: samples/resources/zombiecide/henry/animation/%s%d.png
+        Spec: ./samples/resources/zombiecide/henry/animation/%s%d.png
         Width:  150
         Height: 171
         Started: false
@@ -73,7 +73,7 @@ StateMap:
             IdleFrames: 1
             LoopFrames: true
         AudioState:
-            AudioFile: samples/resources/zombiecide/walk.mp3
+            AudioFile: ./samples/resources/zombiecide/walk.mp3
             LoopAudio: true
         BehaviorList:
             - updateFramesFunc

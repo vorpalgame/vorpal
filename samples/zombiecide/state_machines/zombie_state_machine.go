@@ -66,7 +66,7 @@ func (z *ZombieStateData) render(drawEvent bus.DrawLayersEvent, mouseEvent bus.M
 
 // Helper functions...
 func flipHorizontal(mouseEvent bus.MouseEvent, locator lib.Navigator) bool {
-	mx, _ := mouseEvent.GetCursorPoint()
+	mx := mouseEvent.GetCursorPoint().GetX()
 	lx, _ := locator.GetCurrentPoint()
 	return mx < lx
 }

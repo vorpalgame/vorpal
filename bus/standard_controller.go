@@ -31,6 +31,7 @@ func NewGameController() StandardMediaPeerController {
 	c.bus = GetVorpalBus()
 
 	c.bus.AddControllerListener(&c)
+	//TODO Revisit why this is here...
 	c.audioEvent = make([]AudioEvent, 0, 50)
 	return &c
 }
@@ -72,9 +73,9 @@ func (c *controller) OnTextEvent(textChannel <-chan TextEvent) {
 }
 
 func (c *controller) GetDrawEvent() DrawEvent {
-	evt := c.drawEvent
-	c.drawEvent = nil
-	return evt
+	//evt := c.drawEvent
+	//c.drawEvent = nil
+	return c.drawEvent
 }
 
 func (c *controller) GetAudioEvent() AudioEvent {
