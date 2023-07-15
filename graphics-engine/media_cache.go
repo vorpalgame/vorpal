@@ -2,6 +2,12 @@ package util
 
 import (
 	"image"
+	"sync"
+)
+
+// Minimal synchronization limited to cache access.
+var (
+	imageMapMutex = sync.RWMutex{}
 )
 
 type MediaCache interface {
@@ -14,28 +20,21 @@ type MediaCacheData struct {
 
 func NewMediaCache() MediaCache {
 	cache := MediaCacheData{}
-	cache.imageCache = make(map[string]*image.Image)
+	cache.imageCache = make(map[string]*image.Image, 100)
 
 	return &cache
 }
 func (c *MediaCacheData) GetImage(fileName string) *image.Image {
-	img := c.imageCache[fileName]
-
+	var img *image.Image
+	imageMapMutex.Lock()
+	img = c.imageCache[fileName]
+	imageMapMutex.Unlock()
 	return img
+
 }
 
 func (c *MediaCacheData) CacheImage(fileName string, img *image.Image) {
+	imageMapMutex.Lock()
 	c.imageCache[fileName] = img
+	imageMapMutex.Unlock()
 }
-
-//
-//func loadImage(imgData *lib.ImageMetadata, c *MediaCacheData) {
-//	img := LoadImage(imgData.ImageFileName)
-//	toRect := image.Rect(0, 0, int(imgData.Width), int(imgData.Height))
-//	resizedImage := image.NewRGBA(toRect)
-//
-//	draw.BiLinear.Scale(resizedImage, resizedImage.Rect, *img, (*img).Bounds(), draw.Over, nil)
-//	//This is goofy and I'm sure there's a better way but moving on...
-//	store := image.Image(resizedImage)
-//	c.imageCache[imgData.ImageFileName] = &store
-//}

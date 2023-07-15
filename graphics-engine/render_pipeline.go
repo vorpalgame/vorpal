@@ -29,38 +29,18 @@ func NewRenderPipeline(outputChannel chan *image.RGBA) {
 }
 
 var renderPipelineFunc = func(data *pipelineData, inputChannel <-chan bus.DrawEvent) {
+	cache := data.MediaCache
 	loadCacheResizeChan := make(chan bus.DrawLayersEvent, 1)
-	go loadResizeCache(data, loadCacheResizeChan)
+	NewLoadResizeCachePipeline(&cache, loadCacheResizeChan)
+	renderChan := make(chan bus.DrawLayersEvent, 1)
+	go renderImageLayersFunc(data, renderChan)
 	for evt := range inputChannel {
 		switch evt := evt.(type) {
 		case bus.DrawLayersEvent:
 			loadCacheResizeChan <- evt
+			renderChan <- evt
 		}
 
-	}
-}
-
-// TODO Break into separate chain...
-var loadResizeCache = func(data *pipelineData, inputChannel <-chan bus.DrawLayersEvent) {
-	renderChan := make(chan bus.DrawLayersEvent, 1)
-	go renderImageLayersFunc(data, renderChan)
-	for evt := range inputChannel {
-
-		for _, layer := range evt.GetImageLayers() {
-			for _, imgData := range layer.LayerMetadata {
-				img := data.MediaCache.GetImage(imgData.ImageFileName)
-				if img == nil {
-					img = LoadImage(imgData.ImageFileName)
-					toRect := image.Rect(0, 0, int(imgData.Width), int(imgData.Height))
-					resizedImage := image.NewRGBA(toRect)
-					draw.BiLinear.Scale(resizedImage, resizedImage.Rect, *img, (*img).Bounds(), draw.Over, nil)
-					//This is goofy and I'm sure there's a better way but moving on...
-					store := image.Image(resizedImage)
-					data.CacheImage(imgData.ImageFileName, &store)
-				}
-			}
-		}
-		renderChan <- evt
 	}
 }
 
@@ -74,6 +54,7 @@ var renderImageLayersFunc = func(data *pipelineData, inputChannel <-chan bus.Dra
 				//TODO We need to loop on this after refactor...
 				currentImg = nil
 				for currentImg == nil {
+					//log.Println("Wait for image...")
 					currentImg = data.GetImage(imgData.ImageFileName)
 				}
 				//Should be first layer. Probably make this more explict.
