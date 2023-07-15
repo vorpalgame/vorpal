@@ -1,11 +1,5 @@
 package lib
 
-import (
-	"gopkg.in/yaml.v3"
-	"log"
-	"os"
-)
-
 // Common struct used by all that are also yaml annotated for marshaling.
 // Marshaling creates issues when using interfaces.
 
@@ -15,12 +9,12 @@ type ImageLayerData struct {
 
 func UnmarshalImageLayer(fileName string) *ImageLayerData {
 	value := ImageLayerData{}
-	unmarshal(readFile(fileName), &value)
+	UnmarshalFile(fileName, &value)
 	return &value
 }
 
 func MarshalImageLayer(fileName string, value *ImageLayerData) {
-	marshal(fileName, value)
+	Marshal(fileName, value)
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -36,12 +30,12 @@ type ImageMetadata struct {
 
 func UnmarshalImageMetadata(fileName string) *ImageMetadata {
 	value := ImageMetadata{}
-	unmarshal(readFile(fileName), &value)
+	UnmarshalFile(fileName, &value)
 	return &value
 }
 
 func MarshalImageMetadata(fileName string, imgLayer *ImageMetadata) {
-	marshal(fileName, imgLayer)
+	Marshal(fileName, imgLayer)
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -57,12 +51,12 @@ type NavigatorData struct {
 
 func UnmarshalNavigator(fileName string) *NavigatorData {
 	value := NavigatorData{}
-	unmarshal(readFile(fileName), &value)
+	UnmarshalFile(fileName, &value)
 	return &value
 }
 
 func MarshalNavigator(fileName string, value *NavigatorData) {
-	marshal(fileName, value)
+	Marshal(fileName, value)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -79,12 +73,12 @@ type Scene struct {
 
 func UnmarshalScene(fileName string) *Scene {
 	value := Scene{}
-	unmarshal(readFile(fileName), &value)
+	UnmarshalFile(fileName, &value)
 	return &value
 }
 
 func MarshalScene(fileName string, value *Scene) {
-	marshal(fileName, value)
+	Marshal(fileName, value)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -100,28 +94,3 @@ type TextLineData struct {
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-
-func marshal(file string, data interface{}) {
-	marshaled, _ := yaml.Marshal(data)
-
-	e := os.WriteFile(file, marshaled, 0644)
-	if e != nil {
-		panic(e)
-	}
-}
-
-func unmarshal(contents []byte, toType interface{}) {
-	e := yaml.Unmarshal(contents, toType)
-	if e != nil {
-		panic(e)
-	}
-}
-
-func readFile(fileName string) []byte {
-	f, e := os.ReadFile(fileName)
-	if e != nil {
-		log.Default().Println(e)
-		os.Exit(1)
-	}
-	return f
-}

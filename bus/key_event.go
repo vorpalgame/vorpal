@@ -35,6 +35,16 @@ func (k *keysRegistrationEvent) GetRunes() []rune {
 type KeyEvent interface {
 	ToRune() rune
 	EqualsRune(keyRune rune) bool
+	IsPressed() bool
+	IsReleased() bool
+}
+
+func (k *keyEvent) IsPressed() bool {
+	return k.key.Direction == key.DirPress
+}
+
+func (k *keyEvent) IsReleased() bool {
+	return k.key.Direction == key.DirRelease
 }
 
 type keyEvent struct {

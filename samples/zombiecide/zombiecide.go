@@ -23,7 +23,7 @@ type zombiecide struct {
 var zombies = zombiecide{}
 var fontName = "./samples/resources/fonts/Roboto-Regular.ttf"
 
-func Init() {
+func NewGame() {
 	log.Println("New zombie game")
 
 	vbus := bus.GetVorpalBus()

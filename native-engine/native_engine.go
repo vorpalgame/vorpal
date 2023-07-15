@@ -6,6 +6,7 @@ import (
 	"github.com/vorpalgame/vorpal/util"
 	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
+	"golang.org/x/image/draw"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
 	"golang.org/x/image/math/fixed"
@@ -14,7 +15,6 @@ import (
 	"golang.org/x/mobile/event/mouse"
 	"image"
 	"image/color"
-	"image/draw"
 	"log"
 )
 
@@ -24,7 +24,7 @@ type engine struct {
 	bus.VorpalBus
 	//bus.StandardMediaPeerController
 	MediaCache
-	currentRenderImage, currentDisplayImage *image.RGBA
+	currentRenderImage, currentDisplayImage image.Image
 	window                                  screen.Window
 	screen                                  screen.Screen
 
@@ -79,12 +79,11 @@ func NewEngine() lib.Engine {
 }
 
 func runRenderPipeline(e *engine) {
-	fromRenderPipeline := make(chan *image.RGBA, 1)
-	blitChannel := make(chan *image.RGBA, 1)
+	fromRenderPipeline := make(chan *image.RGBA, 10)
+	blitChannel := make(chan *image.RGBA, 10)
 	go util.NewRenderPipeline(fromRenderPipeline)
 	go blitImage(e, blitChannel)
 	for img := range fromRenderPipeline {
-		e.currentRenderImage = img
 		blitChannel <- img
 	}
 
@@ -93,12 +92,13 @@ func runRenderPipeline(e *engine) {
 var blitImage = func(e *engine, channel <-chan *image.RGBA) {
 
 	for buffer := range channel {
+
 		b, _ := e.screen.NewBuffer(buffer.Bounds().Max)
 		draw.Draw(b.RGBA(), b.Bounds(), buffer, *getPoint(0, 0), draw.Over)
 		e.window.Upload(image.Point{0, 0}, b, buffer.Bounds())
 		e.window.Publish()
-		b.Release()
-		buffer = nil
+		//b.Release()
+		//buffer = nil
 	}
 }
 

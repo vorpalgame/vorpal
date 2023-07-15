@@ -3,17 +3,16 @@ package tarot
 import (
 	"strings"
 
-	"github.com/spf13/viper"
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
 )
 
-// TODO Revisit all the sizeing as we've switched from scaled to absolute.
+// TODO Revisit all the sizing as we've switched from scaled to absolute.
 // Scaling has to take place on game side.
 type TarotGame interface {
 }
 
-//We use the struct embededded when we need to marshal/unmarshal or
+//We use the struct embedded when we need to marshal/unmarshal or
 //Yaml/Viper get confused. Not a serialization technology.
 
 type Tarot struct {
@@ -33,11 +32,8 @@ type Tarot struct {
 func NewGame() TarotGame {
 
 	currentGame := Tarot{}
-	//TODO Check marshaling and bail out when bad
-	e := viper.Unmarshal(&currentGame)
-	if e != nil {
-		panic(e)
-	}
+	lib.UnmarshalFile("./samples/etc/tarot_bootstrap.yaml", &currentGame)
+
 	currentGame.bus = bus.GetVorpalBus()
 
 	currentGame.bus.AddMouseListener(&currentGame)
@@ -55,7 +51,7 @@ func NewGame() TarotGame {
 func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 
-		if evt.EqualsRune('S') {
+		if evt.EqualsRune('S') || evt.EqualsRune('s') && evt.IsReleased() {
 			//t.ShuffleAudio).Stop()
 			t.bus.SendAudioEvent(bus.NewStopAudioEvent(&t.ShuffleAudio))
 			layer := lib.ImageLayerData{}
@@ -67,7 +63,7 @@ func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 			t.bus.SendAudioEvent(bus.NewPlayAudioEvent(&t.ShuffleAudio))
 			t.currentCard = 0
 			t.doSendCard()
-		} else if evt.EqualsRune('n') && t.shuffled {
+		} else if evt.EqualsRune('n') && evt.IsReleased() && t.shuffled {
 			t.doSendCard()
 		}
 
@@ -86,7 +82,7 @@ func (t *Tarot) doStartupScreen() {
 	t.drawEvent = bus.NewDrawLayersEvent()
 
 	layer := lib.ImageLayerData{}
-	metatdata := lib.ImageMetadata{t.BackgroundImage, 0, 0, 1920, 1080, false}
+	metatdata := lib.ImageMetadata{ImageFileName: t.BackgroundImage, Width: 1920, Height: 1080}
 	layer.LayerMetadata = append(layer.LayerMetadata, &metatdata)
 	t.drawEvent.AddImageLayer(layer)
 	t.bus.SendDrawEvent(t.drawEvent)

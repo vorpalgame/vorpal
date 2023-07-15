@@ -1,5 +1,6 @@
 package util
 
+///No x11 packages here...
 import (
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
@@ -7,6 +8,8 @@ import (
 	"image"
 )
 
+// TODO separate the load, resize and cache stages for better performance and
+// to avoid cache misses.
 type pipelineData struct {
 	drawEventChannel chan bus.DrawEvent
 	outputChannel    chan *image.RGBA
@@ -20,47 +23,67 @@ func (data *pipelineData) OnDrawEvent(inputChannel <-chan bus.DrawEvent) {
 }
 
 func NewRenderPipeline(outputChannel chan *image.RGBA) {
-	data := pipelineData{make(chan bus.DrawEvent, 1), outputChannel, NewMediaCache()}
+	data := pipelineData{make(chan bus.DrawEvent, 10), outputChannel, NewMediaCache()}
 	bus.GetVorpalBus().AddDrawEventListener(&data)
 	go renderPipelineFunc(&data, data.drawEventChannel)
 }
 
 var renderPipelineFunc = func(data *pipelineData, inputChannel <-chan bus.DrawEvent) {
-	cacheChan := make(chan bus.DrawLayersEvent, 1)
-	go cacheImagesFunc(data, cacheChan)
+	loadCacheResizeChan := make(chan bus.DrawLayersEvent, 1)
+	go loadResizeCache(data, loadCacheResizeChan)
 	for evt := range inputChannel {
 		switch evt := evt.(type) {
 		case bus.DrawLayersEvent:
-			cacheChan <- evt
+			loadCacheResizeChan <- evt
 		}
 
 	}
 }
 
-var cacheImagesFunc = func(data *pipelineData, inputChannel <-chan bus.DrawLayersEvent) {
+// TODO Break into separate chain...
+var loadResizeCache = func(data *pipelineData, inputChannel <-chan bus.DrawLayersEvent) {
 	renderChan := make(chan bus.DrawLayersEvent, 1)
 	go renderImageLayersFunc(data, renderChan)
 	for evt := range inputChannel {
-		data.CacheImages(evt)
+
+		for _, layer := range evt.GetImageLayers() {
+			for _, imgData := range layer.LayerMetadata {
+				img := data.MediaCache.GetImage(imgData.ImageFileName)
+				if img == nil {
+					img = LoadImage(imgData.ImageFileName)
+					toRect := image.Rect(0, 0, int(imgData.Width), int(imgData.Height))
+					resizedImage := image.NewRGBA(toRect)
+					draw.BiLinear.Scale(resizedImage, resizedImage.Rect, *img, (*img).Bounds(), draw.Over, nil)
+					//This is goofy and I'm sure there's a better way but moving on...
+					store := image.Image(resizedImage)
+					data.CacheImage(imgData.ImageFileName, &store)
+				}
+			}
+		}
 		renderChan <- evt
 	}
-
 }
 
 var renderImageLayersFunc = func(data *pipelineData, inputChannel <-chan bus.DrawLayersEvent) {
 
 	for evt := range inputChannel {
 		var buffer *image.RGBA
+		var currentImg *image.Image
 		for _, layer := range evt.GetImageLayers() {
 			for _, imgData := range layer.LayerMetadata {
-				img := *data.GetImage(imgData.ImageFileName)
+				//TODO We need to loop on this after refactor...
+				currentImg = nil
+				for currentImg == nil {
+					currentImg = data.GetImage(imgData.ImageFileName)
+				}
+				//Should be first layer. Probably make this more explict.
 				if buffer == nil {
-					buffer = image.NewRGBA(img.Bounds())
+					buffer = image.NewRGBA((*currentImg).Bounds())
 				}
 				if imgData.HorizontalFlip {
-					img = flip(img)
+					currentImg = flip(currentImg)
 				}
-				draw.Draw(buffer, getRect(imgData), img, *getPoint(0, 0), draw.Over)
+				draw.Draw(buffer, getRect(imgData), *currentImg, *getPoint(0, 0), draw.Over)
 			}
 
 		}
@@ -69,16 +92,17 @@ var renderImageLayersFunc = func(data *pipelineData, inputChannel <-chan bus.Dra
 	}
 }
 
-func flip(img image.Image) image.Image {
-	size := img.Bounds().Size()
-	flipImg := image.NewNRGBA(img.Bounds())
+func flip(img *image.Image) *image.Image {
+	size := (*img).Bounds().Size()
+	flipImg := image.NewNRGBA((*img).Bounds())
 	for x := 0; x < size.X; x++ {
 		for y := 0; y < size.Y; y++ {
 			xp := size.X - x - 1
-			flipImg.Set(x, y, img.At(xp, y))
+			flipImg.Set(x, y, (*img).At(xp, y))
 		}
 	}
-	return flipImg
+	returnImg := image.Image(flipImg)
+	return &returnImg
 }
 
 // ////////////////////////////////////////////////////////////////////////////
