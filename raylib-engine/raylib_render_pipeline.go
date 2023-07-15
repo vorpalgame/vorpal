@@ -6,6 +6,7 @@ import (
 	"github.com/vorpalgame/vorpal/lib"
 )
 
+// TODO Revamp this
 type RenderTransaction interface {
 	GetDrawEvent() bus.DrawEvent
 	SetDrawEvent(event bus.DrawEvent)
@@ -24,7 +25,7 @@ type renderData struct {
 	DrawEvent                      bus.DrawEvent
 	TextEvent                      bus.TextEvent
 	MediaCache                     MediaCache
-	RenderImage                    *rl.Image //Mot used currently but will be in future instead of cache.
+	RenderImage                    *rl.Image
 	RenderTexture, PreviousTexture *rl.Texture2D
 }
 

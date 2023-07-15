@@ -6,8 +6,8 @@ import (
 
 	//"time"
 
-	engine "github.com/vorpalgame/vorpal/raylib-engine"
-	//engine "github.com/vorpalgame/vorpal/native-engine"
+	//engine "github.com/vorpalgame/vorpal/raylib-engine"
+	engine "github.com/vorpalgame/vorpal/native-engine"
 	"github.com/vorpalgame/vorpal/samples/tarot"
 	"github.com/vorpalgame/vorpal/samples/zombiecide"
 )

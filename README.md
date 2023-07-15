@@ -5,9 +5,9 @@ The libraries are currently modularized and are being revamped on feedback from 
 
 The development of the native engine has brought to light some common design elements that may be standardized and for which wrapper classes will be developed. For example, the native Go mouse.Event uses float32 for X,Y cursor, and stores button state as a number with bit masks for modifiers. The wrapper class can use an opionionated of the API to provide more convenience to the developer. As an example, insted of bit masking or comparsion to determine button state, one might have check the wapper event like this:
 
-myMouseEvent.LeftMouseButton().IsPressed()
+The new Native design is all Go so uses more standard async and concurrent mechanisms. The Raylib based C version is a bit trickier in that regard as resources cannot be touched while they are being used by raylib. 
 
-The design and tests for that are under way and are in a new mouse module in the library. 
+The next step wil be to create a native library and pipeline for processing that loads, resizes and does other image operations that can be used by both the raylib engine and the native engine. In fact, it will be the heart of the native engine. This will permit serving up finished or mostly finished images to Raylib which can then blit them to the graphics card.
 
 ## Vorpal Game &amp; Simulation Engine for Go
 
