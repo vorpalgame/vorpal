@@ -9,7 +9,6 @@ import (
 type MediaCache interface {
 	CacheImages(event bus.DrawLayersEvent)
 	CacheFonts(event lib.Font)
-	DoCacheControl(event bus.ImageCacheEvent)
 	GetImage(img string) *rl.Image
 	GetFont(fontName string) *rl.Font
 	GetAudio(fileName string) *rl.Sound
@@ -79,17 +78,5 @@ func (c *MediaCacheData) CacheImages(evt bus.DrawLayersEvent) {
 			}
 		}
 
-	}
-}
-
-func (c *MediaCacheData) DoCacheControl(evt bus.ImageCacheEvent) {
-	if evt != nil {
-		for _, op := range evt.GetImageCacheOperations() {
-			if op.GetOperation() == "add" {
-				if c.imageCache[op.GetImage()] == nil {
-					c.imageCache[op.GetImage()] = rl.LoadImage(op.GetImage())
-				}
-			}
-		}
 	}
 }

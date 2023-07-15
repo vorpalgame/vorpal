@@ -12,16 +12,22 @@ func NewEngine() lib.Engine {
 
 	e := engine{}
 
-	e.StandardMediaPeerController = bus.NewGameController()
 	e.VorpalBus = bus.GetVorpalBus()
+	e.RaylibPeerController = NewRaylibPeerController()
+	e.MediaCache = NewMediaCache()
+	e.VorpalBus.AddDrawEventListener(e.RaylibPeerController)
+	e.VorpalBus.AddControlEventListener(e.RaylibPeerController)
+	e.VorpalBus.AddAudioEventListener(e.RaylibPeerController)
+	e.VorpalBus.AddKeysRegistrationEventListener(e.RaylibPeerController)
+	e.VorpalBus.AddTextEventListener(e.RaylibPeerController)
+
 	return &e
 }
 
-var cache = NewMediaCache()
-
 type engine struct {
 	bus.VorpalBus
-	bus.StandardMediaPeerController
+	RaylibPeerController
+	MediaCache
 	CurrentRenderImage *rl.Image
 	CurrentTexture     *rl.Texture2D
 }
@@ -36,18 +42,17 @@ func (e *engine) Start() {
 	//When the interface is set for render transaction we can stop using the pointer.
 
 	pipeline := NewRendererPipeline()
-
 	for !rl.WindowShouldClose() {
 		//async safe.
 		go e.sendMouseEvents()
 		go e.sendKeyEvents()
 		go raylibProcessControlEvent(e.GetControlEvents())
-		go raylibProcessAudioEvent(e.GetAudioEvent(), cache)
+		go raylibProcessAudioEvent(e.GetAudioEvent(), e.MediaCache)
 		//Baton pass between threads...
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RayWhite)
-		tx := NewRenderTransaction(e.GetDrawEvent(), e.GetTextEvent(), cache, e.CurrentTexture)
+		tx := NewRenderTransaction(e.GetDrawEvent(), e.GetTextEvent(), e.MediaCache, e.CurrentTexture)
 		pipeline.Execute(&tx)
 		if tx.RenderTexture != nil {
 			e.CurrentTexture = tx.RenderTexture
@@ -82,6 +87,7 @@ func getMouseEvent() mouse.Event {
 func (e *engine) sendKeyEvents() {
 
 	if e.GetKeysRegistrationEvent() != nil {
+
 		for _, r := range e.GetKeysRegistrationEvent().GetRunes() {
 			//We currently pass as "string" so have to fish out the first letter. Refactor later.
 

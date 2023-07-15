@@ -102,7 +102,7 @@ func renderText(evt bus.MultilineTextEvent, tx *renderData) {
 	renderImg := tx.RenderImage
 
 	if renderImg != nil {
-		cache.CacheFonts(evt)
+		tx.MediaCache.CacheFonts(evt)
 		//TODO The lines will not be wrapped here so this is temporary
 		//The next step is to send each presplit line from the other side of the bus
 		//and then iterate over it here.
@@ -111,8 +111,8 @@ func renderText(evt bus.MultilineTextEvent, tx *renderData) {
 		var x = float32(intx)
 		var y = float32(inty)
 		for _, txt := range evt.GetText() {
-			cache.CacheFonts(txt)
-			rl.ImageDrawTextEx(renderImg, rl.Vector2{x, y}, *cache.GetFont(txt.GetFont()), txt.GetText(), float32(txt.GetFontSize()), 0, rl.Black)
+			tx.MediaCache.CacheFonts(txt)
+			rl.ImageDrawTextEx(renderImg, rl.Vector2{x, y}, *tx.MediaCache.GetFont(txt.GetFont()), txt.GetText(), float32(txt.GetFontSize()), 0, rl.Black)
 			//How to do line spacing????
 			y += float32(txt.GetFontSize()) * float32(1.1) //Extra space..
 		}
@@ -129,7 +129,7 @@ var drawRenderer = func(tx *renderData) {
 	if tx.DrawEvent != nil {
 		switch evt := tx.DrawEvent.(type) {
 		case bus.DrawLayersEvent:
-			cache.CacheImages(evt)
+			tx.MediaCache.CacheImages(evt)
 			renderImageLayers(evt, tx)
 		}
 	}

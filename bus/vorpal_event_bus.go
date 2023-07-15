@@ -6,21 +6,18 @@ type vorpalEventBus struct {
 	drawEventListenerChannels            []chan DrawEvent
 	audioEventListenerChannels           []chan AudioEvent
 	textEventListenerChannels            []chan TextEvent
-	imageCacheEventListenerChannels      []chan ImageCacheEvent
 	keysRegistrationEventListenerChannel []chan KeysRegistrationEvent
 	controlEventListenerChannel          []chan ControlEvent
 }
 
 type VorpalBus interface {
-	//Convenience listener collectionss...
-	AddControllerListener(eventListener ControllerListener)
+
 	///Individual listeners....
 	AddKeyEventListener(eventListener KeyEventListener)
 	AddMouseListener(eventListener MouseEventListener)
 	AddDrawEventListener(eventListener DrawEventListener)
 	AddAudioEventListener(eventListener AudioEventListener)
 	AddTextEventListener(eventListener TextEventListener)
-	AddImageCacheEventListener(eventListener ImageCacheEventListener)
 	AddKeysRegistrationEventListener(eventListener KeysRegistrationEventListener)
 	AddControlEventListener(eventListener ControlEventListener)
 
@@ -30,7 +27,6 @@ type VorpalBus interface {
 	SendDrawEvent(event DrawEvent)
 	SendAudioEvent(event AudioEvent)
 	SendTextEvent(event TextEvent)
-	SendImageCacheEvent(event ImageCacheEvent)
 	SendControlEvent(event ControlEvent)
 }
 
@@ -38,14 +34,6 @@ var eb = vorpalEventBus{}
 
 func GetVorpalBus() VorpalBus {
 	return &eb
-}
-
-func (eb *vorpalEventBus) AddControllerListener(eventListener ControllerListener) {
-	eb.AddDrawEventListener(eventListener)
-	eb.AddAudioEventListener(eventListener)
-	eb.AddTextEventListener(eventListener)
-	eb.AddKeysRegistrationEventListener(eventListener)
-	eb.AddControlEventListener(eventListener)
 }
 
 // Channels that can buffer multiple events or where we don't care for only the latest
@@ -112,18 +100,6 @@ func (bus *vorpalEventBus) AddKeyEventListener(eventListener KeyEventListener) {
 
 func (bus *vorpalEventBus) SendKeyEvent(event KeyEvent) {
 	for _, channel := range bus.keyEventListenerChannels {
-		channel <- event
-	}
-}
-
-func (bus *vorpalEventBus) AddImageCacheEventListener(eventListener ImageCacheEventListener) {
-	listenerChannel := make(chan ImageCacheEvent, 10)
-	bus.imageCacheEventListenerChannels = append(bus.imageCacheEventListenerChannels, listenerChannel)
-	go eventListener.OnImageCacheEvent(listenerChannel)
-}
-
-func (bus *vorpalEventBus) SendImageCacheEvent(event ImageCacheEvent) {
-	for _, channel := range bus.imageCacheEventListenerChannels {
 		channel <- event
 	}
 }
