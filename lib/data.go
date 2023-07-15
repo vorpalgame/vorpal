@@ -70,7 +70,7 @@ type Scene struct {
 	WindowTitle  string          `yaml:"WindowTitle"`
 	WindowWidth  int             `yaml:"WindowWidth"`
 	WindowHeight int             `yaml:"WindowHeight"`
-	RegisterKeys []string        `yaml:"RegisterKeys"`
+	RegisterKeys []rune          `yaml:"RegisterKeys"`
 	Background   *ImageLayerData `yaml:"Background"`
 	BehaviorMap  *ImageLayerData `yaml:"BehaviorMap"`
 	Foreground   *ImageLayerData `yaml:"Foreground"`

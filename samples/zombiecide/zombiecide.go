@@ -23,7 +23,6 @@ type zombiecide struct {
 var zombies = zombiecide{}
 var fontName = "./samples/resources/fonts/Roboto-Regular.ttf"
 
-// TODO Refactor this start up to make it more idiomatic and bootstrap from the ymal
 func Init() {
 	log.Println("New zombie game")
 
@@ -67,7 +66,7 @@ func Init() {
 	//TODO currently we inject this into the navigator but may
 	//be better as wrapper or chain of responsiblity.
 	stateMachineZombie.Navigator.ActionStageController = &ac
-	textEvent := bus.NewMultilineTextEvent(fontName, 18, 0, 0).AddText("Henry follows the mouse point where legally possible.\nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.")
+	textEvent := bus.NewMultilineTextEvent(fontName, 18, 0, 0).AddText("Henry follows the mouse point where legally possible.\nLeft mouse button to initiate attack!!!\nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.")
 	textEvent.SetLocation(100, 100)
 	//
 	for {
@@ -90,15 +89,15 @@ func Init() {
 
 func (z *zombiecide) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
-
-		if evt.EqualsString("e") {
+		//TODO We need to standardize the rune handling. The 'e' gets pressed but 'E' gets reported.
+		if evt.EqualsRune('e') || evt.EqualsRune('E') {
 			os.Exit(0)
-		} else if evt.EqualsString("r") {
+		} else if evt.EqualsRune('r') {
 			//TODO Stop and close old resources if necessary...
 			//zombies.zombie = NewZombie()
-		} else if evt.EqualsString("h") {
+		} else if evt.EqualsRune('h') {
 			z.currentZombie = "h"
-		} else if evt.EqualsString("g") {
+		} else if evt.EqualsRune('g') {
 			z.currentZombie = "g"
 		} else {
 			z.keyEvent = evt

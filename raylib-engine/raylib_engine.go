@@ -4,6 +4,8 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
+	"golang.org/x/mobile/event/key"
+	"golang.org/x/mobile/event/mouse"
 )
 
 func NewEngine() lib.Engine {
@@ -59,20 +61,36 @@ func (e *engine) Start() {
 }
 
 func (e *engine) sendMouseEvents() {
-	evt := bus.NewMouseEvent(getMouseButton(rl.MouseLeftButton, "Left"), getMouseButton(rl.MouseMiddleButton, "Center"), getMouseButton(rl.MouseRightButton, "Right"), int32(rl.GetMouseX()), int32(rl.GetMouseY()))
+	evt := bus.NewMouseEvent(getMouseEvent())
 	e.SendMouseEvent(evt)
 
 }
 
-func getMouseButton(button int32, buttonName string) lib.MouseButtonState {
-	return lib.NewMouseButtonState(buttonName, rl.IsMouseButtonDown(button))
+// TODO We need to complete the mapping from rl mouse to mouse.Event
+func getMouseEvent() mouse.Event {
+	evt := mouse.Event{}
+	evt.X = float32(rl.GetMouseX())
+	evt.Y = float32(rl.GetMouseY())
+	if rl.IsMouseButtonDown(rl.MouseLeftButton) {
+		evt.Button = mouse.ButtonLeft
+		evt.Direction = mouse.DirPress
+	}
+	return evt
 }
 
+// TODO Revamp
 func (e *engine) sendKeyEvents() {
+
 	if e.GetKeysRegistrationEvent() != nil {
-		for _, key := range e.GetKeysRegistrationEvent().GetKeys() {
-			if rl.IsKeyPressed(key.ToAscii()) {
-				e.SendKeyEvent(bus.NewKeyEvent(key))
+		for _, r := range e.GetKeysRegistrationEvent().GetRunes() {
+			//We currently pass as "string" so have to fish out the first letter. Refactor later.
+
+			if rl.IsKeyPressed(r) {
+				evt := key.Event{}
+				evt.Rune = r
+				evt.Direction = key.DirPress
+				evt.Code = key.Code(r)
+				e.SendKeyEvent(bus.NewKeyEvent(evt))
 			}
 		}
 	}

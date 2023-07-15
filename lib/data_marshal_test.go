@@ -7,10 +7,10 @@ import (
 
 // Rename after integration...
 
-var testMetadataFile string = "../etc/testMetadataFile.yaml"
-var testLayerFile string = "../etc/testLayerFile.yaml"
-var testNavigatorFile string = "../etc/testNavigatorFile.yaml"
-var testSceneFile string = "../etc/testSceneFile.yaml"
+var testMetadataFile = "testdata/testMetadataFile.yaml"
+var testLayerFile = "testdata/testLayerFile.yaml"
+var testNavigatorFile = "testdata/testNavigatorFile.yaml"
+var testSceneFile = "testdata/testSceneFile.yaml"
 
 func TestRoundtripImageMetadata(t *testing.T) {
 	out := createImageData()
@@ -56,5 +56,5 @@ func createNavigatorData() *NavigatorData {
 }
 
 func createScene() *Scene {
-	return &Scene{"Window Title", 1920, 1080, []string{"e", "E", "R", "r", "g", "G", "h", "H"}, createImageLayer(), createImageLayer(), createImageLayer(), []string{"/samples/etc/henry.yaml"}}
+	return &Scene{"Window Title", 1920, 1080, []rune{'e', 'E', 'R', 'r', 'g', 'G', 'h', 'H'}, createImageLayer(), createImageLayer(), createImageLayer(), []string{"./samples/etc/henry.yaml"}}
 }

@@ -2,14 +2,14 @@ WindowTitle: Zombiecide
 WindowWidth: 1920
 WindowHeight: 1080
 RegisterKeys:
-  - e
-  - E
-  - R
-  - r
-  - g
-  - G
-  - h
-  - H
+  - 101
+  - 69
+  - 82
+  - 114
+  - 103
+  - 71
+  - 104
+  - 72
 Background:
   LayerMetadata:
     - ImageFileName: ./samples/resources/zombiecide/background.png
