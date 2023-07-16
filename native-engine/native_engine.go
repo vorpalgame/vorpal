@@ -3,7 +3,7 @@ package native_engine
 import (
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
-	"github.com/vorpalgame/vorpal/media"
+	"github.com/vorpalgame/vorpal/util"
 	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/image/draw"
