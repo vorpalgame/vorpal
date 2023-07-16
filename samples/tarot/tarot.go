@@ -51,7 +51,7 @@ func NewGame() TarotGame {
 func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 
-		if evt.EqualsRune('S') || evt.EqualsRune('s') && evt.IsReleased() {
+		if evt.Equals('S') || evt.Equals('s') && evt.IsReleased() {
 			//t.ShuffleAudio).Stop()
 			t.bus.SendAudioEvent(bus.NewStopAudioEvent(&t.ShuffleAudio))
 			layer := lib.ImageLayerData{}
@@ -63,7 +63,7 @@ func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 			t.bus.SendAudioEvent(bus.NewPlayAudioEvent(&t.ShuffleAudio))
 			t.currentCard = 0
 			t.doSendCard()
-		} else if evt.EqualsRune('n') && evt.IsReleased() && t.shuffled {
+		} else if evt.Equals('n') && evt.IsReleased() && t.shuffled {
 			t.doSendCard()
 		}
 

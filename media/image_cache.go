@@ -10,21 +10,22 @@ var (
 	imageMapMutex = sync.RWMutex{}
 )
 
-type MediaCache interface {
+type ImageCache interface {
 	GetImage(fileName string) *image.Image
 	CacheImage(fileName string, img *image.Image)
 }
-type MediaCacheData struct {
+type imageCacheData struct {
 	imageCache map[string]*image.Image
 }
 
-func NewMediaCache() MediaCache {
-	cache := MediaCacheData{}
+func NewImageCache() ImageCache {
+	cache := imageCacheData{}
 	cache.imageCache = make(map[string]*image.Image, 100)
 
 	return &cache
 }
-func (c *MediaCacheData) GetImage(fileName string) *image.Image {
+
+func (c *imageCacheData) GetImage(fileName string) *image.Image {
 	var img *image.Image
 	imageMapMutex.Lock()
 	img = c.imageCache[fileName]
@@ -33,7 +34,7 @@ func (c *MediaCacheData) GetImage(fileName string) *image.Image {
 
 }
 
-func (c *MediaCacheData) CacheImage(fileName string, img *image.Image) {
+func (c *imageCacheData) CacheImage(fileName string, img *image.Image) {
 	imageMapMutex.Lock()
 	c.imageCache[fileName] = img
 	imageMapMutex.Unlock()

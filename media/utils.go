@@ -8,8 +8,18 @@ import (
 	"os"
 )
 
+func GetFile(fileName string) *os.File {
+	log.Println(fileName)
+	f, err := os.Open(fileName)
+	if err != nil {
+		log.Fatal(err)
+
+	}
+	defer f.Close()
+	return f
+}
+
 func LoadImage(imageFileName string) *image.Image {
-	log.Println(imageFileName)
 	f, err := os.Open(imageFileName)
 	if err != nil {
 		log.Fatal(err)
@@ -18,7 +28,7 @@ func LoadImage(imageFileName string) *image.Image {
 	defer f.Close()
 	img, err := png.Decode(f)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error during decode: ", err)
 	}
 	return &img
 }

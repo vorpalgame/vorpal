@@ -13,7 +13,7 @@ import (
 type pipelineData struct {
 	drawEventChannel chan bus.DrawEvent
 	outputChannel    chan *image.RGBA
-	MediaCache
+	ImageCache
 }
 
 func (data *pipelineData) OnDrawEvent(inputChannel <-chan bus.DrawEvent) {
@@ -23,13 +23,13 @@ func (data *pipelineData) OnDrawEvent(inputChannel <-chan bus.DrawEvent) {
 }
 
 func NewRenderPipeline(outputChannel chan *image.RGBA) {
-	data := pipelineData{make(chan bus.DrawEvent, 10), outputChannel, NewMediaCache()}
+	data := pipelineData{make(chan bus.DrawEvent, 10), outputChannel, NewImageCache()}
 	bus.GetVorpalBus().AddDrawEventListener(&data)
 	go renderPipelineFunc(&data, data.drawEventChannel)
 }
 
 var renderPipelineFunc = func(data *pipelineData, inputChannel <-chan bus.DrawEvent) {
-	cache := data.MediaCache
+	cache := data.ImageCache
 	loadCacheResizeChan := make(chan bus.DrawLayersEvent, 1)
 	NewLoadResizeCachePipeline(&cache, loadCacheResizeChan)
 	renderChan := make(chan bus.DrawLayersEvent, 1)

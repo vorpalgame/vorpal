@@ -8,7 +8,7 @@ import (
 	"image"
 )
 
-func NewLoadResizeCachePipeline(mediaCache *MediaCache, inputChannel chan bus.DrawLayersEvent) {
+func NewLoadResizeCachePipeline(mediaCache *ImageCache, inputChannel chan bus.DrawLayersEvent) {
 	go loadResizeCachePipeline(mediaCache, inputChannel)
 
 }
@@ -19,7 +19,7 @@ type loadResizeCacheData struct {
 	resizedImage  *image.RGBA
 }
 
-var loadResizeCachePipeline = func(mediaCache *MediaCache, inputChannel <-chan bus.DrawLayersEvent) {
+var loadResizeCachePipeline = func(mediaCache *ImageCache, inputChannel <-chan bus.DrawLayersEvent) {
 
 	loadChan := make(chan *loadResizeCacheData, 100)
 	go loadImageFunc(mediaCache, loadChan)
@@ -37,7 +37,7 @@ var loadResizeCachePipeline = func(mediaCache *MediaCache, inputChannel <-chan b
 	}
 }
 
-var loadImageFunc = func(mediaCache *MediaCache, inputChannel chan *loadResizeCacheData) {
+var loadImageFunc = func(mediaCache *ImageCache, inputChannel chan *loadResizeCacheData) {
 	resizeChan := make(chan *loadResizeCacheData, 100)
 	go resizeImageFunc(mediaCache, resizeChan)
 	for evt := range inputChannel {
@@ -46,7 +46,7 @@ var loadImageFunc = func(mediaCache *MediaCache, inputChannel chan *loadResizeCa
 	}
 }
 
-var resizeImageFunc = func(mediaCache *MediaCache, inputChannel chan *loadResizeCacheData) {
+var resizeImageFunc = func(mediaCache *ImageCache, inputChannel chan *loadResizeCacheData) {
 	cacheChan := make(chan *loadResizeCacheData, 100)
 	go cacheImageFunc(mediaCache, cacheChan)
 	for evt := range inputChannel {
@@ -59,7 +59,7 @@ var resizeImageFunc = func(mediaCache *MediaCache, inputChannel chan *loadResize
 	}
 }
 
-var cacheImageFunc = func(cache *MediaCache, inputChannel chan *loadResizeCacheData) {
+var cacheImageFunc = func(cache *ImageCache, inputChannel chan *loadResizeCacheData) {
 	for evt := range inputChannel {
 		store := image.Image(evt.resizedImage)
 		(*cache).CacheImage(evt.imageMetadata.ImageFileName, &store)

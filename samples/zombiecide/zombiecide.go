@@ -66,7 +66,7 @@ func NewGame() {
 	//TODO currently we inject this into the navigator but may
 	//be better as wrapper or chain of responsiblity.
 	stateMachineZombie.Navigator.ActionStageController = &ac
-	textEvent := bus.NewMultilineTextEvent(fontName, 18, 0, 0).AddText("Henry follows the mouse point where legally possible.\nLeft mouse button to initiate attack!!!\nStand still too long and he dies!\n Press 'e' to exit or 'r' to restart.")
+	textEvent := bus.NewMultilineTextEvent(fontName, 18, 0, 0).AddText("Henry follows the mouse point where legally possible.\nLeft mouse button to initiate attack!!!\nStand still too long and he dies!\n Press 'e' to exit.")
 	textEvent.SetLocation(100, 100)
 	//
 	for {
@@ -89,15 +89,14 @@ func NewGame() {
 
 func (z *zombiecide) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
-		//TODO We need to standardize the rune handling. The 'e' gets pressed but 'E' gets reported.
-		if evt.EqualsRune('e') || evt.EqualsRune('E') {
+		if evt.EqualsIgnoreCase('e') {
 			os.Exit(0)
-		} else if evt.EqualsRune('r') {
+		} else if evt.Equals('r') {
 			//TODO Stop and close old resources if necessary...
 			//zombies.zombie = NewZombie()
-		} else if evt.EqualsRune('h') {
+		} else if evt.EqualsIgnoreCase('h') {
 			z.currentZombie = "h"
-		} else if evt.EqualsRune('g') {
+		} else if evt.EqualsIgnoreCase('g') {
 			z.currentZombie = "g"
 		} else {
 			z.keyEvent = evt

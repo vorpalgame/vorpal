@@ -3,7 +3,7 @@ package native_engine
 import (
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
-	"github.com/vorpalgame/vorpal/util"
+	"github.com/vorpalgame/vorpal/media"
 	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/image/draw"
@@ -18,19 +18,17 @@ import (
 	"log"
 )
 
-//TODO We should revisit the caching mechanisms and flushing and perhaps caching reversed/flipped images.
-
 type engine struct {
 	bus.VorpalBus
 	//bus.StandardMediaPeerController
-	MediaCache
+	audioCache                              util.AudioCache
+	imageCache                              util.ImageCache
 	currentRenderImage, currentDisplayImage image.Image
 	window                                  screen.Window
 	screen                                  screen.Screen
 
 	textEventChannel    chan bus.TextEvent
 	controlEventChannel chan bus.ControlEvent
-	audioEventChannel   chan bus.AudioEvent
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -40,12 +38,6 @@ type engine struct {
 //// implementation. The bus conveys the message but the internal channels are set up
 //// to reflect the processing and concurrency requirements.
 /////////////////////////////////////////////////////////////////////////////////////////
-
-func (e *engine) OnAudioEvent(inputChannel <-chan bus.AudioEvent) {
-	for evt := range inputChannel {
-		e.audioEventChannel <- evt
-	}
-}
 
 func (e *engine) OnControlEvent(inputChannel <-chan bus.ControlEvent) {
 	for evt := range inputChannel {
@@ -62,19 +54,17 @@ func (e *engine) OnTextEvent(inputChannel <-chan bus.TextEvent) {
 func NewEngine() lib.Engine {
 
 	log.Println("New native engine...")
-	e := engine{}
-	e.MediaCache = NewMediaCache()
+	e := engine{imageCache: util.NewImageCache(), audioCache: util.NewAudioCache()}
 
 	e.textEventChannel = make(chan bus.TextEvent, 1)
 	e.controlEventChannel = make(chan bus.ControlEvent, 1)
-	e.audioEventChannel = make(chan bus.AudioEvent, 1)
 
 	e.VorpalBus = bus.GetVorpalBus()
 	e.AddTextEventListener(&e)
 	e.AddControlEventListener(&e)
-	e.AddAudioEventListener(&e)
 	go initWindow(&e)
 	go runRenderPipeline(&e)
+	go util.NewAudioPipeline(&e.audioCache)
 	return &e
 }
 
@@ -97,8 +87,8 @@ var blitImage = func(e *engine, channel <-chan *image.RGBA) {
 		draw.Draw(b.RGBA(), b.Bounds(), buffer, *getPoint(0, 0), draw.Over)
 		e.window.Upload(image.Point{0, 0}, b, buffer.Bounds())
 		e.window.Publish()
-		//b.Release()
-		//buffer = nil
+		b.Release()
+		buffer = nil
 	}
 }
 
@@ -131,20 +121,14 @@ var initWindow = func(e *engine) {
 	})
 }
 
+// Note these are being slowly refactored away.
 func (e *engine) Start() {
 	log.Println("Start Native Engine...")
 	go textPipeline(e, e.textEventChannel)
-	go audioPipeline(e, e.audioEventChannel)
 	go controlPipeline(e, e.controlEventChannel)
 	for { //Loop until exit is called...
 	}
 	//Revisit the looping as we get more util components in place.
-}
-
-var audioPipeline = func(e *engine, inputChannel chan bus.AudioEvent) {
-	for event := range inputChannel {
-		_ = event
-	}
 }
 
 var controlPipeline = func(e *engine, inputChannel chan bus.ControlEvent) {

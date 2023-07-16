@@ -2,6 +2,7 @@ package bus
 
 import (
 	"golang.org/x/mobile/event/key"
+	"unicode"
 )
 
 func NewKeyEvent(key key.Event) KeyEvent {
@@ -34,7 +35,8 @@ func (k *keysRegistrationEvent) GetRunes() []rune {
 
 type KeyEvent interface {
 	ToRune() rune
-	EqualsRune(keyRune rune) bool
+	Equals(keyRune rune) bool
+	EqualsIgnoreCase(keyRune rune) bool
 	IsPressed() bool
 	IsReleased() bool
 }
@@ -55,6 +57,9 @@ func (k *keyEvent) ToRune() rune {
 	return k.key.Rune
 }
 
-func (k *keyEvent) EqualsRune(keyRune rune) bool {
+func (k *keyEvent) EqualsIgnoreCase(keyRune rune) bool {
+	return k.key.Rune == unicode.ToLower(keyRune) || k.key.Rune == unicode.ToUpper(keyRune)
+}
+func (k *keyEvent) Equals(keyRune rune) bool {
 	return k.key.Rune == keyRune
 }
