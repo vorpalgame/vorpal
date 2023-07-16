@@ -13,6 +13,11 @@ func NewAudioPlayer() AudioPlayer {
 	return &audioPlayer{}
 }
 
+const (
+	once = 1
+	loop = -1
+)
+
 type AudioPlayer interface {
 	Play()
 	Stop()
@@ -27,6 +32,7 @@ type audioPlayer struct {
 	stream  beep.StreamSeeker
 	format  beep.Format
 	file    *os.File
+	ctrl    *beep.Ctrl
 	playing bool
 }
 
@@ -38,6 +44,7 @@ func (s *audioPlayer) Load(fileName string) AudioPlayer {
 
 	}
 	s.stream, s.format, err = mp3.Decode(s.file)
+	s.ctrl = &beep.Ctrl{Streamer: beep.Loop(once, s.stream), Paused: false}
 	if err != nil {
 		log.Fatal(err)
 
@@ -46,13 +53,16 @@ func (s *audioPlayer) Load(fileName string) AudioPlayer {
 }
 
 func (s *audioPlayer) Play() {
-	speaker.Init(s.format.SampleRate, s.format.SampleRate.N(time.Second/10))
-	monitorChannel := make(chan bool)
 	s.playing = true
-	go monitor(s, monitorChannel)
-	speaker.Play(beep.Seq(s.stream, beep.Callback(func() {
-		monitorChannel <- false
-	})))
+	speaker.Init(s.format.SampleRate, s.format.SampleRate.N(time.Second/10))
+	s.ctrl.Paused = false
+	//s.stream.Seek(0)
+	speaker.Play(s.ctrl)
+	//monitorChannel := make(chan bool)
+	//go monitor(s, monitorChannel)
+	//speaker.Play(beep.Seq(s.stream, beep.Callback(func() {
+	//	monitorChannel <- false
+	//})))
 }
 
 var monitor = func(player AudioPlayer, inputChannel chan bool) {
@@ -71,14 +81,17 @@ func (s *audioPlayer) IsPlaying() bool {
 	return s.playing
 }
 func (s *audioPlayer) Stop() {
-	s.playing = false
+	s.Pause()
+	//Go to end...
+	s.stream.Seek(s.stream.Len())
+	//	speaker.Clear()
 
-	//TODO right now this only monitor but
-	//should be a control.
 }
 
 func (s *audioPlayer) Pause() {
-
+	s.playing = false
+	s.ctrl.Paused = true
+	speaker.Play(s.ctrl)
 }
 
 func (s *audioPlayer) Unload() {
