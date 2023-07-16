@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var testFile = "../samples/resources/zombiecide/attack.mp3"
+var testFile = "../../samples/resources/zombiecide/attack.mp3"
 
 func TestAudioPlayer(t *testing.T) {
 

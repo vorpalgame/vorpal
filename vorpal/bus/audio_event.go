@@ -35,11 +35,11 @@ type playAudioEventData struct {
 	isLoop   bool
 }
 
-func (p playAudioEventData) GetAudioFile() string {
+func (p *playAudioEventData) GetAudioFile() string {
 	return p.fileName
 }
 
-func (p playAudioEventData) IsLoop() bool {
+func (p *playAudioEventData) IsLoop() bool {
 	return p.isLoop
 }
 
@@ -53,6 +53,6 @@ type stopAudioEventData struct {
 	fileName string
 }
 
-func (s stopAudioEventData) GetAudioFile() string {
+func (s *stopAudioEventData) GetAudioFile() string {
 	return s.fileName
 }
