@@ -1,4 +1,4 @@
-module github.com/vorpalgame/vorpal/samples
+module github.com/vorpalgame/samples
 
 go 1.20
 
@@ -7,7 +7,6 @@ require (
 	github.com/stretchr/testify v1.8.4
 	gopkg.in/yaml.v3 v3.0.1
 )
-
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect

@@ -1,7 +1,7 @@
-package zombiecide
+package main
 
 import (
-	"github.com/vorpalgame/vorpal/samples/zombiecide/state_machines"
+	"github.com/vorpalgame/samples/zombiecide/state_machines"
 	"log"
 	"os"
 	"time"
@@ -21,7 +21,9 @@ type zombiecide struct {
 //Sample file for different possible use cases...
 
 var zombies = zombiecide{}
-var fontName = "./samples/resources/fonts/Roboto-Regular.ttf"
+
+// TODO Move to bootstrap.yaml
+var fontName = "zombiecide/resources/fonts/Roboto-Regular.ttf"
 
 func NewGame() {
 	log.Println("New zombie game")
@@ -29,7 +31,7 @@ func NewGame() {
 	vbus := bus.GetVorpalBus()
 	//This loading/configuration needs to be consolidated into configurator
 	//as we eliminate Viper in the next step.
-	scene := lib.UnmarshalScene("./samples/etc/zombie_bootstrap.yaml")
+	scene := lib.UnmarshalScene("zombiecide/etc/bootstrap.yaml")
 	vbus.SendControlEvent(bus.NewWindowSizeEvent(scene.WindowWidth, scene.WindowHeight))
 	vbus.SendControlEvent(bus.NewWindowTitleEvent(scene.WindowTitle))
 

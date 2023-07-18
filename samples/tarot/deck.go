@@ -1,4 +1,4 @@
-package tarot
+package main
 
 import (
 	"fmt"

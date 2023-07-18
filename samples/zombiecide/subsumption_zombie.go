@@ -1,4 +1,4 @@
-package zombiecide
+package main
 
 import (
 	"github.com/vorpalgame/vorpal/bus"

@@ -41,7 +41,7 @@ func (d *deck) Init() {
 
 	// 		cardSuit := "resources/" + value + "_of_" + suit + ".png"
 
-	// 		d.cards = append(d.cards, &card{value, suit, cardSuit})
+	// 		d.resources = append(d.resources, &card{value, suit, cardSuit})
 	// 		loadImagesEvent.AddImage(cardSuit)
 
 	// 	}

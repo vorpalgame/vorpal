@@ -12,7 +12,7 @@ RegisterKeys:
   - 72
 Background:
   LayerMetadata:
-    - ImageFileName: ./samples/resources/zombiecide/background.png
+    - ImageFileName: zombiecide/resources/background.png
       X: 0
       "Y": 0
       Width: 1920
@@ -20,7 +20,7 @@ Background:
       HorizontalFlip: false
 BehaviorMap:
   LayerMetadata:
-    - ImageFileName: ./samples/resources/zombiecide/behaviorland.png
+    - ImageFileName: zombiecide/resources/behaviorland.png
       X: 0
       "Y": 0
       Width: 1920
@@ -28,11 +28,11 @@ BehaviorMap:
       HorizontalFlip: false
 Foreground:
   LayerMetadata:
-    - ImageFileName: ./samples/resources/zombiecide/foreground.png
+    - ImageFileName: zombiecide/resources/foreground.png
       X: 0
       "Y": 0
       Width: 1920
       Height: 1080
       HorizontalFlip: false
 Actors:
-  - ./samples/etc/henry.yaml
+  - zombiecide/etc/henry.yaml

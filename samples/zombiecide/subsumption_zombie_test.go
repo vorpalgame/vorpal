@@ -1,4 +1,4 @@
-package zombiecide
+package main
 
 //
 //func TestBasicSubsumption(t *testing.T) {

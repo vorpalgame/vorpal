@@ -1,4 +1,4 @@
-package tarot
+package main
 
 import (
 	"strings"
@@ -32,7 +32,7 @@ type Tarot struct {
 func NewGame() TarotGame {
 
 	currentGame := Tarot{}
-	lib.UnmarshalFile("./samples/etc/tarot_bootstrap.yaml", &currentGame)
+	lib.UnmarshalFile("tarot/etc/bootstrap.yaml", &currentGame)
 
 	currentGame.bus = bus.GetVorpalBus()
 
