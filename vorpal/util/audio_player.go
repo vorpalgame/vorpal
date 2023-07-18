@@ -10,7 +10,7 @@ import (
 )
 
 func NewAudioPlayer() AudioPlayer {
-	return &audioPlayer{}
+	return &audioPlayer{ctrl: &beep.Ctrl{}}
 }
 
 const (
@@ -58,26 +58,13 @@ func (s *audioPlayer) PlayLooped() {
 }
 
 func (s *audioPlayer) play(loop int) {
+
 	s.ctrl = &beep.Ctrl{Streamer: beep.Loop(loop, s.stream), Paused: false}
-
 	speaker.Init(s.format.SampleRate, s.format.SampleRate.N(time.Second/10))
+	s.stream.Seek(0)
 	s.ctrl.Paused = false
-	//s.stream.Seek(0)
-	//monitorChannel := make(chan bool)
-	//go s.monitor(monitorChannel)
 	speaker.Play(s.ctrl)
-	//beep.Callback(func() {
-	//	monitorChannel <- true //when done...
-	//}))
 }
-
-// Event is used _ but we may use for more in the future.
-//func (s *audioPlayer) monitor(inputChannel chan bool) {
-//	for evt := range inputChannel {
-//		s.ctrl.Paused = evt
-//
-//	}
-//}
 
 // TODO Distinguish betweeen pause and stopped??
 func (s *audioPlayer) IsStopped() bool {
