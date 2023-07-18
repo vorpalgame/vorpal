@@ -19,7 +19,8 @@ const (
 )
 
 type AudioPlayer interface {
-	Play()
+	PlayOnce()
+	PlayLooped()
 	Stop()
 	Pause()
 	Unload()
@@ -29,11 +30,10 @@ type AudioPlayer interface {
 }
 
 type audioPlayer struct {
-	stream  beep.StreamSeeker
-	format  beep.Format
-	file    *os.File
-	ctrl    *beep.Ctrl
-	playing bool
+	stream beep.StreamSeeker
+	format beep.Format
+	file   *os.File
+	ctrl   *beep.Ctrl
 }
 
 func (s *audioPlayer) Load(fileName string) AudioPlayer {
@@ -44,54 +44,66 @@ func (s *audioPlayer) Load(fileName string) AudioPlayer {
 
 	}
 	s.stream, s.format, err = mp3.Decode(s.file)
-	s.ctrl = &beep.Ctrl{Streamer: beep.Loop(once, s.stream), Paused: false}
-	if err != nil {
-		log.Fatal(err)
 
-	}
 	return s
 }
 
-func (s *audioPlayer) Play() {
-	s.playing = true
+func (s *audioPlayer) PlayOnce() {
+	s.play(once)
+
+}
+
+func (s *audioPlayer) PlayLooped() {
+	s.play(loop)
+}
+
+func (s *audioPlayer) play(loop int) {
+	s.ctrl = &beep.Ctrl{Streamer: beep.Loop(loop, s.stream), Paused: false}
+
 	speaker.Init(s.format.SampleRate, s.format.SampleRate.N(time.Second/10))
 	s.ctrl.Paused = false
 	//s.stream.Seek(0)
-	speaker.Play(s.ctrl)
 	//monitorChannel := make(chan bool)
-	//go monitor(s, monitorChannel)
-	//speaker.Play(beep.Seq(s.stream, beep.Callback(func() {
-	//	monitorChannel <- false
-	//})))
+	//go s.monitor(monitorChannel)
+	speaker.Play(s.ctrl)
+	//beep.Callback(func() {
+	//	monitorChannel <- true //when done...
+	//}))
 }
 
-var monitor = func(player AudioPlayer, inputChannel chan bool) {
-	for evt := range inputChannel {
-		_ = evt
-		player.Stop()
+// Event is used _ but we may use for more in the future.
+//func (s *audioPlayer) monitor(inputChannel chan bool) {
+//	for evt := range inputChannel {
+//		s.ctrl.Paused = evt
+//
+//	}
+//}
 
-	}
-}
-
+// TODO Distinguish betweeen pause and stopped??
 func (s *audioPlayer) IsStopped() bool {
-	return !s.playing
+
+	return s.ctrl.Paused || s.stream.Position() == s.stream.Len()
 }
 
 func (s *audioPlayer) IsPlaying() bool {
-	return s.playing
+	return !s.IsStopped()
 }
 func (s *audioPlayer) Stop() {
-	s.Pause()
-	//Go to end...
-	s.stream.Seek(s.stream.Len())
-	//	speaker.Clear()
+	//
+	log.Println("Stop called")
+
+	speaker.Lock()
+	s.ctrl.Paused = true
+	speaker.Unlock()
 
 }
 
 func (s *audioPlayer) Pause() {
-	s.playing = false
+	log.Println("Pause called...")
+	speaker.Lock()
 	s.ctrl.Paused = true
-	speaker.Play(s.ctrl)
+	speaker.Unlock()
+
 }
 
 func (s *audioPlayer) Unload() {

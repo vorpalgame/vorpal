@@ -37,7 +37,7 @@ var loadCacheControlAudioPipeline = func(cache *AudioCache, inputChannel chan bu
 
 		switch evt := event.(type) {
 		case bus.PlayAudioEvent:
-			log.Println("Play audio event...")
+			log.Println("PlayOnce audio event...")
 			loadAudioChannel <- evt
 		case bus.StopAudioEvent:
 			log.Println("Stop audio event...")
@@ -64,7 +64,7 @@ var loadAudio = func(cache *AudioCache, inputChannel chan bus.PlayAudioEvent) {
 
 var playAudio = func(cache *AudioCache, inputChannel chan bus.PlayAudioEvent) {
 	for evt := range inputChannel {
-		log.Println("Play audio function:", evt)
+		log.Println("PlayOnce audio function:", evt)
 		var player AudioPlayer
 		for player == nil {
 			player = (*cache).GetPlayer(evt.GetAudioFile())
@@ -72,7 +72,7 @@ var playAudio = func(cache *AudioCache, inputChannel chan bus.PlayAudioEvent) {
 		}
 		if player.IsStopped() {
 			log.Println("Go ahead and play...")
-			player.Play()
+			player.PlayOnce()
 		}
 	}
 }
@@ -80,10 +80,10 @@ var playAudio = func(cache *AudioCache, inputChannel chan bus.PlayAudioEvent) {
 var stopAudio = func(cache *AudioCache, inputChannel chan bus.StopAudioEvent) {
 	for evt := range inputChannel {
 		log.Println("Stop Audio: ", evt)
-		//player := (*cache).GetPlayer(evt.GetAudioFile())
-		//if player != nil {
-		//	player.Stop()
-		//}
+		player := (*cache).GetPlayer(evt.GetAudioFile())
+		if player != nil {
+			player.Stop()
+		}
 	}
 
 }
