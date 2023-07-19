@@ -6,6 +6,8 @@ import (
 	"github.com/vorpalgame/vorpal/lib"
 	"golang.org/x/mobile/event/key"
 	"golang.org/x/mobile/event/mouse"
+	"log"
+	"unicode"
 )
 
 func NewEngine() lib.Engine {
@@ -83,15 +85,13 @@ func getMouseEvent() mouse.Event {
 	return evt
 }
 
-// TODO Revamp
 func (e *engine) sendKeyEvents() {
 
 	if e.GetKeysRegistrationEvent() != nil {
-
+		log.Println(e.GetKeysRegistrationEvent())
 		for _, r := range e.GetKeysRegistrationEvent().GetRunes() {
-			//We currently pass as "string" so have to fish out the first letter. Refactor later.
-
-			if rl.IsKeyPressed(r) {
+			//TODO Let's wire a better mechanism for this...and pull it from the registration event.
+			if rl.IsKeyPressed(r) || rl.IsKeyPressed(unicode.ToUpper(r)) {
 				evt := key.Event{}
 				evt.Rune = r
 				evt.Direction = key.DirPress

@@ -32,8 +32,8 @@ func writeTarotData() {
 	tarot.Title = "Tarot Reading..."
 	tarot.BackgroundImage = "tarot/resources/resources/table.png"
 	//resources.RegisterKeys: ["s", ">S", ">N", ">n"]
-	tarot.HeaderFont = "tarot/resources/fonts/Roboto-Black.ttf"
-	tarot.TextFont = "samples/resources/fonts/Roboto-Regular.ttf"
+	tarot.HeaderFont = "tarot/resources/font/Roboto-Black.ttf"
+	tarot.TextFont = "samples/resources/font/Roboto-Regular.ttf"
 	//resources.ShuffleAudio = "samples/resources/audio/shuffle.mp3"
 	tarot.TarotDeck = getDeckData()
 

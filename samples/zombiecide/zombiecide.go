@@ -23,7 +23,7 @@ type zombiecide struct {
 var zombies = zombiecide{}
 
 // TODO Move to bootstrap.yaml
-var fontName = "zombiecide/resources/fonts/Roboto-Regular.ttf"
+var fontName = "zombiecide/resources/font/Roboto-Regular.ttf"
 
 func NewGame() {
 	log.Println("New zombie game")
@@ -93,7 +93,7 @@ func (z *zombiecide) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
 		if evt.EqualsIgnoreCase('e') {
 			os.Exit(0)
-		} else if evt.Equals('r') {
+		} else if evt.EqualsIgnoreCase('r') {
 			//TODO Stop and close old resources if necessary...
 			//zombies.zombie = NewZombie()
 		} else if evt.EqualsIgnoreCase('h') {
