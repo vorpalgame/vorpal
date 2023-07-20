@@ -144,7 +144,7 @@ var textPipeline = func(e *engine, inputChannel <-chan bus.TextEvent) {
 		case bus.MultilineTextEvent:
 			_ = evt
 		}
-		//log.Println("Text Event...")
+		//log.Println("Text RenderEvent...")
 		//log.Println(evt)
 	}
 }
