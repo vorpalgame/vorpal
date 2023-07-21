@@ -1,13 +1,7 @@
 # Vorpal Engine
 
 ## News
-The libraries are currently modularized and are being revamped on feedback from initial development work. A new native graphic engine, in addition to the Raylib engine, is being developed. This new Go native engine will be the reference engine as it will not require special C libraries, compilers or Go extension configuration. Raylib will still be used and will likely be more performant. One could develop using the reference engine and switch to Raylib for release. Future versions may also be developed for SDL2, Ebiten, etc. 
-
-The development of the native engine has brought to light some common design elements that may be standardized and for which wrapper classes will be developed. For example, the native Go mouse.Event uses float32 for X,Y cursor, and stores button state as a number with bit masks for modifiers. The wrapper class can use an opionionated of the API to provide more convenience to the developer. As an example, insted of bit masking or comparsion to determine button state, one might have check the wapper event like this:
-
-The new Native design is all Go so uses more standard async and concurrent mechanisms. The Raylib based C version is a bit trickier in that regard as resources cannot be touched while they are being used by raylib. 
-
-The next step wil be to create a native library and pipeline for processing that loads, resizes and does other image operations that can be used by both the raylib engine and the native engine. In fact, it will be the heart of the native engine. This will permit serving up finished or mostly finished images to Raylib which can then blit them to the graphics card.
+***The media components are going to be forked to a separate project and the Vorpal Engine will use them as dependencies. The new framework project will be useful for creating game engines, rendering for web applications, GUI components for metrology and monitoring, and pretty much any case you'd require that has graphics, audio or text rendering that will benefit from asynchronous, event based, Golang mechanics. ****
 
 ## Vorpal Game &amp; Simulation Engine for Go
 
