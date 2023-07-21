@@ -1,4 +1,4 @@
-package util
+package render
 
 ///No x11 packages here...
 import (

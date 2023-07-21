@@ -1,4 +1,4 @@
-package util
+package audio
 
 import (
 	"github.com/vorpalgame/vorpal/bus"
@@ -70,10 +70,8 @@ var playAudio = func(cache *AudioCache, inputChannel chan bus.PlayAudioEvent) {
 			player = (*cache).GetPlayer(evt.GetAudioFile())
 			log.Println("Player ", player)
 		}
-		if player.IsStopped() {
-			log.Println("Go ahead and play...")
-			player.PlayOnce()
-		}
+		player.Stop()
+		player.PlayOnce()
 	}
 }
 

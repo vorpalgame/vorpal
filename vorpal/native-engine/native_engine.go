@@ -3,7 +3,8 @@ package native_engine
 import (
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
-	"github.com/vorpalgame/vorpal/util"
+	"github.com/vorpalgame/vorpal/media/audio"
+	"github.com/vorpalgame/vorpal/media/render"
 	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/image/draw"
@@ -21,8 +22,8 @@ import (
 type engine struct {
 	bus.VorpalBus
 	//bus.StandardMediaPeerController
-	audioCache                              util.AudioCache
-	imageCache                              util.ImageCache
+	audioCache                              audio.AudioCache
+	imageCache                              render.ImageCache
 	currentRenderImage, currentDisplayImage image.Image
 	window                                  screen.Window
 	screen                                  screen.Screen
@@ -54,7 +55,7 @@ func (e *engine) OnTextEvent(inputChannel <-chan bus.TextEvent) {
 func NewEngine() lib.Engine {
 
 	log.Println("New native engine...")
-	e := engine{imageCache: util.NewImageCache(), audioCache: util.NewAudioCache()}
+	e := engine{imageCache: render.NewImageCache(), audioCache: audio.NewAudioCache()}
 
 	e.textEventChannel = make(chan bus.TextEvent, 1)
 	e.controlEventChannel = make(chan bus.ControlEvent, 1)
@@ -64,14 +65,14 @@ func NewEngine() lib.Engine {
 	e.AddControlEventListener(&e)
 	go initWindow(&e)
 	go runRenderPipeline(&e)
-	go util.NewAudioPipeline(&e.audioCache)
+	go audio.NewAudioPipeline(&e.audioCache)
 	return &e
 }
 
 func runRenderPipeline(e *engine) {
 	fromRenderPipeline := make(chan *image.RGBA, 10)
 	blitChannel := make(chan *image.RGBA, 10)
-	go util.NewRenderPipeline(fromRenderPipeline)
+	go render.NewRenderPipeline(fromRenderPipeline)
 	go blitImage(e, blitChannel)
 	for img := range fromRenderPipeline {
 		blitChannel <- img
@@ -143,7 +144,7 @@ var textPipeline = func(e *engine, inputChannel <-chan bus.TextEvent) {
 		case bus.MultilineTextEvent:
 			_ = evt
 		}
-		//log.Println("Text Event...")
+		//log.Println("Text RenderEvent...")
 		//log.Println(evt)
 	}
 }

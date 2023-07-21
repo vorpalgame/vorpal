@@ -1,6 +1,7 @@
-package tarot
+package main
 
 import (
+	"os"
 	"strings"
 
 	"github.com/vorpalgame/vorpal/bus"
@@ -32,7 +33,7 @@ type Tarot struct {
 func NewGame() TarotGame {
 
 	currentGame := Tarot{}
-	lib.UnmarshalFile("./samples/etc/tarot_bootstrap.yaml", &currentGame)
+	lib.UnmarshalFile("tarot/etc/bootstrap.yaml", &currentGame)
 
 	currentGame.bus = bus.GetVorpalBus()
 
@@ -45,13 +46,9 @@ func NewGame() TarotGame {
 
 }
 
-// TODO We are currently constructing and passing with structs due to issue disecvoered
-// with the marshaling. The interfaces and constructors shoudl be wired back in now that those
-// are straightened out.
 func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 	for evt := range keyChannel {
-
-		if evt.Equals('S') || evt.Equals('s') && evt.IsReleased() {
+		if evt.EqualsIgnoreCase('s') {
 			//t.ShuffleAudio).Stop()
 			t.bus.SendAudioEvent(bus.NewStopAudioEvent(&t.ShuffleAudio))
 			layer := lib.ImageLayerData{}
@@ -63,8 +60,10 @@ func (t *Tarot) OnKeyEvent(keyChannel <-chan bus.KeyEvent) {
 			t.bus.SendAudioEvent(bus.NewPlayAudioEvent(&t.ShuffleAudio))
 			t.currentCard = 0
 			t.doSendCard()
-		} else if evt.Equals('n') && evt.IsReleased() && t.shuffled {
+		} else if evt.EqualsIgnoreCase('n') && t.shuffled {
 			t.doSendCard()
+		} else if evt.EqualsIgnoreCase('e') {
+			os.Exit(0)
 		}
 
 	}
@@ -78,7 +77,7 @@ func (t *Tarot) doStartupScreen() {
 	//These should be registered from the yaml configuration
 	//TODO Get key bindings from yaml file...
 	t.bus.SendControlEvent(bus.NewWindowTitleEvent(t.Title))
-	t.bus.SendKeysRegistrationEvent(bus.NewKeyRegistrationEvent([]rune{'s', 'n', 'S', 'N'}))
+	t.bus.SendKeysRegistrationEvent(bus.NewKeyRegistrationEvent([]rune{'s', 'n', 'e'}))
 	t.drawEvent = bus.NewDrawLayersEvent()
 
 	layer := lib.ImageLayerData{}

@@ -1,4 +1,4 @@
-package util
+package audio
 
 import (
 	"github.com/stretchr/testify/assert"

@@ -1,9 +1,10 @@
-package util
+package render
 
 ///No x11 packages here...
 import (
 	"github.com/vorpalgame/vorpal/bus"
 	"github.com/vorpalgame/vorpal/lib"
+	"github.com/vorpalgame/vorpal/util"
 	"golang.org/x/image/draw"
 	"image"
 )
@@ -41,7 +42,7 @@ var loadImageFunc = func(mediaCache *ImageCache, inputChannel chan *loadResizeCa
 	resizeChan := make(chan *loadResizeCacheData, 100)
 	go resizeImageFunc(mediaCache, resizeChan)
 	for evt := range inputChannel {
-		evt.loadedImage = LoadImage(evt.imageMetadata.ImageFileName)
+		evt.loadedImage = util.LoadImage(evt.imageMetadata.ImageFileName)
 		resizeChan <- evt
 	}
 }

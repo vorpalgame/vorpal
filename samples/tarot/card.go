@@ -1,4 +1,4 @@
-package tarot
+package main
 
 type TarotCardData struct {
 	CardImg  string `yaml:"CardImg"`

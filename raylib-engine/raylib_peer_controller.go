@@ -96,9 +96,9 @@ func (c *raylibPeerController) GetControlEvents() []bus.ControlEvent {
 // use of temp
 
 func (c *raylibPeerController) GetTextEvent() bus.TextEvent {
-	temp := c.textEvent
-	c.textEvent = nil
-	return temp
+	//temp := c.textEvent
+	//c.textEvent = nil
+	return c.textEvent
 }
 
 func (c *raylibPeerController) GetKeysRegistrationEvent() bus.KeysRegistrationEvent {
