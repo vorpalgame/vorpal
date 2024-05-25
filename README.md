@@ -4,7 +4,6 @@
 **The media components are being forked to a separate project and the Vorpal Engine will use them as dependencies. The new framework project will be useful for creating game engines, rendering for web applications, GUI components for metrology and monitoring, and pretty much any case you'd require that has graphics, audio or text rendering that will benefit from asynchronous, event based, Golang mechanics.**
 
 The framework/library is being created here and will be a dependency for the Vorpal Game project in the future. 
-https://github.com/enjekt/vorpal-media
 
 ## Vorpal Game &amp; Simulation Engine for Go
 
